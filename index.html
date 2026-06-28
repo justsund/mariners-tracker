@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Did the Mariners Score More Than 3?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -92,6 +95,15 @@
       color: rgba(196,206,212,0.55);
       font-size: 0.82rem;
       letter-spacing: 0.5px;
+    }
+
+    .sf-tagline {
+      display: none;
+      margin-top: 10px;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #000;
     }
 
     /* ---- Layout ---- */
@@ -246,16 +258,14 @@
     }
 
     /* ---- Last 10 W-L record ---- */
-    .last10-record {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: rgba(196,206,212,0.55);
-      margin-bottom: 14px;
-      letter-spacing: 0.5px;
+    .games-record {
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: rgba(196,206,212,0.7);
     }
 
-    .last10-record .rec-w { color: var(--yes); }
-    .last10-record .rec-l { color: var(--no); }
+    .games-record .rec-w { color: var(--yes); }
+    .games-record .rec-l { color: var(--no); }
 
     .scoreboard {
       display: flex;
@@ -271,13 +281,21 @@
       color: var(--silver);
       margin-bottom: 6px;
       font-weight: 600;
+      /* Reserve two lines so a wrapped opponent name (e.g. "Cleveland
+         Guardians") doesn't push its run total lower than the other side. */
+      min-height: 2.4em;
+      line-height: 1.2;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      text-align: center;
     }
 
     .scoreboard-runs { font-size: 3.2rem; font-weight: 800; }
     .scoreboard-runs.mariners { color: var(--light-teal); }
     .scoreboard-runs.opponent { color: var(--silver); }
 
-    .scoreboard-divider { font-size: 2rem; color: rgba(255,255,255,0.2); }
+    .scoreboard-divider { font-size: 2rem; color: rgba(255,255,255,0.2); transform: translateY(1.15rem); }
 
     .inning-info  { text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--silver); }
     .inning-detail{ text-align: center; margin-top: 4px; font-size: 0.75rem; color: rgba(255,255,255,0.38); }
@@ -587,6 +605,94 @@
       color: rgba(255,255,255,0.18);
     }
 
+    /* ====================================================================== */
+    /* THEME TOGGLE CONTROL                                                    */
+    /* ====================================================================== */
+    .theme-toggle {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+    }
+    .tt-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(196,206,212,0.5);
+      margin-right: 4px;
+    }
+    .tt-btn {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid rgba(0,178,169,0.45);
+      background: rgba(12,44,86,0.6);
+      color: var(--silver);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: transform 0.15s, background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .tt-btn:hover { transform: translateY(-1px); }
+    .tt-beta { font-size: 0.72em; opacity: 0.65; font-weight: 700; }
+    .tt-btn.active {
+      background: var(--light-teal);
+      color: #06242a;
+      border-color: var(--light-teal);
+      box-shadow: 0 0 16px rgba(0,178,169,0.5);
+    }
+
+    /* ====================================================================== */
+    /* DRIFTING CLOUDS (Springfield only)                                     */
+    /* ====================================================================== */
+    .clouds {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      display: none;
+    }
+    body.springfield .clouds { display: block; }
+    .cloud {
+      position: absolute;
+      filter: drop-shadow(0 6px 0 rgba(0,0,0,0.05));
+    }
+    .cloud svg { display: block; }
+    @keyframes drift {
+      from { transform: translateX(-30vw); }
+      to   { transform: translateX(130vw); }
+    }
+    .cloud.c1 { top: 6%;  animation: drift 75s  linear infinite; animation-delay: -10s; }
+    .cloud.c2 { top: 26%; animation: drift 115s linear infinite; animation-delay: -60s; }
+    .cloud.c2 svg { transform: scale(1.5); }
+    .cloud.c3 { top: 50%; animation: drift 95s  linear infinite; animation-delay: -30s; opacity: 0.85; }
+    .cloud.c3 svg { transform: scale(0.85); }
+    .cloud.c4 { top: 72%; animation: drift 140s linear infinite; animation-delay: -95s; opacity: 0.7; }
+    .cloud.c4 svg { transform: scale(1.1); }
+
+    /* keep all real content above the cloud layer */
+    .top-stripe, .theme-toggle, header, #loading, #error, #app, footer {
+      position: relative;
+      z-index: 1;
+    }
+    .theme-toggle { z-index: 60; }
+
+    /* theme-conditional copy helpers */
+    .theme-springfield { display: none; }
+    body.springfield .theme-default { display: none; }
+    body.springfield .theme-springfield { display: inline; }
+    body.springfield .sf-tagline { display: block; }
+
     /* ---- Mobile ---- */
     @media (max-width: 560px) {
       .grid { gap: 12px; padding: 0 12px; }
@@ -621,12 +727,237 @@
       /* More breathing room for linescore on mobile (single-column = wider card) */
       .linescore-table { font-size: 0.78rem; }
       .linescore-table th, .linescore-table td { padding: 5px 4px; min-width: 22px; }
+
+      .tt-label { display: none; }
     }
+
+    /* ====================================================================== */
+    /* ☁️  SPRINGFIELD MODE SKIN                                              */
+    /*   Bright cartoon sky, thick black outlines, flat fills, bouncy copy.   */
+    /* ====================================================================== */
+    body.springfield {
+      font-family: 'Nunito', sans-serif;
+      color: #000;
+      background:
+        radial-gradient(circle at 85% 12%, rgba(255,217,15,0.55) 0%, transparent 26%),
+        linear-gradient(180deg, #aee3fb 0%, #87CEEB 52%, #bfeacb 100%);
+      background-attachment: fixed;
+      /* Smooth cartoon outline for big display numbers. Uses layered shadows
+         instead of -webkit-text-stroke, which spikes at sharp glyph corners. */
+      --toon-outline:
+        -2px -2px 0 #000, -2px 0 0 #000, -2px 2px 0 #000,
+         0   -2px 0 #000,                 0   2px 0 #000,
+         2px -2px 0 #000,  2px 0 0 #000,  2px 2px 0 #000,
+        -3px  0   0 #000,  3px 0 0 #000,  0  -3px 0 #000, 0 3px 0 #000;
+    }
+
+    body.springfield .top-stripe {
+      height: 6px;
+      background: linear-gradient(90deg, #FF3B30, #FFD90F, #7ED957, #4A4EFF, #FF69B4);
+    }
+
+    /* Header */
+    body.springfield header::after {
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.25), transparent);
+    }
+    body.springfield .header-logo img {
+      filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.3)) !important;
+    }
+    body.springfield .header-wordmark {
+      color: #000;
+      font-family: 'Fredoka', sans-serif;
+    }
+    body.springfield header h1 {
+      font-family: 'Fredoka', sans-serif;
+      color: #000;
+      text-shadow: none;
+    }
+    body.springfield header h1 em {
+      color: #000;
+      background: #FFD90F;
+      padding: 0 0.22em;
+      border-radius: 8px;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+    body.springfield header p.subtitle { color: rgba(0,0,0,0.55); }
+
+    /* Toggle control */
+    body.springfield .tt-label { color: rgba(0,0,0,0.55); }
+    body.springfield .tt-btn {
+      font-family: 'Fredoka', sans-serif;
+      border: 3px solid #000;
+      background: #fff;
+      color: #000;
+      box-shadow: 3px 3px 0 #000;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    body.springfield .tt-btn:hover { transform: translateY(-2px) scale(1.03); }
+    body.springfield .tt-btn.active {
+      background: #FF69B4;
+      color: #000;
+      border-color: #000;
+      box-shadow: 3px 3px 0 #000;
+    }
+
+    /* Cards */
+    body.springfield .card {
+      background: #fff;
+      border: 3px solid #000;
+      border-radius: 22px;
+      box-shadow: 6px 6px 0 #000;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    body.springfield .card::after { display: none; }
+    body.springfield .card-label {
+      color: #FF69B4;
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    /* Verdict */
+    /* Big display numbers: cartoon outline via layered shadow (no spurs). */
+    body.springfield .verdict-word,
+    body.springfield .scoreboard-runs,
+    body.springfield .streak-number,
+    body.springfield .tally-stat-num {
+      -webkit-text-stroke: 0;
+      text-shadow: var(--toon-outline);
+    }
+    body.springfield .verdict-word.yes { color: #7ED957; }
+    body.springfield .verdict-word.no  { color: #FF3B30; }
+    body.springfield .verdict-detail { color: #000; }
+    body.springfield .verdict-opponent { color: #000; font-weight: 800; }
+
+    /* Badges */
+    body.springfield .live-badge,
+    body.springfield .final-badge,
+    body.springfield .today-badge {
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0 #000;
+      color: #000;
+      font-family: 'Fredoka', sans-serif;
+    }
+    body.springfield .live-badge  { background: #FFD90F; }
+    body.springfield .final-badge { background: #fff; }
+    body.springfield .today-badge { background: #7ED957; }
+    body.springfield .live-dot    { background: #FF3B30; }
+
+    /* Scoreboard */
+    body.springfield .scoreboard-team-name { color: #000; font-weight: 800; }
+    body.springfield .scoreboard-runs.mariners { color: #FFD90F; }
+    body.springfield .scoreboard-runs.opponent { color: #87CEEB; }
+    body.springfield .scoreboard-divider { color: #000; }
+    body.springfield .game-time { color: #000; font-family: 'Fredoka', sans-serif; }
+    body.springfield .game-status-text,
+    body.springfield .today-venue,
+    body.springfield .inning-info,
+    body.springfield .inning-detail { color: rgba(0,0,0,0.6); }
+    body.springfield .today-vs { color: #000; font-weight: 800; }
+
+    /* Linescore */
+    body.springfield .linescore-table th { color: rgba(0,0,0,0.45); }
+    body.springfield .linescore-table th,
+    body.springfield .linescore-table td { border-bottom: 1px solid rgba(0,0,0,0.12); }
+    body.springfield .linescore-table td.team-label { color: #000; }
+    body.springfield .linescore-table td.total { color: #000; }
+    body.springfield .linescore-table td.current-inning { background: #FFD90F; }
+    body.springfield .inning-window-note { color: rgba(0,0,0,0.4); }
+
+    /* Bases + matchup */
+    body.springfield .base { border-color: #000; }
+    body.springfield .base.occupied { background: #FFD90F; border-color: #000; }
+    body.springfield .matchup-line { color: #000; }
+    body.springfield .matchup-line span { color: #4A4EFF; }
+    body.springfield .last-play { color: rgba(0,0,0,0.6); }
+
+    /* Final decisions */
+    body.springfield .final-divider { border-top: 1px solid rgba(0,0,0,0.12); }
+    body.springfield .final-decisions { color: rgba(0,0,0,0.6); }
+    body.springfield .final-decisions strong { color: #000; }
+    body.springfield .decision-label { color: rgba(0,0,0,0.4); }
+
+    /* Streak */
+    body.springfield .streak-number { color: #FF3B30; }
+    body.springfield .streak-number.zero { color: #7ED957; }
+    body.springfield .streak-label { color: #000; }
+
+    /* Season tally */
+    body.springfield .tally-stat-num.under { color: #FF3B30; }
+    body.springfield .tally-stat-num.over  { color: #7ED957; }
+    body.springfield #tally-pct { color: #FFD90F !important; text-shadow: var(--toon-outline) !important; }
+    body.springfield .tally-stat-desc { color: rgba(0,0,0,0.6); }
+    body.springfield .tally-divider { background: rgba(0,0,0,0.2); }
+    body.springfield .tally-bar {
+      height: 14px;
+      background: #fff;
+      border: 2px solid #000;
+    }
+    body.springfield .tally-bar-fill { background: #FF69B4; }
+    body.springfield .tally-bar-labels .label-under,
+    body.springfield .tally-bar-labels .label-over { color: #000; }
+
+    /* Recent games */
+    body.springfield .games-section-label {
+      color: #FF69B4;
+      font-family: 'Fredoka', sans-serif;
+    }
+    body.springfield .games-record { color: rgba(0,0,0,0.55); }
+    body.springfield .games-record .rec-w,
+    body.springfield .games-record .rec-l { color: #000; }
+    body.springfield .game-row {
+      background: #fff;
+      border: 2.5px solid #000;
+      box-shadow: 3px 3px 0 #000;
+      border-radius: 14px;
+    }
+    body.springfield .game-row:hover {
+      background: #FFF7C2;
+      border-color: #000;
+      transform: translateY(-2px);
+    }
+    body.springfield .game-dot.over  { background: #7ED957; border: 2px solid #000; box-shadow: none; }
+    body.springfield .game-dot.under { background: #FF3B30; border: 2px solid #000; box-shadow: none; }
+    body.springfield .game-opponent { color: #000; }
+    body.springfield .game-date { color: rgba(0,0,0,0.55); }
+    body.springfield .game-score { color: #000 !important; }
+    body.springfield .game-verdict.yes { background: #FFD90F; color: #000; border: 2px solid #000; }
+    body.springfield .game-verdict.no  { background: #FF3B30; color: #000; border: 2px solid #000; }
+
+    /* Loading / error / footer */
+    body.springfield #loading { color: #000; }
+    body.springfield .spinner { border: 3px solid rgba(0,0,0,0.15); border-top-color: #FF69B4; }
+    body.springfield #error { color: #FF3B30; }
+    body.springfield footer { color: rgba(0,0,0,0.45); }
   </style>
 </head>
 <body>
 
+<!-- Drifting clouds (Springfield mode only) -->
+<div class="clouds" aria-hidden="true">
+  <div class="cloud c1">
+    <svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg>
+  </div>
+  <div class="cloud c2">
+    <svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg>
+  </div>
+  <div class="cloud c3">
+    <svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg>
+  </div>
+  <div class="cloud c4">
+    <svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg>
+  </div>
+</div>
+
 <div class="top-stripe"></div>
+
+<!-- Design toggle -->
+<div class="theme-toggle" role="group" aria-label="Choose a design">
+  <span class="tt-label">Design</span>
+  <button id="btn-classic" class="tt-btn active" type="button" onclick="setTheme('classic')">🔱 Classic</button>
+  <button id="btn-springfield" class="tt-btn" type="button" onclick="setTheme('springfield')">☁️ Springfield <span class="tt-beta">(Beta)</span></button>
+</div>
 
 <header>
   <div class="header-logo">
@@ -635,15 +966,22 @@
   </div>
   <h1>Did the Mariners score<br><em>more than 3 runs?</em></h1>
   <p class="subtitle" id="last-updated"></p>
+  <p class="sf-tagline">Sky's out, scores out. Did they get past three? ☁️⚾</p>
 </header>
 
 <div id="loading">
   <div class="spinner"></div>
-  <p>Loading Mariners data…</p>
+  <p>
+    <span class="theme-default">Loading Mariners data…</span>
+    <span class="theme-springfield">Crunching baseball numbers… probably.</span>
+  </p>
 </div>
 
 <div id="error">
-  <p>⚠️ Could not load game data. Check your connection and refresh.</p>
+  <p>
+    <span class="theme-default">⚠️ Could not load game data. Check your connection and refresh.</span>
+    <span class="theme-springfield">😬 Well… that wasn't supposed to happen. Try a refresh.</span>
+  </p>
 </div>
 
 <div id="app">
@@ -759,8 +1097,7 @@
 
     <!-- Recent games -->
     <div class="card full-width">
-      <div class="games-section-label">Last 10 Games</div>
-      <div class="last10-record" id="last10-record"></div>
+      <div class="games-section-label">Last 10 Games <span class="games-record" id="last10-record"></span></div>
       <div class="games-list" id="games-list"></div>
     </div>
 
@@ -770,6 +1107,24 @@
 <footer>
   Data: MLB Stats API &nbsp;·&nbsp; <span id="refresh-note">Refreshes every 60s</span>
 </footer>
+
+<!-- Theme toggle logic. Classic is always the default landing design;
+     Springfield (Beta) is opt-in per visit and not persisted. -->
+<script>
+  (function () {
+    window.setTheme = function (t) {
+      var sf = t === 'springfield';
+      document.body.classList.toggle('springfield', sf);
+      var c = document.getElementById('btn-classic');
+      var s = document.getElementById('btn-springfield');
+      if (c) c.classList.toggle('active', !sf);
+      if (s) s.classList.toggle('active', sf);
+    };
+
+    // Always start on Classic.
+    setTheme('classic');
+  })();
+</script>
 
 <script>
   const TEAM_ID   = 136;
@@ -872,7 +1227,7 @@
       const last10Wins   = recent.filter(g => marScore(g).isWin).length;
       const last10Losses = recent.length - last10Wins;
       document.getElementById('last10-record').innerHTML =
-        `<span class="rec-w">${last10Wins}W</span> – <span class="rec-l">${last10Losses}L</span>`;
+        `(<span class="rec-w">${last10Wins}W</span> – <span class="rec-l">${last10Losses}L</span>)`;
 
       const list = document.getElementById('games-list');
       list.innerHTML = '';
