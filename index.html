@@ -104,7 +104,7 @@
       font-weight: 600;
       font-size: 0.95rem;
       color: #000;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.5s ease;
     }
     .sf-tagline.fade { opacity: 0; }
 
@@ -698,6 +698,25 @@
       border-color: var(--light-teal);
       box-shadow: 0 0 16px rgba(0,178,169,0.5);
     }
+    .open-live-btn {
+      display: block;
+      width: 100%;
+      margin: 18px auto 2px;
+      font: inherit;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border: 1px solid rgba(0,178,169,0.45);
+      background: rgba(0,178,169,0.12);
+      color: var(--light-teal);
+      transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+    .open-live-btn:hover { transform: translateY(-1px); background: rgba(0,178,169,0.2); box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+    .open-live-btn .arrow { margin-left: 6px; }
 
     /* ====================================================================== */
     /* DRIFTING CLOUDS (Springfield only)                                     */
@@ -846,6 +865,15 @@
       border-color: #000;
       box-shadow: 3px 3px 0 #000;
     }
+    body.springfield .open-live-btn {
+      font-family: 'Fredoka', sans-serif;
+      border: 3px solid #000;
+      background: #FFD90F;
+      color: #000;
+      box-shadow: 4px 4px 0 #000;
+      border-radius: 14px;
+    }
+    body.springfield .open-live-btn:hover { transform: translateY(-2px) scale(1.01); background: #FFE34D; box-shadow: 4px 4px 0 #000; }
 
     /* Cards */
     body.springfield .card {
@@ -1122,6 +1150,11 @@
         <div id="final-decisions"></div>
       </div>
 
+      <!-- Launch the full live tracker (shown when a game is in the spotlight) -->
+      <button class="open-live-btn" id="open-live-btn" type="button" style="display:none;">
+        Open Full Live Tracker<span class="arrow">&rarr;</span>
+      </button>
+
     </div>
 
     <!-- Streak card -->
@@ -1301,12 +1334,17 @@
     function rotateSFTagline() {
       const el = document.getElementById('sf-tagline');
       if (!el) return;
+      // Fade fully out, hold invisible, swap the text, then fade back in.
+      // The 600ms wait is deliberately longer than the 0.5s opacity transition,
+      // so the old saying is completely gone before the new one appears: the
+      // two never overlap or crossfade.
       el.classList.add('fade');
       setTimeout(function () {
         sfIndex = (sfIndex + 1) % QUOTES.length;
         el.textContent = QUOTES[sfIndex];
+        void el.offsetWidth; // commit opacity:0 + new text before fading in
         el.classList.remove('fade');
-      }, 400);
+      }, 600);
     }
 
     window.setTheme = function (t) {
@@ -1321,7 +1359,7 @@
       if (sf) {
         var el = document.getElementById('sf-tagline');
         if (el) el.textContent = QUOTES[sfIndex];
-        sfInterval = setInterval(rotateSFTagline, 60000);
+        sfInterval = setInterval(rotateSFTagline, 30000);
       }
     };
 
@@ -1560,10 +1598,12 @@
           document.getElementById(id).style.display = id === state ? 'block' : 'none'
         );
       }
+      let spotlightPk = null;
 
       if (live) {
         // State A: live game
         showGCState('gc-live');
+        spotlightPk = live.gamePk;
         const { marRuns, oppRuns, oppName } = marScore(live);
         document.getElementById('live-mar-runs').textContent = marRuns;
         document.getElementById('live-opp-runs').textContent = oppRuns;
@@ -1623,6 +1663,7 @@
         if (todayGame) {
           // State B: today's upcoming game
           showGCState('gc-today');
+          spotlightPk = todayGame.gamePk;
           const { oppName, isAway } = marScore(todayGame);
           document.getElementById('today-matchup').textContent =
             `Mariners ${isAway ? '@' : 'vs'} ${oppName}`;
@@ -1634,6 +1675,7 @@
         } else if (lastGame) {
           // State C: last completed game linescore
           showGCState('gc-final');
+          spotlightPk = lastGame.gamePk;
           const { marRuns, oppRuns, oppName, isAway } = marScore(lastGame);
           document.getElementById('final-date').textContent = fmtDate(lastGame.officialDate);
           document.getElementById('final-mar-runs').textContent = marRuns;
@@ -1685,6 +1727,18 @@
         clearInterval(refreshInterval);
         refreshInterval = setInterval(load, 60000);
         document.getElementById('refresh-note').textContent = 'Refreshes every 60s';
+      }
+
+      // Wire the "open full live tracker" button to the spotlighted game.
+      const liveBtn = document.getElementById('open-live-btn');
+      if (spotlightPk) {
+        liveBtn.style.display = 'block';
+        liveBtn.onclick = () => {
+          const design = document.body.classList.contains('springfield') ? 'springfield' : 'classic';
+          window.open('live.html?gamePk=' + spotlightPk + '&design=' + design, '_blank', 'noopener');
+        };
+      } else {
+        liveBtn.style.display = 'none';
       }
 
       document.getElementById('last-updated').textContent =
