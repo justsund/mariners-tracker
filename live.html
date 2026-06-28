@@ -80,10 +80,11 @@
     .pip.on.strike { background: #ff5a48; border-color: #ff5a48; }
     .pip.on.out { background: var(--silver); border-color: var(--silver); }
     .pip.out-pip { width: 11px; height: 11px; }
-    .bases { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .base-row { display: flex; gap: 4px; }
-    .base { width: 20px; height: 20px; transform: rotate(45deg); border: 2px solid rgba(255,255,255,0.35); border-radius: 3px; transition: all .25s; }
+    .bases { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .base-row { display: flex; align-items: center; gap: 3px; }
+    .base { width: 16px; height: 16px; transform: rotate(45deg); border: 2px solid rgba(255,255,255,0.35); border-radius: 2px; background: transparent; transition: all .25s; }
     .base.on { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 14px rgba(255,197,47,0.7); }
+    .base-home { width: 16px; height: 16px; }
 
     /* Hero "more than 3" */
     .hero { text-align: center; }
@@ -317,7 +318,11 @@
           <div class="count-grid" id="count"></div>
           <div class="bases">
             <div class="base" id="b2"></div>
-            <div class="base-row"><div class="base" id="b3"></div><div class="base" id="b1"></div></div>
+            <div class="base-row">
+              <div class="base" id="b3"></div>
+              <div class="base-home"></div>
+              <div class="base" id="b1"></div>
+            </div>
           </div>
         </div>
         <div id="pre-fin"></div>
