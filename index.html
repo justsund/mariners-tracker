@@ -174,16 +174,17 @@
     .verdict-word.no  { color: var(--no);  text-shadow: 0 0 40px rgba(231,76,60,0.45); }
 
     .verdict-detail {
-      margin-top: 14px;
-      font-size: 1.05rem;
-      color: var(--silver);
+      margin-top: 8px;
+      font-size: 0.92rem;
+      color: #FFC52F;
       font-weight: 500;
     }
 
     .verdict-opponent {
-      margin-top: 6px;
-      font-size: 0.85rem;
-      color: #FFC52F;
+      margin-top: 14px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--white);
     }
 
     /* ---- Game card badges ---- */
@@ -207,14 +208,36 @@
     }
 
     .final-badge {
-      background: rgba(196,206,212,0.1);
-      border: 1px solid rgba(196,206,212,0.3);
-      color: var(--silver);
+      background: rgba(255,197,47,0.15);
+      border: 1px solid rgba(255,197,47,0.55);
+      color: #FFC52F;
     }
 
     .today-badge {
-      background: rgba(0,178,169,0.15);
-      border: 1px solid rgba(0,178,169,0.4);
+      background: rgba(255,197,47,0.15);
+      border: 1px solid rgba(255,197,47,0.55);
+      color: #FFC52F;
+    }
+
+    .final-topline {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .final-topline .final-badge { margin-bottom: 0; }
+    .final-date {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: rgba(0,178,169,0.12);
+      border: 1px solid rgba(0,178,169,0.35);
       color: var(--light-teal);
     }
 
@@ -268,6 +291,8 @@
 
     .games-record .rec-w { color: var(--yes); }
     .games-record .rec-l { color: var(--no); }
+    .games-record .rec-under { color: var(--no); }
+    .games-record .rec-mut { color: rgba(196,206,212,0.45); font-weight: 700; }
 
     .scoreboard {
       display: flex;
@@ -438,11 +463,12 @@
     }
     .streak-label {
       margin-top: 14px;
-      font-size: 0.95rem;
-      color: var(--silver);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--white);
     }
 
-    /* ---- Season Tally — full-width centered ---- */
+    /* ---- Season Tally - full-width centered ---- */
     .tally-card {
       text-align: center;
     }
@@ -578,7 +604,7 @@
       border-radius: 20px;
       white-space: nowrap;
     }
-    .game-verdict.yes { background:rgba(255,197,47,0.12); color:#FFC52F; border:1px solid rgba(255,197,47,0.4); }
+    .game-verdict.yes { background:rgba(0,178,169,0.12); color:var(--light-teal); border:1px solid rgba(0,178,169,0.4); }
     .game-verdict.no  { background:rgba(231,76,60,0.13); color:#ff6b6b; border:1px solid rgba(231,76,60,0.35); }
 
     /* ---- Loading / error ---- */
@@ -645,7 +671,6 @@
       transition: transform 0.15s, background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
     }
     .tt-btn:hover { transform: translateY(-1px); }
-    .tt-beta { font-size: 0.72em; opacity: 0.65; font-weight: 700; }
     .tt-btn.active {
       background: var(--light-teal);
       color: #06242a;
@@ -722,7 +747,7 @@
       .tally-divider { display: none; }
       .tally-stat-num { font-size: clamp(2rem, 10vw, 3.5rem); }
 
-      /* Live card — stack matchup + diamond vertically on small screens */
+      /* Live card - stack matchup + diamond vertically on small screens */
       .live-situation { flex-direction: column; gap: 10px; }
       .matchup-line { text-align: center; max-width: 100%; }
 
@@ -734,7 +759,7 @@
     }
 
     /* ====================================================================== */
-    /* ☁️  SPRINGFIELD MODE SKIN                                              */
+    /* SPRINGFIELD MODE SKIN                                              */
     /*   Bright cartoon sky, thick black outlines, flat fills, bouncy copy.   */
     /* ====================================================================== */
     body.springfield {
@@ -827,7 +852,7 @@
     }
     body.springfield .verdict-word.yes { color: #7ED957; }
     body.springfield .verdict-word.no  { color: #FF3B30; }
-    body.springfield .verdict-detail { color: #000; }
+    body.springfield .verdict-detail { color: rgba(0,0,0,0.65); }
     body.springfield .verdict-opponent { color: #000; font-weight: 800; }
 
     /* Badges */
@@ -840,8 +865,15 @@
       font-family: 'Fredoka', sans-serif;
     }
     body.springfield .live-badge  { background: #FFD90F; }
-    body.springfield .final-badge { background: #fff; }
-    body.springfield .today-badge { background: #7ED957; }
+    body.springfield .final-badge { background: #FFD90F; }
+    body.springfield .today-badge { background: #FFD90F; }
+    body.springfield .final-date {
+      background: #fff;
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0 #000;
+      color: #000;
+      font-family: 'Fredoka', sans-serif;
+    }
     body.springfield .live-dot    { background: #FF3B30; }
 
     /* Scoreboard */
@@ -905,7 +937,9 @@
     }
     body.springfield .games-record { color: rgba(0,0,0,0.55); }
     body.springfield .games-record .rec-w,
-    body.springfield .games-record .rec-l { color: #000; }
+    body.springfield .games-record .rec-l,
+    body.springfield .games-record .rec-under { color: #000; }
+    body.springfield .games-record .rec-mut { color: rgba(0,0,0,0.4); }
     body.springfield .game-row {
       background: #fff;
       border: 2.5px solid #000;
@@ -917,12 +951,12 @@
       border-color: #000;
       transform: translateY(-2px);
     }
-    body.springfield .game-dot.over  { background: #7ED957; border: 2px solid #000; box-shadow: none; }
-    body.springfield .game-dot.under { background: #FF3B30; border: 2px solid #000; box-shadow: none; }
+    body.springfield .game-dot.over  { background: #FFD90F; border: 2px solid #000; box-shadow: none; }
+    body.springfield .game-dot.under { background: #FFD90F; border: 2px solid #000; box-shadow: none; }
     body.springfield .game-opponent { color: #000; }
     body.springfield .game-date { color: rgba(0,0,0,0.55); }
     body.springfield .game-score { color: #000 !important; }
-    body.springfield .game-verdict.yes { background: #FFD90F; color: #000; border: 2px solid #000; }
+    body.springfield .game-verdict.yes { background: #7ED957; color: #000; border: 2px solid #000; }
     body.springfield .game-verdict.no  { background: #FF3B30; color: #000; border: 2px solid #000; }
 
     /* Loading / error / footer */
@@ -956,7 +990,7 @@
 <div class="theme-toggle" role="group" aria-label="Choose a design">
   <span class="tt-label">Design</span>
   <button id="btn-classic" class="tt-btn active" type="button" onclick="setTheme('classic')">🔱 Classic</button>
-  <button id="btn-springfield" class="tt-btn" type="button" onclick="setTheme('springfield')">☁️ Springfield <span class="tt-beta">(Beta)</span></button>
+  <button id="btn-springfield" class="tt-btn" type="button" onclick="setTheme('springfield')">☁️ Springfield</button>
 </div>
 
 <header>
@@ -972,15 +1006,15 @@
 <div id="loading">
   <div class="spinner"></div>
   <p>
-    <span class="theme-default">Loading Mariners data…</span>
-    <span class="theme-springfield">Crunching baseball numbers… probably.</span>
+    <span class="theme-default">Loading Mariners data...</span>
+    <span class="theme-springfield">Crunching baseball numbers... probably.</span>
   </p>
 </div>
 
 <div id="error">
   <p>
-    <span class="theme-default">⚠️ Could not load game data. Check your connection and refresh.</span>
-    <span class="theme-springfield">😬 Well… that wasn't supposed to happen. Try a refresh.</span>
+    <span class="theme-default">Could not load game data. Check your connection and refresh.</span>
+    <span class="theme-springfield">Well, that wasn't supposed to happen. Try a refresh.</span>
   </p>
 </div>
 
@@ -990,9 +1024,9 @@
     <!-- Verdict card -->
     <div class="card verdict-card">
       <div class="card-label">Last Completed Game</div>
-      <div class="verdict-word" id="verdict-word">—</div>
-      <div class="verdict-detail"  id="verdict-detail"></div>
+      <div class="verdict-word" id="verdict-word">-</div>
       <div class="verdict-opponent" id="verdict-opponent"></div>
+      <div class="verdict-detail"  id="verdict-detail"></div>
     </div>
 
     <!-- Game spotlight card (always visible, 3 states) -->
@@ -1040,16 +1074,19 @@
 
       <!-- State C: Last completed game linescore -->
       <div id="gc-final" style="display:none;">
-        <div class="final-badge">Final</div>
+        <div class="final-topline">
+          <span class="final-date" id="final-date"></span>
+          <span class="final-badge">Final</span>
+        </div>
         <div class="scoreboard">
           <div class="scoreboard-team">
             <div class="scoreboard-team-name">Mariners</div>
-            <div class="scoreboard-runs mariners" id="final-mar-runs">—</div>
+            <div class="scoreboard-runs mariners" id="final-mar-runs">-</div>
           </div>
           <div class="scoreboard-divider">–</div>
           <div class="scoreboard-team">
-            <div class="scoreboard-team-name" id="final-opp-name">—</div>
-            <div class="scoreboard-runs opponent" id="final-opp-runs">—</div>
+            <div class="scoreboard-team-name" id="final-opp-name">-</div>
+            <div class="scoreboard-runs opponent" id="final-opp-runs">-</div>
           </div>
         </div>
         <div id="final-linescore-wrap"></div>
@@ -1065,7 +1102,7 @@
       <div class="streak-label"  id="streak-label"></div>
     </div>
 
-    <!-- Season tally — full width, centered -->
+    <!-- Season tally - full width, centered -->
     <div class="card full-width tally-card">
       <div class="card-label">2026 Season Tally</div>
       <div class="tally-stats">
@@ -1080,7 +1117,7 @@
         </div>
         <div class="tally-divider"></div>
         <div class="tally-stat">
-          <div class="tally-stat-num" id="tally-pct" style="color:#FFC52F;text-shadow:0 0 30px rgba(255,197,47,0.4);">—</div>
+          <div class="tally-stat-num" id="tally-pct" style="color:#FFC52F;text-shadow:0 0 30px rgba(255,197,47,0.4);">-</div>
           <div class="tally-stat-desc">of games ≤ 3 runs</div>
         </div>
       </div>
@@ -1109,62 +1146,112 @@
 </footer>
 
 <!-- Theme toggle logic. Classic is always the default landing design;
-     Springfield (Beta) is opt-in per visit and not persisted.
+     Springfield is opt-in per visit and not persisted.
      In Springfield, the tagline rotates through Simpsons quotes. -->
 <script>
   (function () {
     const QUOTES = [
-      "If the Ms don't score more than 3, they can EAT MY SHORTS! 🛹",
-      "Three runs or fewer? That's unpossible! 🤔",
-      "D'oh. Three runs. D'oh. 😩",
-      "Marge, I just realized the Mariners are never gonna score more than 3 runs. ...I'm going to Moe's. 🍺",
-      "Ay, caramba! THREE RUNS AGAIN?! 😱",
-      "Don't have a cow, man. They only scored three. 🐄",
-      "Stupid sexy Mariners. Can't score more than 3. 😤",
-      "To the Mariners — the cause of, and solution to, all of life's problems. 🍩",
-      "Excellent... they scored three runs. Now if they could simply score a FOURTH. 🧐",
-      "Release the hounds... on whoever left those runners on base. 🐕",
-      "My dad says the Mariners make him cry. My cat's breath smells like cat food. 🐱",
-      "I choo-choo-choose the Mariners! Even when they only score 3. 💌",
-      "I eateded the baseball. ⚾",
-      "Well, okily-dokily neighborino! Could you score-arino more than three? 🙏",
-      "HA-ha. 👉",
-      "What do you mean they only scored THREE?! I've been saying this for 30 years! That's not a joke, that's a cry for help. 🤡",
-      "Every time the Mariners score more than 3 runs, I feel like a million bucks. So... never. 🍺",
-      "According to my calculations, the Mariners have a 46% chance of scoring more than 3. I hate that I did that math. 🤓",
-      "I have REPEATEDLY tried to watch the Mariners score more than 3 runs. REPEATEDLY. 😤",
-      "Nothing to see here folks. Just a baseball team scoring 3 runs or fewer. Move along. 👮",
-      "Back in my day, teams scored MORE than 3 runs! We called it 'offense.' ☁️",
-      "I was saying 'boo-urns.' Also the Mariners lost again. 😐",
-      "Worst. Offense. Ever. 📚",
-      "I've got a crush on the Mariners. They never score more than 3 but I can't stop watching. 💙",
-      "Everything's coming up Milhouse! ...Oh wait, they only scored 3. 😭",
-      "Hi, I'm Troy McClure! You might remember me from such collapses as 'The 2001 Record-Setting Season' and 'Everything Since.' 🎬",
-      "Trying is the first step toward failing. But also scoring more than 3 runs. 🍩",
-      "Why does everything I love either kill me or score fewer than 3 runs? 🏠",
-      "Son, when you score more than 3 runs, everything's coming up Milhouse. 🌸",
-      "Glaven! According to my glavin calculations, the probability of scoring more than 3 runs is hovering just above the glavin threshold! 🔬",
-      "Disco Stu doesn't score more than 3 runs. But Disco Stu doesn't advertise. 🕺",
-      "Fat Tony says: it would be a shame if something happened to that run support. 🤌",
-      "And I, for one, welcome our new 3-runs-or-fewer overlords. 📺",
-      "Mariners fans, I've said it before and I'll say it again: democracy simply doesn't work. Neither does this offense. 📺",
-      "I've got a bad feeling about this. Actually I've had this feeling since 2001. It's just my baseline now. 🏫",
-      "Whoa dude... three runs. That's like... one, two, three... yeah, bummer. 🚌",
-      "I have argued before the Supreme Court. I once argued with a sandwich. Neither scored more than 3 runs. ⚖️",
-      "The Mariners scored 3 runs. I'm in the police. 👮",
-      "By the Hammurabi code, thou shalt score more than 3 runs! The Mariners remain in violation. 🍎",
-      "The Mariners' run differential is, as we say in jazz, off. 🎷",
-      "I didn't do it. But I watched them not score more than 3 runs and I didn't do anything about it either. 🛹",
-      "To alcohol! The cause of, and solution to, watching the Mariners! 🍺",
-      "Oh no. They lost again. And I have three kids. Unrelated. 👨‍👩‍👧‍👦",
-      "I am so smart! S-M-R-T! Unlike the Mariners offense! 🏠",
-      "Cowabunga! They actually scored more than 3! ...Just kidding. 🛹",
-      "The Mariners are like Moe's bar — nobody wins, everyone leaves sad. 🍺",
-      "It's a perfectly cromulent run total. ✏️",
-      "Three runs! I was told there would be more runs. 🎠",
-      "You don't win games with salad. OR, apparently, with more than 3 runs. 🥗",
-      "I'm not a bad man. I simply root for a team that cannot score. 🏭",
-      "Mmm... home runs. 🤤",
+      "D'oh! The Mariners again.",
+      "Mariners bullpen? Eat my shorts.",
+      "Ay, caramba! They lost AGAIN?!",
+      "Don't have a cow, man. It's just another Mariners loss.",
+      "Mmm... a Mariners win. (drools) ...someday.",
+      "Worst. Season. Ever.",
+      "Me root for a winner? That's unpossible.",
+      "I'm a Mariners fan! ...I'm Idaho.",
+      "The Mariners are my favorite. My cat's breath smells like cat food.",
+      "I watched the Mariners and I bent my Wookiee.",
+      "Stupid sexy Mariners. Always breaking my heart.",
+      "To the Mariners! The cause of, and solution to, all of my problems.",
+      "Marge, the Mariners are losing. I'm going to Moe's.",
+      "Everything's coming up Mariners! ...so, terribly.",
+      "I choo-choo-choose the Mariners. Why do I do this to myself?",
+      "Don't make me run, I'm full of expired hope.",
+      "I was saying 'Boo-urns.' Also, the Mariners lost.",
+      "Local Man Yells At Mariners.",
+      "And I, for one, welcome our new last-place overlords.",
+      "Mariners fans, I've said it before: hope simply doesn't work.",
+      "Won't somebody PLEASE think of the bullpen?!",
+      "The Mariners lost? Ha-ha!",
+      "Mariners offense? Smell ya later.",
+      "The Mariners are batting. Smithers, release the hounds.",
+      "Another Mariners collapse... eeexcellent.",
+      "Smithers, who are these Mariners and why do they keep losing?",
+      "Family. Religion. Friendship. Three things the Mariners will let you down on.",
+      "Sir, the Mariners lost again. Shall I draw you a bath?",
+      "The Mariners lost. Thank you, come again.",
+      "Did the Mariners win? Works on contingency? No, money down!",
+      "The Mariners, with their crazy excuses.",
+      "You call them the Mariners, despite the fact that they are clearly grounded into a double play?",
+      "A winning streak? At this time of season, localized entirely within the Mariners?! May I see it? ...No.",
+      "The Mariners are a perfectly cromulent disappointment.",
+      "Nothing embiggens a losing streak like the Mariners.",
+      "(Ralph, smiling on the bus) I'm a Mariners fan!",
+      "Mariners, choke, purple monkey dishwasher.",
+      "Cowabunga, dude... another Mariners loss.",
+      "I'm a Mariners fan! S-M-R-T!",
+      "I watch the Mariners. The goggles do nothing!",
+      "Up and at them... and the Mariners blow the lead.",
+      "Why you little...! (Homer, watching the Mariners)",
+      "Save me, Jeebus! The Mariners are batting!",
+      "Three runs and no lead? Why can't the Mariners have no runs and three leads?",
+      "Trying is the first step toward failure. The Mariners know this well.",
+      "The Mariners don't strike. They just show up and do it really half-assed.",
+      "Mariners, you tried your best and you failed miserably. The lesson is: never try.",
+      "Stats are meaningless. You could use stats to prove the Mariners are even remotely good.",
+      "Oh, so the Mariners have offense in October now? ...They don't.",
+      "In this house, we obey the laws of the Mariners: thou shalt be let down.",
+      "I didn't think it was possible, but the Mariners both suck AND blow.",
+      "Worst Mariners loss ever. / You say that so often it's lost all meaning.",
+      "Can't talk. Mariners blowing it.",
+      "Just because I don't care about the Mariners doesn't mean they don't hurt me.",
+      "Operator! Give me the number for 911! The Mariners loaded the bases!",
+      "A Mariners title is make-believe, like elves, gremlins, and Eskimos.",
+      "The Mariners. Is there anything they CAN do?",
+      "The Mariners... now there's a permanent solution to feeling happy.",
+      "I'm not gonna lie to you, Marge. This Mariners team is a journey of pain.",
+      "There's no such thing as a Mariners win. It's just something they made up to sell tickets.",
+      "Hi, I'm Troy McClure! You may remember the Mariners from such collapses as 'The 2001 Season' and 'Every Year Since.'",
+      "Disco Stu doesn't root for the Mariners. But Disco Stu doesn't advertise.",
+      "Hi-diddly-ho! Could the Mariners win-arino just one game?",
+      "Mariners losing again? Okily-dokily. The Lord is testing me.",
+      "I'm a Mariners fan... who the hell are these guys leaving runners on base?",
+      "Rootin' for a winner? That's a paddlin'.",
+      "I'm seeing double here... four runs! ...no, still three.",
+      "You don't make friends with the Mariners! You don't make friends with the Mariners!",
+      "It takes two to choke: the starter and the bullpen.",
+      "Marge, it's the Mariners. I can't be expected to feel things.",
+      "Glayvin! By my calculations the Mariners should be good. The math, it has betrayed me!",
+      "Fat Tony says: it would be a shame if something happened to that lead. ...It did.",
+      "The Mariners are like Moe's bar: nobody wins, everyone leaves sad.",
+      "According to my readings, the Mariners' magic number is 'ha, no.'",
+      "I eateded the whole season.",
+      "The Mariners' run differential is, as we say in jazz, off.",
+      "Lisa, the Mariners are an affront to the very concept of competence.",
+      "Two words: Mar. Iners. (Dad, that's one word.)",
+      "Dental plan. Mariners offense. Dental plan. Mariners offense.",
+      "Hey hey! The Mariners! ...Kids, I think this is a rerun.",
+      "Inflammable means flammable? And the Mariners mean heartbreak? What a country!",
+      "I used to root for a contender. Then they changed what a contender was.",
+      "The doctor said I'd have fewer nosebleeds if I'd just stop watching the Mariners.",
+      "Hello, darkness, my old friend. Hello, Mariners, same thing.",
+      "Every time the Mariners lose, an angel gets its wings clipped.",
+      "We're number... well, we're a number.",
+      "Kent Brockman here. The Mariners' offense remains, in a word, dormant.",
+      "I, Chief Wiggum, hereby arrest the Mariners for impersonating a baseball team.",
+      "I'm a rageaholic! I'm addicted to rageahol! ...it's the Mariners.",
+      "They're the best team money can't buy a win for.",
+      "The Mariners put the 'L' in 'Seattle.' Wait... there are two. Perfect.",
+      "I've watched the Mariners lose in ways science cannot explain.",
+      "Won't somebody think of the run support?!",
+      "The Mariners: proudly snatching defeat from the jaws of victory since forever.",
+      "I call the big one 'Bitey.' I call the Mariners 'Quiet.'",
+      "The Mariners are why Daddy drinks, Lisa.",
+      "It's not the Mariners who are wrong. It's the scoreboard. ...No, it's the Mariners.",
+      "D'oh-fense. That's the whole problem.",
+      "Comic Book Guy here: the most disappointing collection of at-bats I have ever witnessed.",
+      "Boo-hoo, Seattle. Try again next year. And the year after. And the...",
+      "Mmm... home runs.",
     ];
 
     let sfIndex = Math.floor(Math.random() * QUOTES.length);
@@ -1193,7 +1280,7 @@
       if (sf) {
         var el = document.getElementById('sf-tagline');
         if (el) el.textContent = QUOTES[sfIndex];
-        sfInterval = setInterval(rotateSFTagline, 4000);
+        sfInterval = setInterval(rotateSFTagline, 60000);
       }
     };
 
@@ -1278,10 +1365,10 @@
         vw.textContent = verdict ? 'YES' : 'NO';
         vw.className   = 'verdict-word ' + (verdict ? 'yes' : 'no');
         document.getElementById('verdict-detail').textContent =
-          `Mariners ${marRuns}, ${oppName} ${oppRuns} (${isWin ? 'W' : 'L'}) — ${fmtDate(lastGame.officialDate)}`;
+          `Mariners ${marRuns}, ${oppName} ${oppRuns} (${isWin ? 'W' : 'L'}) · ${fmtDate(lastGame.officialDate)}`;
         document.getElementById('verdict-opponent').textContent =
-          verdict ? `✓ They scored more than ${THRESHOLD} runs`
-                  : `✗ They did NOT score more than ${THRESHOLD} runs`;
+          verdict ? `They scored more than ${THRESHOLD} runs`
+                  : `They did NOT score more than ${THRESHOLD} runs`;
       }
 
       // ---- Streak ----
@@ -1294,7 +1381,7 @@
       sEl.textContent = streak;
       sEl.className   = 'streak-number' + (streak === 0 ? ' zero' : '');
       document.getElementById('streak-label').textContent =
-        streak === 0   ? 'No active streak — last game they scored > 3!'
+        streak === 0   ? 'No active streak. They scored > 3 last game!'
         : streak === 1 ? 'game in a row scoring 3 or fewer runs'
                        : 'games in a row scoring 3 or fewer runs';
 
@@ -1302,8 +1389,9 @@
       const recent = completed.slice(-10).reverse();
       const last10Wins   = recent.filter(g => marScore(g).isWin).length;
       const last10Losses = recent.length - last10Wins;
+      const last10Under  = recent.filter(g => marScore(g).marRuns <= THRESHOLD).length;
       document.getElementById('last10-record').innerHTML =
-        `(<span class="rec-w">${last10Wins}W</span> – <span class="rec-l">${last10Losses}L</span>)`;
+        `(<span class="rec-w">${last10Wins}W</span> – <span class="rec-l">${last10Losses}L</span> <span class="rec-mut">·</span> <span class="rec-under">${last10Under}</span><span class="rec-mut">/${recent.length} ≤3</span>)`;
 
       const list = document.getElementById('games-list');
       list.innerHTML = '';
@@ -1322,7 +1410,7 @@
           </div>
           <div class="game-row-right">
             <div class="game-score ${isWin ? 'win' : 'loss'}">${marRuns}–${oppRuns} ${isWin ? 'W' : 'L'}</div>
-            <div class="game-verdict ${isOver ? 'yes' : 'no'}">${isOver ? '✓ YES' : '✗ NO'}</div>
+            <div class="game-verdict ${isOver ? 'yes' : 'no'}">${isOver ? 'YES' : 'NO'}</div>
           </div>`;
         list.appendChild(row);
       }
@@ -1414,7 +1502,7 @@
           const matchup = feed.liveData.plays?.currentPlay?.matchup;
           if (matchup) {
             document.getElementById('live-matchup').innerHTML =
-              `🏏 <span>${matchup.batter?.fullName ?? '—'}</span><br>vs <span>${matchup.pitcher?.fullName ?? '—'}</span>`;
+              `<span>${matchup.batter?.fullName ?? '-'}</span><br>vs <span>${matchup.pitcher?.fullName ?? '-'}</span>`;
           }
 
           // ---- Base situation ----
@@ -1428,7 +1516,7 @@
           const lastPlay = [...allPlays].reverse().find(p => p.about?.isComplete);
           if (lastPlay?.result?.description) {
             document.getElementById('live-last-play').textContent =
-              '⚾ ' + lastPlay.result.description;
+              lastPlay.result.description;
           }
 
         } catch(e) {
@@ -1461,6 +1549,7 @@
           // State C: last completed game linescore
           showGCState('gc-final');
           const { marRuns, oppRuns, oppName, isAway } = marScore(lastGame);
+          document.getElementById('final-date').textContent = fmtDate(lastGame.officialDate);
           document.getElementById('final-mar-runs').textContent = marRuns;
           document.getElementById('final-opp-runs').textContent = oppRuns;
           document.getElementById('final-opp-name').textContent = oppName;
@@ -1476,8 +1565,8 @@
             // ---- Pitching decisions ----
             const dec = feed.liveData.decisions;
             if (dec) {
-              const wName  = dec.winner?.fullName ?? '—';
-              const lName  = dec.loser?.fullName  ?? '—';
+              const wName  = dec.winner?.fullName ?? '-';
+              const lName  = dec.loser?.fullName  ?? '-';
               const svName = dec.save?.fullName;
               // Pull W/L records from boxscore
               function record(teamSide, personId) {
