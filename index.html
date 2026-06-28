@@ -142,7 +142,13 @@
     }
 
     /* ---- YES / NO hero card ---- */
-    .verdict-card { text-align: center; padding: 40px 28px; }
+    .verdict-card {
+      text-align: center;
+      padding: 40px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
     .verdict-word {
       font-size: clamp(5rem, 18vw, 8rem);
@@ -280,6 +286,33 @@
     #gc-final { text-align: center; }
     #gc-live  { text-align: center; }
 
+    .final-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin: 12px 0 10px;
+    }
+    .final-decisions {
+      font-size: 0.72rem;
+      color: rgba(196,206,212,0.6);
+      text-align: center;
+      padding: 0 6px;
+    }
+    .final-decisions strong { color: #fff; font-weight: 600; }
+    .decision-label {
+      font-weight: 700;
+      font-size: 0.62rem;
+      letter-spacing: 0.05em;
+      color: rgba(196,206,212,0.35);
+      margin-right: 3px;
+    }
+    .decisions-wl {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 4px;
+    }
+    .decisions-sv { margin-top: 2px; }
+
     .inning-window-note {
       font-size: 0.68rem;
       color: rgba(196,206,212,0.38);
@@ -363,7 +396,13 @@
     }
 
     /* ---- Streak card ---- */
-    .streak-card { padding: 28px; text-align: center; }
+    .streak-card {
+      padding: 28px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
     .streak-number {
       font-size: clamp(7rem, 20vw, 12rem);
@@ -676,6 +715,7 @@
           </div>
         </div>
         <div id="final-linescore-wrap"></div>
+        <div id="final-decisions"></div>
       </div>
 
     </div>
@@ -903,6 +943,12 @@
         return name.split(' ').pop().substring(0, 3).toUpperCase();
       }
 
+      function ordSuffix(n) {
+        const s = ['th','st','nd','rd'];
+        const v = n % 100;
+        return s[(v-20)%10] || s[v] || s[0];
+      }
+
       // ---- Game spotlight card ----
       function showGCState(state) {
         ['gc-live','gc-today','gc-final'].forEach(id =>
@@ -988,13 +1034,46 @@
           document.getElementById('final-opp-runs').textContent = oppRuns;
           document.getElementById('final-opp-name').textContent = oppName;
           try {
-            const ls        = await fetchJSON(`https://statsapi.mlb.com/api/v1/game/${lastGame.gamePk}/linescore`);
+            const feed       = await fetchJSON(`https://statsapi.mlb.com/api/v1.1/game/${lastGame.gamePk}/feed/live`);
+            const ls         = feed.liveData.linescore;
             const isMarAway2 = lastGame.teams.away.team.id === TEAM_ID;
-            const awayLbl   = isMarAway2 ? 'SEA' : teamAbbr(oppName);
-            const homeLbl   = isMarAway2 ? teamAbbr(oppName) : 'SEA';
+            const awayLbl    = isMarAway2 ? 'SEA' : teamAbbr(oppName);
+            const homeLbl    = isMarAway2 ? teamAbbr(oppName) : 'SEA';
             buildLinescore(ls, awayLbl, homeLbl,
               document.getElementById('final-linescore-wrap'), false);
-          } catch(e) { /* linescore unavailable, scoreboard still shows */ }
+
+            // ---- Pitching decisions ----
+            const dec = feed.liveData.decisions;
+            if (dec) {
+              const wName  = dec.winner?.fullName ?? '—';
+              const lName  = dec.loser?.fullName  ?? '—';
+              const svName = dec.save?.fullName;
+              // Pull W/L records from boxscore
+              function record(teamSide, personId) {
+                const bs = feed.liveData.boxscore?.teams;
+                if (!bs) return '';
+                const info = Object.values(bs[teamSide]?.players ?? {})
+                  .find(p => p.person?.id === personId);
+                const s = info?.seasonStats?.pitching;
+                return s ? ` (${s.wins}–${s.losses})` : '';
+              }
+              const winSide  = isMarAway2 ? 'home' : 'away';
+              const loseSide = isMarAway2 ? 'away' : 'home';
+              const svLine = svName
+                ? `<div class="decisions-sv"><span class="decision-label">SV</span> <strong>${svName}</strong></div>`
+                : '';
+              document.getElementById('final-decisions').innerHTML =
+                `<hr class="final-divider">
+                 <div class="final-decisions">
+                   <div class="decisions-wl">
+                     <span><span class="decision-label">W</span> <strong>${wName}</strong>${record(winSide, dec.winner?.id)}</span>
+                     <span><span class="decision-label">L</span> <strong>${lName}</strong>${record(loseSide, dec.loser?.id)}</span>
+                   </div>
+                   ${svLine}
+                 </div>`;
+            }
+
+          } catch(e) { /* extras unavailable, scoreboard still shows */ }
         }
 
         clearInterval(refreshInterval);
