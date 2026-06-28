@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Did the Mariners Score More Than 3?</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0C2C56;
+      --teal: #005C5C;
+      --light-teal: #00B2A9;
+      --silver: #C4CED4;
+      --white: #ffffff;
+      --yes: #00B2A9;
+      --no:  #E74C3C;
+      --card-bg: rgba(12, 44, 86, 0.55);
+      --card-border: rgba(0, 178, 169, 0.18);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* Rich navy → teal gradient */
+      background:
+        radial-gradient(ellipse at 80% 0%, rgba(0,92,92,0.55) 0%, transparent 60%),
+        radial-gradient(ellipse at 10% 90%, rgba(0,178,169,0.2) 0%, transparent 50%),
+        linear-gradient(160deg, #081624 0%, #0C2C56 45%, #003a3a 100%);
+      background-attachment: fixed;
+      color: var(--white);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ---- Top stripe ---- */
+    .top-stripe {
+      height: 5px;
+      background: linear-gradient(90deg, #005C5C 0%, #00B2A9 40%, #C4CED4 60%, #00B2A9 80%, #005C5C 100%);
+    }
+
+    /* ---- Header ---- */
+    header {
+      text-align: center;
+      padding: 40px 16px 32px;
+      position: relative;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,178,169,0.4), transparent);
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .header-logo svg {
+      width: 52px; height: 52px;
+      filter: drop-shadow(0 0 12px rgba(0,178,169,0.6));
+    }
+
+    .header-wordmark {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--light-teal);
+    }
+
+    header h1 {
+      font-size: clamp(1.6rem, 5vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      text-shadow: 0 2px 24px rgba(0,178,169,0.25);
+    }
+
+    header h1 em {
+      font-style: normal;
+      color: var(--light-teal);
+    }
+
+    header p.subtitle {
+      margin-top: 10px;
+      color: rgba(196,206,212,0.55);
+      font-size: 0.82rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---- Layout ---- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      max-width: 1100px;
+      margin: 32px auto 0;
+      padding: 0 20px;
+    }
+
+    /* ---- Cards ---- */
+    .card {
+      background: linear-gradient(160deg, rgba(12,56,100,0.75) 0%, rgba(8,36,70,0.85) 100%);
+      border: 1px solid rgba(0,178,169,0.28);
+      border-radius: 18px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow:
+        0 4px 24px rgba(0,0,0,0.45),
+        0 1px 0 rgba(0,178,169,0.25) inset,
+        0 -1px 0 rgba(0,0,0,0.3) inset;
+    }
+
+    /* teal top-edge glow */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 8%; right: 8%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,178,169,0.7), transparent);
+    }
+
+    .card.full-width { grid-column: 1 / -1; }
+
+    /* ---- Card labels ---- */
+    .card-label {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--light-teal);
+      margin-bottom: 18px;
+    }
+
+    /* ---- YES / NO hero card ---- */
+    .verdict-card { text-align: center; padding: 40px 28px; }
+
+    .verdict-word {
+      font-size: clamp(5rem, 18vw, 8rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -3px;
+    }
+    .verdict-word.yes { color: var(--yes); text-shadow: 0 0 40px rgba(0,178,169,0.45); }
+    .verdict-word.no  { color: var(--no);  text-shadow: 0 0 40px rgba(231,76,60,0.45); }
+
+    .verdict-detail {
+      margin-top: 14px;
+      font-size: 1.05rem;
+      color: var(--silver);
+      font-weight: 500;
+    }
+
+    .verdict-opponent {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: #FFC52F;
+    }
+
+    /* ---- Live card ---- */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,197,47,0.15);
+      border: 1px solid rgba(255,197,47,0.55);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #FFC52F;
+      margin-bottom: 18px;
+    }
+
+    .live-dot {
+      width: 7px; height: 7px;
+      background: #FFC52F;
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .scoreboard {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .scoreboard-team { flex: 1; text-align: center; }
+
+    .scoreboard-team-name {
+      font-size: 0.8rem;
+      color: var(--silver);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .scoreboard-runs { font-size: 3.2rem; font-weight: 800; }
+    .scoreboard-runs.mariners { color: var(--light-teal); }
+    .scoreboard-runs.opponent { color: var(--silver); }
+
+    .scoreboard-divider { font-size: 2rem; color: rgba(255,255,255,0.2); }
+
+    .inning-info  { text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--silver); }
+    .inning-detail{ text-align: center; margin-top: 4px; font-size: 0.75rem; color: rgba(255,255,255,0.38); }
+
+    .linescore-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 0.78rem;
+    }
+    .linescore-table th, .linescore-table td {
+      padding: 5px 6px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      min-width: 26px;
+    }
+    .linescore-table th { color: rgba(255,255,255,0.3); font-weight: 600; }
+    .linescore-table td.team-label { text-align:left; color:var(--silver); font-weight:700; padding-right:10px; }
+    .linescore-table td.total { font-weight:700; color:var(--white); }
+    .linescore-table td.current-inning { background:rgba(0,178,169,0.15); border-radius:4px; }
+
+    /* ---- Streak card ---- */
+    .streak-card { padding: 28px; text-align: center; }
+
+    .streak-number {
+      font-size: clamp(7rem, 20vw, 12rem);
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -5px;
+      color: var(--no);
+      text-shadow: 0 4px 40px rgba(231,76,60,0.4);
+    }
+    .streak-number.zero {
+      color: var(--yes);
+      text-shadow: 0 4px 40px rgba(0,178,169,0.4);
+    }
+    .streak-label {
+      margin-top: 14px;
+      font-size: 0.95rem;
+      color: var(--silver);
+    }
+
+    /* ---- Season Tally — full-width centered ---- */
+    .tally-card {
+      text-align: center;
+    }
+
+    .tally-card .card-label {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .tally-stats {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: clamp(24px, 6vw, 80px);
+      flex-wrap: wrap;
+    }
+
+    .tally-stat { text-align: center; }
+
+    .tally-stat-num {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+    .tally-stat-num.over  { color: var(--yes); text-shadow: 0 0 30px rgba(0,178,169,0.4); }
+    .tally-stat-num.under { color: var(--no);  text-shadow: 0 0 30px rgba(231,76,60,0.3); }
+    .tally-stat-num.pct   { color: var(--silver); }
+
+    .tally-stat-desc {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(196,206,212,0.6);
+    }
+
+    .tally-divider {
+      width: 1px;
+      height: 60px;
+      background: rgba(196,206,212,0.15);
+      align-self: center;
+      flex-shrink: 0;
+    }
+
+    .tally-bar-wrap {
+      margin-top: 28px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .tally-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .tally-bar-labels .label-over  { color: var(--yes); }
+    .tally-bar-labels .label-under { color: var(--no); }
+
+    .tally-bar {
+      height: 10px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+    .tally-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #c0392b, #E74C3C);
+      border-radius: 5px;
+      transition: width 0.8s ease;
+    }
+
+    /* ---- Recent games ---- */
+    .games-section-label {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--light-teal);
+      margin-bottom: 18px;
+    }
+
+    .games-list {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .game-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(0,178,169,0.12);
+      font-size: 1rem;
+      gap: 8px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .game-row:hover { background: rgba(0,178,169,0.08); border-color: rgba(0,178,169,0.25); }
+
+    .game-row-left { display:flex; align-items:center; gap:14px; flex:1; min-width:0; }
+
+    .game-dot {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .game-dot.over  { background: #FFC52F; box-shadow: 0 0 8px rgba(255,197,47,0.8); }
+    .game-dot.under { background: #FFC52F; box-shadow: 0 0 8px rgba(255,197,47,0.8); }
+
+    .game-opponent { color: var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; font-size: 1rem; }
+    .game-date     { color: rgba(196,206,212,0.55); font-size:0.82rem; margin-top:3px; }
+
+    .game-row-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+
+    .game-score { font-weight:700; font-size:1rem; white-space:nowrap; }
+    .game-score.win  { color: var(--yes); }
+    .game-score.loss { color: var(--no); }
+
+    .game-verdict {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .game-verdict.yes { background:rgba(255,197,47,0.12); color:#FFC52F; border:1px solid rgba(255,197,47,0.4); }
+    .game-verdict.no  { background:rgba(231,76,60,0.13); color:#ff6b6b; border:1px solid rgba(231,76,60,0.35); }
+
+    /* ---- Loading / error ---- */
+    #loading {
+      text-align: center;
+      padding: 100px 20px;
+      color: var(--silver);
+    }
+    .spinner {
+      width: 42px; height: 42px;
+      border: 3px solid rgba(255,255,255,0.12);
+      border-top-color: var(--light-teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 18px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #error { display:none; text-align:center; padding:60px 20px; color:var(--no); }
+    #app   { display:none; }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.18);
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-stripe"></div>
+
+<header>
+  <div class="header-logo">
+    <img src="https://www.mlbstatic.com/team-logos/136.svg" alt="Seattle Mariners" style="width:52px;height:52px;filter:drop-shadow(0 0 12px rgba(0,178,169,0.6));" />
+    <div class="header-wordmark">Seattle Mariners</div>
+  </div>
+  <h1>Did the Mariners score<br><em>more than 3 runs?</em></h1>
+  <p class="subtitle" id="last-updated"></p>
+</header>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Loading Mariners data…</p>
+</div>
+
+<div id="error">
+  <p>⚠️ Could not load game data. Check your connection and refresh.</p>
+</div>
+
+<div id="app">
+  <div class="grid">
+
+    <!-- Verdict card -->
+    <div class="card verdict-card">
+      <div class="card-label">Last Completed Game</div>
+      <div class="verdict-word" id="verdict-word">—</div>
+      <div class="verdict-detail"  id="verdict-detail"></div>
+      <div class="verdict-opponent" id="verdict-opponent"></div>
+    </div>
+
+    <!-- Live game card -->
+    <div class="card" id="live-card" style="display:none;">
+      <div class="live-badge"><div class="live-dot"></div> Live</div>
+      <div class="scoreboard">
+        <div class="scoreboard-team">
+          <div class="scoreboard-team-name">Mariners</div>
+          <div class="scoreboard-runs mariners" id="live-mar-runs">0</div>
+        </div>
+        <div class="scoreboard-divider">–</div>
+        <div class="scoreboard-team">
+          <div class="scoreboard-team-name" id="live-opp-name">Opponent</div>
+          <div class="scoreboard-runs opponent" id="live-opp-runs">0</div>
+        </div>
+      </div>
+      <div class="inning-info"   id="live-inning"></div>
+      <div class="inning-detail" id="live-count"></div>
+      <div id="linescore-wrap"></div>
+    </div>
+
+    <!-- Streak card -->
+    <div class="card streak-card">
+      <div class="card-label">Consecutive Games ≤ 3 Runs</div>
+      <div class="streak-number" id="streak-num">0</div>
+      <div class="streak-label"  id="streak-label"></div>
+    </div>
+
+    <!-- Season tally — full width, centered -->
+    <div class="card full-width tally-card">
+      <div class="card-label">2026 Season Tally</div>
+      <div class="tally-stats">
+        <div class="tally-stat">
+          <div class="tally-stat-num over" id="tally-over">0</div>
+          <div class="tally-stat-desc">Scored &gt; 3 runs</div>
+        </div>
+        <div class="tally-divider"></div>
+        <div class="tally-stat">
+          <div class="tally-stat-num under" id="tally-under">0</div>
+          <div class="tally-stat-desc">Scored ≤ 3 runs</div>
+        </div>
+        <div class="tally-divider"></div>
+        <div class="tally-stat">
+          <div class="tally-stat-num" id="tally-pct" style="color:#FFC52F;text-shadow:0 0 30px rgba(255,197,47,0.4);">—</div>
+          <div class="tally-stat-desc">of games ≤ 3 runs</div>
+        </div>
+      </div>
+      <div class="tally-bar-wrap">
+        <div class="tally-bar-labels">
+          <span class="label-over"  id="tally-over-label"></span>
+          <span class="label-under" id="tally-under-label"></span>
+        </div>
+        <div class="tally-bar">
+          <div class="tally-bar-fill" id="tally-bar-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent games -->
+    <div class="card full-width">
+      <div class="games-section-label">Last 10 Games</div>
+      <div class="games-list" id="games-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Data: MLB Stats API &nbsp;·&nbsp; <span id="refresh-note">Refreshes every 60s</span>
+</footer>
+
+<script>
+  const TEAM_ID   = 136;
+  const SEASON    = 2026;
+  const THRESHOLD = 3;
+
+  let refreshInterval = null;
+
+  function today() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  async function fetchJSON(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  }
+
+  function marScore(game) {
+    const away  = game.teams.away;
+    const home  = game.teams.home;
+    const isAway = away.team.id === TEAM_ID;
+    const mar   = isAway ? away : home;
+    const opp   = isAway ? home : away;
+    return {
+      marRuns: mar.score ?? 0,
+      oppRuns: opp.score ?? 0,
+      oppName: opp.team.name,
+      isWin:   mar.isWinner ?? false,
+      isAway
+    };
+  }
+
+  function fmtDate(officialDate) {
+    const [y,m,d] = officialDate.split('-');
+    return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+
+  async function load() {
+    try {
+      const endDate  = today();
+      const schedURL = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&season=${SEASON}&gameType=R&startDate=${SEASON}-03-01&endDate=${endDate}`;
+      const data     = await fetchJSON(schedURL);
+
+      const allGames = [];
+      for (const day of (data.dates || []))
+        for (const g of day.games)
+          allGames.push({ ...g, officialDate: day.date });
+
+      const completed = allGames.filter(g => g.status.abstractGameState === 'Final');
+      const live      = allGames.find(g  => g.status.abstractGameState === 'Live');
+
+      // ---- Season tally ----
+      let over = 0, under = 0;
+      for (const g of completed) {
+        marScore(g).marRuns > THRESHOLD ? over++ : under++;
+      }
+      const total = over + under;
+      const pct   = total ? Math.round(under / total * 100) : 0;
+
+      document.getElementById('tally-over').textContent         = over;
+      document.getElementById('tally-under').textContent        = under;
+      document.getElementById('tally-pct').textContent          = pct + '%';
+      document.getElementById('tally-bar-fill').style.width     = pct + '%';
+      document.getElementById('tally-over-label').textContent   = `${over} games`;
+      document.getElementById('tally-under-label').textContent  = `${under} games`;
+
+      // ---- Last completed game ----
+      const lastGame = completed[completed.length - 1];
+      if (lastGame) {
+        const { marRuns, oppRuns, oppName, isWin } = marScore(lastGame);
+        const verdict = marRuns > THRESHOLD;
+        const vw = document.getElementById('verdict-word');
+        vw.textContent = verdict ? 'YES' : 'NO';
+        vw.className   = 'verdict-word ' + (verdict ? 'yes' : 'no');
+        document.getElementById('verdict-detail').textContent =
+          `Mariners ${marRuns}, ${oppName} ${oppRuns} (${isWin ? 'W' : 'L'}) — ${fmtDate(lastGame.officialDate)}`;
+        document.getElementById('verdict-opponent').textContent =
+          verdict ? `✓ They scored more than ${THRESHOLD} runs`
+                  : `✗ They did NOT score more than ${THRESHOLD} runs`;
+      }
+
+      // ---- Streak ----
+      let streak = 0;
+      for (let i = completed.length - 1; i >= 0; i--) {
+        if (marScore(completed[i]).marRuns <= THRESHOLD) streak++;
+        else break;
+      }
+      const sEl = document.getElementById('streak-num');
+      sEl.textContent = streak;
+      sEl.className   = 'streak-number' + (streak === 0 ? ' zero' : '');
+      document.getElementById('streak-label').textContent =
+        streak === 0   ? 'No active streak — last game they scored > 3!'
+        : streak === 1 ? 'game in a row scoring 3 or fewer runs'
+                       : 'games in a row scoring 3 or fewer runs';
+
+      // ---- Recent games (last 10) ----
+      const recent = completed.slice(-10).reverse();
+      const list   = document.getElementById('games-list');
+      list.innerHTML = '';
+      for (const g of recent) {
+        const { marRuns, oppRuns, oppName, isWin, isAway } = marScore(g);
+        const isOver = marRuns > THRESHOLD;
+        const row    = document.createElement('div');
+        row.className = 'game-row';
+        row.innerHTML = `
+          <div class="game-row-left">
+            <div class="game-dot ${isOver ? 'over' : 'under'}"></div>
+            <div>
+              <div class="game-opponent">${isAway ? '@ ' : 'vs '}${oppName}</div>
+              <div class="game-date">${fmtDate(g.officialDate)}</div>
+            </div>
+          </div>
+          <div class="game-row-right">
+            <div class="game-score ${isWin ? 'win' : 'loss'}">${marRuns}–${oppRuns} ${isWin ? 'W' : 'L'}</div>
+            <div class="game-verdict ${isOver ? 'yes' : 'no'}">${isOver ? '✓ YES' : '✗ NO'}</div>
+          </div>`;
+        list.appendChild(row);
+      }
+
+      // ---- Live game ----
+      if (live) {
+        const { marRuns, oppRuns, oppName } = marScore(live);
+        document.getElementById('live-mar-runs').textContent = marRuns;
+        document.getElementById('live-opp-runs').textContent = oppRuns;
+        document.getElementById('live-opp-name').textContent = oppName;
+
+        try {
+          const ls = await fetchJSON(`https://statsapi.mlb.com/api/v1/game/${live.gamePk}/linescore`);
+          document.getElementById('live-inning').textContent =
+            `${ls.inningState} of the ${ls.currentInningOrdinal}`;
+          document.getElementById('live-count').textContent =
+            `${ls.balls ?? 0}-${ls.strikes ?? 0}, ${ls.outs ?? 0} out${ls.outs !== 1 ? 's' : ''}`;
+
+          const isMarAway = live.teams.away.team.id === TEAM_ID;
+          const awayLabel = isMarAway ? 'SEA' : oppName.split(' ').pop().substring(0,3).toUpperCase();
+          const homeLabel = isMarAway ? oppName.split(' ').pop().substring(0,3).toUpperCase() : 'SEA';
+          const innings   = ls.innings || [];
+          let awayRow = '', homeRow = '';
+
+          for (let n = 1; n <= ls.scheduledInnings; n++) {
+            const inn = innings.find(i => i.num === n);
+            const cls = n === ls.currentInning ? ' class="current-inning"' : '';
+            awayRow += inn ? `<td${cls}>${inn.away.runs ?? ''}</td>` : `<td${cls}></td>`;
+            homeRow += inn ? `<td${cls}>${inn.home.runs ?? '-'}</td>` : `<td${cls}></td>`;
+          }
+
+          const headers = Array.from({length: ls.scheduledInnings}, (_,i) => `<th>${i+1}</th>`).join('');
+          document.getElementById('linescore-wrap').innerHTML = `
+            <table class="linescore-table">
+              <thead><tr><th></th>${headers}<th>R</th></tr></thead>
+              <tbody>
+                <tr><td class="team-label">${awayLabel}</td>${awayRow}<td class="total">${ls.teams.away.runs ?? 0}</td></tr>
+                <tr><td class="team-label">${homeLabel}</td>${homeRow}<td class="total">${ls.teams.home.runs ?? 0}</td></tr>
+              </tbody>
+            </table>`;
+        } catch(e) {
+          document.getElementById('live-inning').textContent = live.status.detailedState;
+        }
+
+        document.getElementById('live-card').style.display = 'block';
+        clearInterval(refreshInterval);
+        refreshInterval = setInterval(load, 30_000);
+        document.getElementById('refresh-note').textContent = 'Refreshes every 30s (live game)';
+      } else {
+        document.getElementById('live-card').style.display = 'none';
+        clearInterval(refreshInterval);
+        refreshInterval = setInterval(load, 60_000);
+        document.getElementById('refresh-note').textContent = 'Refreshes every 60s';
+      }
+
+      document.getElementById('last-updated').textContent =
+        'Updated ' + new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('app').style.display     = 'block';
+
+    } catch(err) {
+      console.error(err);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display   = 'block';
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>
