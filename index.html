@@ -284,15 +284,31 @@
 
     /* ---- Last 10 W-L record ---- */
     .games-record {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 18px;
+      font-size: 1.1rem;
       font-weight: 800;
       letter-spacing: 1px;
       color: rgba(196,206,212,0.7);
     }
+    .games-record .rec-grp { white-space: nowrap; }
 
     .games-record .rec-w { color: var(--yes); }
     .games-record .rec-l { color: var(--no); }
-    .games-record .rec-under { color: var(--no); }
-    .games-record .rec-mut { color: rgba(196,206,212,0.45); font-weight: 700; }
+    .games-record .rec-neutral { color: #FFC52F; }
+
+    /* ---- Season trend chart ---- */
+    .trend-sub { color: rgba(196,206,212,0.6); font-size: 0.85rem; margin: -6px 0 16px; }
+    .trend-chart { width: 100%; }
+    .trend-svg { display: block; width: 100%; height: auto; }
+    .trend-grid { stroke: rgba(255,255,255,0.08); stroke-width: 1; }
+    .trend-ref  { stroke: rgba(196,206,212,0.35); stroke-width: 1; stroke-dasharray: 4 4; }
+    .trend-area { fill: rgba(255,197,47,0.13); stroke: none; }
+    .trend-line { fill: none; stroke: #FFC52F; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+    .trend-dot  { fill: #FFC52F; }
+    .trend-label { fill: rgba(196,206,212,0.55); font-size: 13px; font-family: inherit; }
+    .trend-cur  { fill: #FFC52F; font-size: 14px; font-weight: 700; font-family: inherit; }
 
     .scoreboard {
       display: flex;
@@ -547,12 +563,17 @@
 
     /* ---- Recent games ---- */
     .games-section-label {
-      font-size: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .games-title {
+      font-size: 1.4rem;
       font-weight: 800;
       letter-spacing: 2.5px;
       text-transform: uppercase;
       color: var(--light-teal);
-      margin-bottom: 18px;
     }
 
     .games-list {
@@ -931,15 +952,23 @@
     body.springfield .tally-bar-labels .label-over { color: #000; }
 
     /* Recent games */
-    body.springfield .games-section-label {
+    body.springfield .games-title {
       color: #FF69B4;
       font-family: 'Fredoka', sans-serif;
     }
     body.springfield .games-record { color: rgba(0,0,0,0.55); }
     body.springfield .games-record .rec-w,
     body.springfield .games-record .rec-l,
-    body.springfield .games-record .rec-under { color: #000; }
-    body.springfield .games-record .rec-mut { color: rgba(0,0,0,0.4); }
+    body.springfield .games-record .rec-neutral { color: #000; }
+
+    body.springfield .trend-sub  { color: rgba(0,0,0,0.6); }
+    body.springfield .trend-grid { stroke: rgba(0,0,0,0.1); }
+    body.springfield .trend-ref  { stroke: rgba(0,0,0,0.3); }
+    body.springfield .trend-area { fill: rgba(74,78,255,0.12); }
+    body.springfield .trend-line { stroke: #4A4EFF; }
+    body.springfield .trend-dot  { fill: #4A4EFF; }
+    body.springfield .trend-label { fill: rgba(0,0,0,0.55); }
+    body.springfield .trend-cur  { fill: #4A4EFF; }
     body.springfield .game-row {
       background: #fff;
       border: 2.5px solid #000;
@@ -1097,9 +1126,8 @@
 
     <!-- Streak card -->
     <div class="card streak-card">
-      <div class="card-label">Consecutive Games ≤ 3 Runs</div>
+      <div class="card-label">Consecutive Games Scoring ≤ 3 Runs</div>
       <div class="streak-number" id="streak-num">0</div>
-      <div class="streak-label"  id="streak-label"></div>
     </div>
 
     <!-- Season tally - full width, centered -->
@@ -1132,9 +1160,22 @@
       </div>
     </div>
 
+    <!-- Season trend -->
+    <div class="card full-width">
+      <div class="games-section-label">
+        <span class="games-title">Season Trend</span>
+        <span class="games-record"><span class="rec-grp rec-neutral" id="trend-current"></span></span>
+      </div>
+      <p class="trend-sub">Running share of games where the Mariners scored 3 or fewer runs, by game number.</p>
+      <div id="trend-chart" class="trend-chart"></div>
+    </div>
+
     <!-- Recent games -->
     <div class="card full-width">
-      <div class="games-section-label">Last 10 Games <span class="games-record" id="last10-record"></span></div>
+      <div class="games-section-label">
+        <span class="games-title">Last 10 Games</span>
+        <span class="games-record" id="last10-record"></span>
+      </div>
       <div class="games-list" id="games-list"></div>
     </div>
 
@@ -1327,6 +1368,56 @@
     return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'});
   }
 
+  let trendGames = [];
+  function renderTrend() {
+    const el = document.getElementById('trend-chart');
+    if (!el) return;
+    const games = trendGames, n = games.length;
+    const curEl = document.getElementById('trend-current');
+    if (!n) {
+      el.innerHTML = '<p class="trend-sub">No completed games yet this season.</p>';
+      if (curEl) curEl.textContent = '';
+      return;
+    }
+    let under = 0; const pts = [];
+    for (let i = 0; i < n; i++) {
+      if (marScore(games[i]).marRuns <= THRESHOLD) under++;
+      pts.push(under / (i + 1) * 100);
+    }
+    const seasonPct = Math.round(under / n * 100);
+    if (curEl) curEl.textContent = `${seasonPct}% scored ≤3 (${under} of ${n})`;
+
+    const W = Math.max(el.clientWidth || 900, 320), H = 300;
+    const padL = 46, padR = 18, padT = 18, padB = 34;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const X = i => padL + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+    const Y = p => padT + (1 - p / 100) * plotH;
+
+    let grid = '';
+    [0, 25, 50, 75, 100].forEach(v => {
+      const yy = Y(v).toFixed(1);
+      grid += `<line class="${v === 50 ? 'trend-ref' : 'trend-grid'}" x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}"/>`;
+      grid += `<text class="trend-label" x="${padL - 8}" y="${(parseFloat(yy) + 4).toFixed(1)}" text-anchor="end">${v}%</text>`;
+    });
+
+    let line = '';
+    for (let i = 0; i < n; i++) line += `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(pts[i]).toFixed(1)}`;
+    const area = `M${X(0).toFixed(1)},${Y(0).toFixed(1)}` +
+      pts.map((p, i) => `L${X(i).toFixed(1)},${Y(p).toFixed(1)}`).join('') +
+      `L${X(n - 1).toFixed(1)},${Y(0).toFixed(1)}Z`;
+
+    let xl = `<text class="trend-label" x="${X(0).toFixed(1)}" y="${H - 10}" text-anchor="start">1</text>`;
+    if (n > 1) xl += `<text class="trend-label" x="${X(n - 1).toFixed(1)}" y="${H - 10}" text-anchor="end">${n}</text>`;
+    if (n > 6) { const m = Math.floor((n - 1) / 2); xl += `<text class="trend-label" x="${X(m).toFixed(1)}" y="${H - 10}" text-anchor="middle">${m + 1}</text>`; }
+
+    const lp = pts[n - 1];
+    const dot = `<circle class="trend-dot" cx="${X(n - 1).toFixed(1)}" cy="${Y(lp).toFixed(1)}" r="4.5"/>`;
+    const cur = `<text class="trend-cur" x="${(X(n - 1) - 8).toFixed(1)}" y="${(Y(lp) - 10).toFixed(1)}" text-anchor="end">${Math.round(lp)}%</text>`;
+
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="trend-svg" role="img" aria-label="Cumulative percentage of games scoring three or fewer runs across the season">${grid}<path class="trend-area" d="${area}"/><path class="trend-line" d="${line}"/>${dot}${cur}${xl}</svg>`;
+  }
+  window.addEventListener('resize', () => { clearTimeout(window.__trendT); window.__trendT = setTimeout(renderTrend, 150); });
+
   async function load() {
     try {
       const endDate  = today();
@@ -1380,18 +1471,13 @@
       const sEl = document.getElementById('streak-num');
       sEl.textContent = streak;
       sEl.className   = 'streak-number' + (streak === 0 ? ' zero' : '');
-      document.getElementById('streak-label').textContent =
-        streak === 0   ? 'No active streak. They scored > 3 last game!'
-        : streak === 1 ? 'game in a row scoring 3 or fewer runs'
-                       : 'games in a row scoring 3 or fewer runs';
-
       // ---- Recent games (last 10) ----
       const recent = completed.slice(-10).reverse();
       const last10Wins   = recent.filter(g => marScore(g).isWin).length;
       const last10Losses = recent.length - last10Wins;
       const last10Under  = recent.filter(g => marScore(g).marRuns <= THRESHOLD).length;
       document.getElementById('last10-record').innerHTML =
-        `(<span class="rec-w">${last10Wins}W</span> – <span class="rec-l">${last10Losses}L</span> <span class="rec-mut">·</span> <span class="rec-under">${last10Under}</span><span class="rec-mut">/${recent.length} ≤3</span>)`;
+        `<span class="rec-grp"><span class="rec-w">${last10Wins}W</span> – <span class="rec-l">${last10Losses}L</span></span><span class="rec-grp rec-neutral">${last10Under} ≤3 runs</span>`;
 
       const list = document.getElementById('games-list');
       list.innerHTML = '';
@@ -1606,6 +1692,9 @@
 
       document.getElementById('loading').style.display = 'none';
       document.getElementById('app').style.display     = 'block';
+
+      trendGames = completed;
+      renderTrend();
 
     } catch(err) {
       console.error(err);
