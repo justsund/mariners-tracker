@@ -203,9 +203,17 @@
     }
     body.springfield .card-h { color: #FF69B4; font-family: 'Fredoka', sans-serif; }
 
-    /* Big display numbers: cartoon outline via layered shadow (no spurs). */
-    body.springfield .team-runs, body.springfield .hero-verdict, body.springfield .big-time {
+    /* Big display numbers: cartoon outline via layered shadow (no spurs).
+       The time string is excluded: a heavy outline on longer text reads as
+       chunky/mushy, so it gets a clean Fredoka treatment instead. */
+    body.springfield .team-runs, body.springfield .hero-verdict {
       -webkit-text-stroke: 0; text-shadow: var(--toon-outline);
+    }
+    body.springfield .big-time {
+      color: #000;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.10);
     }
     body.springfield .team-runs.mar { color: #FFD90F; }
     body.springfield .team-runs.opp { color: #87CEEB; }
@@ -403,6 +411,12 @@
     function sfxStrike() { tone(180, 0.18, 'sawtooth', 0.05); }
     function sfxOut() { tone(300, 0.22, 'square', 0.04); }
     function sfxYes() { [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => tone(f, 0.5, 'triangle', 0.09), i * 110)); }
+    function sfxHomeRun() {
+      // Grandest cue: a low boom under a rising six-note fanfare. Reserved for
+      // a Mariners home run specifically.
+      tone(98, 0.6, 'sawtooth', 0.05);
+      [392, 523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => tone(f, 0.45, 'triangle', 0.09), i * 85));
+    }
 
     $('btn-sound').onclick = () => {
       soundOn = !soundOn; ensureAudio();
@@ -463,6 +477,21 @@
       return (t.home.players['ID' + id]) || (t.away.players['ID' + id]) || null;
     }
 
+    // Most recent fully-completed play in the feed.
+    function lastCompletedPlay(feed) {
+      const plays = (feed.liveData.plays && feed.liveData.plays.allPlays) || [];
+      for (let i = plays.length - 1; i >= 0; i--) {
+        if (plays[i].about && plays[i].about.isComplete) return plays[i];
+      }
+      return null;
+    }
+    // True when the given play is a home run hit by the Mariners.
+    function isMarinersHR(play, marIsHome) {
+      if (!play || !play.result || play.result.eventType !== 'home_run') return false;
+      const battingIsHome = play.about && !play.about.isTopInning; // home bats in the bottom half
+      return battingIsHome === marIsHome;
+    }
+
     /* ---------- render ---------- */
     function render(feed) {
       const gd = feed.gameData, ld = feed.liveData;
@@ -511,8 +540,14 @@
       if (prev.marRuns !== null && marRuns > prev.marRuns) {
         const el = marIsHome ? $('home-runs') : $('away-runs');
         el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
-        sfxRun();
-        if (prev.marRuns <= THRESHOLD && marRuns > THRESHOLD) { confetti(120); sfxYes(); }
+        const hr = isMarinersHR(lastCompletedPlay(feed), marIsHome);
+        const crossed = prev.marRuns <= THRESHOLD && marRuns > THRESHOLD;
+        if (hr) {
+          sfxHomeRun(); confetti(crossed ? 150 : 100);
+        } else {
+          sfxRun();
+          if (crossed) { confetti(120); sfxYes(); }
+        }
       }
 
       // LIVE situation
