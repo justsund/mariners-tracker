@@ -104,7 +104,9 @@
       font-weight: 600;
       font-size: 0.95rem;
       color: #000;
+      transition: opacity 0.4s ease;
     }
+    .sf-tagline.fade { opacity: 0; }
 
     /* ---- Layout ---- */
     .grid {
@@ -738,9 +740,7 @@
     body.springfield {
       font-family: 'Nunito', sans-serif;
       color: #000;
-      background:
-        radial-gradient(circle at 85% 12%, rgba(255,217,15,0.55) 0%, transparent 26%),
-        linear-gradient(180deg, #aee3fb 0%, #87CEEB 52%, #bfeacb 100%);
+      background: linear-gradient(180deg, #cdeffb 0%, #9bd9f1 50%, #74c6e8 100%);
       background-attachment: fixed;
       /* Smooth cartoon outline for big display numbers. Uses layered shadows
          instead of -webkit-text-stroke, which spikes at sharp glyph corners. */
@@ -966,7 +966,7 @@
   </div>
   <h1>Did the Mariners score<br><em>more than 3 runs?</em></h1>
   <p class="subtitle" id="last-updated"></p>
-  <p class="sf-tagline">Sky's out, scores out. Did they get past three? ☁️⚾</p>
+  <p class="sf-tagline" id="sf-tagline"></p>
 </header>
 
 <div id="loading">
@@ -1109,9 +1109,78 @@
 </footer>
 
 <!-- Theme toggle logic. Classic is always the default landing design;
-     Springfield (Beta) is opt-in per visit and not persisted. -->
+     Springfield (Beta) is opt-in per visit and not persisted.
+     In Springfield, the tagline rotates through Simpsons quotes. -->
 <script>
   (function () {
+    const QUOTES = [
+      "If the Ms don't score more than 3, they can EAT MY SHORTS! 🛹",
+      "Three runs or fewer? That's unpossible! 🤔",
+      "D'oh. Three runs. D'oh. 😩",
+      "Marge, I just realized the Mariners are never gonna score more than 3 runs. ...I'm going to Moe's. 🍺",
+      "Ay, caramba! THREE RUNS AGAIN?! 😱",
+      "Don't have a cow, man. They only scored three. 🐄",
+      "Stupid sexy Mariners. Can't score more than 3. 😤",
+      "To the Mariners — the cause of, and solution to, all of life's problems. 🍩",
+      "Excellent... they scored three runs. Now if they could simply score a FOURTH. 🧐",
+      "Release the hounds... on whoever left those runners on base. 🐕",
+      "My dad says the Mariners make him cry. My cat's breath smells like cat food. 🐱",
+      "I choo-choo-choose the Mariners! Even when they only score 3. 💌",
+      "I eateded the baseball. ⚾",
+      "Well, okily-dokily neighborino! Could you score-arino more than three? 🙏",
+      "HA-ha. 👉",
+      "What do you mean they only scored THREE?! I've been saying this for 30 years! That's not a joke, that's a cry for help. 🤡",
+      "Every time the Mariners score more than 3 runs, I feel like a million bucks. So... never. 🍺",
+      "According to my calculations, the Mariners have a 46% chance of scoring more than 3. I hate that I did that math. 🤓",
+      "I have REPEATEDLY tried to watch the Mariners score more than 3 runs. REPEATEDLY. 😤",
+      "Nothing to see here folks. Just a baseball team scoring 3 runs or fewer. Move along. 👮",
+      "Back in my day, teams scored MORE than 3 runs! We called it 'offense.' ☁️",
+      "I was saying 'boo-urns.' Also the Mariners lost again. 😐",
+      "Worst. Offense. Ever. 📚",
+      "I've got a crush on the Mariners. They never score more than 3 but I can't stop watching. 💙",
+      "Everything's coming up Milhouse! ...Oh wait, they only scored 3. 😭",
+      "Hi, I'm Troy McClure! You might remember me from such collapses as 'The 2001 Record-Setting Season' and 'Everything Since.' 🎬",
+      "Trying is the first step toward failing. But also scoring more than 3 runs. 🍩",
+      "Why does everything I love either kill me or score fewer than 3 runs? 🏠",
+      "Son, when you score more than 3 runs, everything's coming up Milhouse. 🌸",
+      "Glaven! According to my glavin calculations, the probability of scoring more than 3 runs is hovering just above the glavin threshold! 🔬",
+      "Disco Stu doesn't score more than 3 runs. But Disco Stu doesn't advertise. 🕺",
+      "Fat Tony says: it would be a shame if something happened to that run support. 🤌",
+      "And I, for one, welcome our new 3-runs-or-fewer overlords. 📺",
+      "Mariners fans, I've said it before and I'll say it again: democracy simply doesn't work. Neither does this offense. 📺",
+      "I've got a bad feeling about this. Actually I've had this feeling since 2001. It's just my baseline now. 🏫",
+      "Whoa dude... three runs. That's like... one, two, three... yeah, bummer. 🚌",
+      "I have argued before the Supreme Court. I once argued with a sandwich. Neither scored more than 3 runs. ⚖️",
+      "The Mariners scored 3 runs. I'm in the police. 👮",
+      "By the Hammurabi code, thou shalt score more than 3 runs! The Mariners remain in violation. 🍎",
+      "The Mariners' run differential is, as we say in jazz, off. 🎷",
+      "I didn't do it. But I watched them not score more than 3 runs and I didn't do anything about it either. 🛹",
+      "To alcohol! The cause of, and solution to, watching the Mariners! 🍺",
+      "Oh no. They lost again. And I have three kids. Unrelated. 👨‍👩‍👧‍👦",
+      "I am so smart! S-M-R-T! Unlike the Mariners offense! 🏠",
+      "Cowabunga! They actually scored more than 3! ...Just kidding. 🛹",
+      "The Mariners are like Moe's bar — nobody wins, everyone leaves sad. 🍺",
+      "It's a perfectly cromulent run total. ✏️",
+      "Three runs! I was told there would be more runs. 🎠",
+      "You don't win games with salad. OR, apparently, with more than 3 runs. 🥗",
+      "I'm not a bad man. I simply root for a team that cannot score. 🏭",
+      "Mmm... home runs. 🤤",
+    ];
+
+    let sfIndex = Math.floor(Math.random() * QUOTES.length);
+    let sfInterval = null;
+
+    function rotateSFTagline() {
+      const el = document.getElementById('sf-tagline');
+      if (!el) return;
+      el.classList.add('fade');
+      setTimeout(function () {
+        sfIndex = (sfIndex + 1) % QUOTES.length;
+        el.textContent = QUOTES[sfIndex];
+        el.classList.remove('fade');
+      }, 400);
+    }
+
     window.setTheme = function (t) {
       var sf = t === 'springfield';
       document.body.classList.toggle('springfield', sf);
@@ -1119,6 +1188,13 @@
       var s = document.getElementById('btn-springfield');
       if (c) c.classList.toggle('active', !sf);
       if (s) s.classList.toggle('active', sf);
+
+      clearInterval(sfInterval); // avoid stacking intervals on repeat selects
+      if (sf) {
+        var el = document.getElementById('sf-tagline');
+        if (el) el.textContent = QUOTES[sfIndex];
+        sfInterval = setInterval(rotateSFTagline, 4000);
+      }
     };
 
     // Always start on Classic.
