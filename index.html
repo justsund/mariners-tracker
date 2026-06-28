@@ -166,21 +166,36 @@
       color: #FFC52F;
     }
 
-    /* ---- Live card ---- */
-    .live-badge {
+    /* ---- Game card badges ---- */
+    .live-badge, .final-badge, .today-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255,197,47,0.15);
-      border: 1px solid rgba(255,197,47,0.55);
       border-radius: 20px;
       padding: 4px 12px;
       font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: #FFC52F;
       margin-bottom: 18px;
+    }
+
+    .live-badge {
+      background: rgba(255,197,47,0.15);
+      border: 1px solid rgba(255,197,47,0.55);
+      color: #FFC52F;
+    }
+
+    .final-badge {
+      background: rgba(196,206,212,0.1);
+      border: 1px solid rgba(196,206,212,0.3);
+      color: var(--silver);
+    }
+
+    .today-badge {
+      background: rgba(0,178,169,0.15);
+      border: 1px solid rgba(0,178,169,0.4);
+      color: var(--light-teal);
     }
 
     .live-dot {
@@ -191,6 +206,50 @@
     }
 
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .game-time {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-top: 16px;
+    }
+
+    .game-status-text {
+      text-align: center;
+      font-size: 0.8rem;
+      color: rgba(196,206,212,0.5);
+      margin-top: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .today-vs {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--silver);
+      margin-top: 20px;
+    }
+
+    .today-venue {
+      text-align: center;
+      font-size: 0.78rem;
+      color: rgba(196,206,212,0.45);
+      margin-top: 4px;
+    }
+
+    /* ---- Last 10 W-L record ---- */
+    .last10-record {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: rgba(196,206,212,0.55);
+      margin-bottom: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    .last10-record .rec-w { color: var(--yes); }
+    .last10-record .rec-l { color: var(--no); }
 
     .scoreboard {
       display: flex;
@@ -217,22 +276,91 @@
     .inning-info  { text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--silver); }
     .inning-detail{ text-align: center; margin-top: 4px; font-size: 0.75rem; color: rgba(255,255,255,0.38); }
 
+    /* center Final card state */
+    #gc-final { text-align: center; }
+    #gc-live  { text-align: center; }
+
+    .inning-window-note {
+      font-size: 0.68rem;
+      color: rgba(196,206,212,0.38);
+      text-align: center;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
     .linescore-table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 18px;
-      font-size: 0.78rem;
+      font-size: 0.72rem;
     }
     .linescore-table th, .linescore-table td {
-      padding: 5px 6px;
+      padding: 4px 3px;
       text-align: center;
       border-bottom: 1px solid rgba(255,255,255,0.07);
-      min-width: 26px;
+      min-width: 20px;
     }
     .linescore-table th { color: rgba(255,255,255,0.3); font-weight: 600; }
     .linescore-table td.team-label { text-align:left; color:var(--silver); font-weight:700; padding-right:10px; }
     .linescore-table td.total { font-weight:700; color:var(--white); }
     .linescore-table td.current-inning { background:rgba(0,178,169,0.15); border-radius:4px; }
+
+    /* ---- Live situation (bases + matchup) ---- */
+    .live-situation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin: 10px 0 4px;
+    }
+    .matchup-line {
+      font-size: 0.75rem;
+      color: var(--silver);
+      text-align: left;
+      line-height: 1.6;
+      max-width: 160px;
+    }
+    .matchup-line span { color: var(--white); font-weight: 600; }
+
+    /* Base diamond */
+    .bases-diamond {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .base-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .base {
+      width: 14px;
+      height: 14px;
+      transform: rotate(45deg);
+      border: 2px solid rgba(255,255,255,0.35);
+      border-radius: 2px;
+      background: transparent;
+      transition: background 0.2s;
+    }
+    .base.occupied {
+      background: #FFC52F;
+      border-color: #FFC52F;
+    }
+    .base-home {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Last play text */
+    .last-play {
+      font-size: 0.72rem;
+      color: rgba(196,206,212,0.7);
+      font-style: italic;
+      margin: 4px auto 8px;
+      max-width: 320px;
+      min-height: 1.2em;
+    }
 
     /* ---- Streak card ---- */
     .streak-card { padding: 28px; text-align: center; }
@@ -446,6 +574,14 @@
       .tally-stats { gap: 20px; }
       .tally-divider { display: none; }
       .tally-stat-num { font-size: clamp(2rem, 10vw, 3.5rem); }
+
+      /* Live card — stack matchup + diamond vertically on small screens */
+      .live-situation { flex-direction: column; gap: 10px; }
+      .matchup-line { text-align: center; max-width: 100%; }
+
+      /* More breathing room for linescore on mobile (single-column = wider card) */
+      .linescore-table { font-size: 0.78rem; }
+      .linescore-table th, .linescore-table td { padding: 5px 4px; min-width: 22px; }
     }
   </style>
 </head>
@@ -482,23 +618,66 @@
       <div class="verdict-opponent" id="verdict-opponent"></div>
     </div>
 
-    <!-- Live game card -->
-    <div class="card" id="live-card" style="display:none;">
-      <div class="live-badge"><div class="live-dot"></div> Live</div>
-      <div class="scoreboard">
-        <div class="scoreboard-team">
-          <div class="scoreboard-team-name">Mariners</div>
-          <div class="scoreboard-runs mariners" id="live-mar-runs">0</div>
+    <!-- Game spotlight card (always visible, 3 states) -->
+    <div class="card" id="game-card">
+
+      <!-- State A: Live -->
+      <div id="gc-live" style="display:none;">
+        <div class="live-badge"><div class="live-dot"></div> Live</div>
+        <div class="scoreboard">
+          <div class="scoreboard-team">
+            <div class="scoreboard-team-name">Mariners</div>
+            <div class="scoreboard-runs mariners" id="live-mar-runs">0</div>
+          </div>
+          <div class="scoreboard-divider">–</div>
+          <div class="scoreboard-team">
+            <div class="scoreboard-team-name" id="live-opp-name">Opponent</div>
+            <div class="scoreboard-runs opponent" id="live-opp-runs">0</div>
+          </div>
         </div>
-        <div class="scoreboard-divider">–</div>
-        <div class="scoreboard-team">
-          <div class="scoreboard-team-name" id="live-opp-name">Opponent</div>
-          <div class="scoreboard-runs opponent" id="live-opp-runs">0</div>
+        <div class="inning-info"   id="live-inning"></div>
+        <div class="inning-detail" id="live-count"></div>
+        <div class="live-situation">
+          <div class="matchup-line" id="live-matchup"></div>
+          <div class="bases-diamond" id="live-bases">
+            <div class="base second"  id="base-2"></div>
+            <div class="base-row">
+              <div class="base third" id="base-3"></div>
+              <div class="base-home"></div>
+              <div class="base first" id="base-1"></div>
+            </div>
+          </div>
         </div>
+        <div class="last-play" id="live-last-play"></div>
+        <div id="linescore-wrap"></div>
       </div>
-      <div class="inning-info"   id="live-inning"></div>
-      <div class="inning-detail" id="live-count"></div>
-      <div id="linescore-wrap"></div>
+
+      <!-- State B: Today's upcoming game -->
+      <div id="gc-today" style="display:none;">
+        <div class="today-badge">Today's Game</div>
+        <div class="today-vs" id="today-matchup"></div>
+        <div class="today-venue" id="today-venue"></div>
+        <div class="game-time" id="today-time"></div>
+        <div class="game-status-text" id="today-status"></div>
+      </div>
+
+      <!-- State C: Last completed game linescore -->
+      <div id="gc-final" style="display:none;">
+        <div class="final-badge">Final</div>
+        <div class="scoreboard">
+          <div class="scoreboard-team">
+            <div class="scoreboard-team-name">Mariners</div>
+            <div class="scoreboard-runs mariners" id="final-mar-runs">—</div>
+          </div>
+          <div class="scoreboard-divider">–</div>
+          <div class="scoreboard-team">
+            <div class="scoreboard-team-name" id="final-opp-name">—</div>
+            <div class="scoreboard-runs opponent" id="final-opp-runs">—</div>
+          </div>
+        </div>
+        <div id="final-linescore-wrap"></div>
+      </div>
+
     </div>
 
     <!-- Streak card -->
@@ -513,13 +692,13 @@
       <div class="card-label">2026 Season Tally</div>
       <div class="tally-stats">
         <div class="tally-stat">
-          <div class="tally-stat-num over" id="tally-over">0</div>
-          <div class="tally-stat-desc">Scored &gt; 3 runs</div>
+          <div class="tally-stat-num under" id="tally-under">0</div>
+          <div class="tally-stat-desc">Scored ≤ 3 runs</div>
         </div>
         <div class="tally-divider"></div>
         <div class="tally-stat">
-          <div class="tally-stat-num under" id="tally-under">0</div>
-          <div class="tally-stat-desc">Scored ≤ 3 runs</div>
+          <div class="tally-stat-num over" id="tally-over">0</div>
+          <div class="tally-stat-desc">Scored &gt; 3 runs</div>
         </div>
         <div class="tally-divider"></div>
         <div class="tally-stat">
@@ -529,8 +708,8 @@
       </div>
       <div class="tally-bar-wrap">
         <div class="tally-bar-labels">
-          <span class="label-over"  id="tally-over-label"></span>
           <span class="label-under" id="tally-under-label"></span>
+          <span class="label-over"  id="tally-over-label"></span>
         </div>
         <div class="tally-bar">
           <div class="tally-bar-fill" id="tally-bar-fill" style="width:0%"></div>
@@ -541,6 +720,7 @@
     <!-- Recent games -->
     <div class="card full-width">
       <div class="games-section-label">Last 10 Games</div>
+      <div class="last10-record" id="last10-record"></div>
       <div class="games-list" id="games-list"></div>
     </div>
 
@@ -649,7 +829,12 @@
 
       // ---- Recent games (last 10) ----
       const recent = completed.slice(-10).reverse();
-      const list   = document.getElementById('games-list');
+      const last10Wins   = recent.filter(g => marScore(g).isWin).length;
+      const last10Losses = recent.length - last10Wins;
+      document.getElementById('last10-record').innerHTML =
+        `<span class="rec-w">${last10Wins}W</span> – <span class="rec-l">${last10Losses}L</span>`;
+
+      const list = document.getElementById('games-list');
       list.innerHTML = '';
       for (const g of recent) {
         const { marRuns, oppRuns, oppName, isWin, isAway } = marScore(g);
@@ -671,54 +856,149 @@
         list.appendChild(row);
       }
 
-      // ---- Live game ----
+      // ---- Shared linescore builder (sliding 9-inning window, R/H/E) ----
+      function buildLinescore(ls, awayLabel, homeLabel, wrapEl, isLive) {
+        const innings    = ls.innings || [];
+        const totalInns  = Math.max(ls.scheduledInnings || 9, innings.length, ls.currentInning || 0);
+        const WIN        = 9; // columns to display
+        const startInn   = totalInns > WIN ? totalInns - WIN + 1 : 1;
+        const endInn     = Math.max(totalInns, WIN);
+
+        let awayRow = '', homeRow = '';
+        for (let n = startInn; n <= endInn; n++) {
+          const inn    = innings.find(i => i.num === n);
+          const isCur  = isLive && n === ls.currentInning;
+          const cls    = isCur ? ' class="current-inning"' : '';
+          const homeVal = isCur && ls.isTopInning !== false ? '' : (inn?.home?.runs ?? '');
+          awayRow += `<td${cls}>${inn?.away?.runs ?? ''}</td>`;
+          homeRow += `<td${cls}>${homeVal}</td>`;
+        }
+
+        const headers = Array.from({length: endInn - startInn + 1}, (_,i) =>
+          `<th>${startInn + i}</th>`).join('');
+        const note = startInn > 1
+          ? `<div class="inning-window-note">Showing innings ${startInn}–${endInn}</div>` : '';
+
+        wrapEl.innerHTML = `
+          <table class="linescore-table">
+            <thead><tr><th></th>${headers}<th>R</th><th>H</th><th>E</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="team-label">${awayLabel}</td>${awayRow}
+                <td class="total">${ls.teams.away.runs  ?? 0}</td>
+                <td class="total">${ls.teams.away.hits  ?? 0}</td>
+                <td class="total">${ls.teams.away.errors ?? 0}</td>
+              </tr>
+              <tr>
+                <td class="team-label">${homeLabel}</td>${homeRow}
+                <td class="total">${ls.teams.home.runs  ?? 0}</td>
+                <td class="total">${ls.teams.home.hits  ?? 0}</td>
+                <td class="total">${ls.teams.home.errors ?? 0}</td>
+              </tr>
+            </tbody>
+          </table>${note}`;
+      }
+
+      function teamAbbr(name) {
+        return name.split(' ').pop().substring(0, 3).toUpperCase();
+      }
+
+      // ---- Game spotlight card ----
+      function showGCState(state) {
+        ['gc-live','gc-today','gc-final'].forEach(id =>
+          document.getElementById(id).style.display = id === state ? 'block' : 'none'
+        );
+      }
+
       if (live) {
+        // State A: live game
+        showGCState('gc-live');
         const { marRuns, oppRuns, oppName } = marScore(live);
         document.getElementById('live-mar-runs').textContent = marRuns;
         document.getElementById('live-opp-runs').textContent = oppRuns;
         document.getElementById('live-opp-name').textContent = oppName;
 
         try {
-          const ls = await fetchJSON(`https://statsapi.mlb.com/api/v1/game/${live.gamePk}/linescore`);
+          const feed = await fetchJSON(`https://statsapi.mlb.com/api/v1.1/game/${live.gamePk}/feed/live`);
+          const ls   = feed.liveData.linescore;
+
           document.getElementById('live-inning').textContent =
             `${ls.inningState} of the ${ls.currentInningOrdinal}`;
           document.getElementById('live-count').textContent =
             `${ls.balls ?? 0}-${ls.strikes ?? 0}, ${ls.outs ?? 0} out${ls.outs !== 1 ? 's' : ''}`;
 
           const isMarAway = live.teams.away.team.id === TEAM_ID;
-          const awayLabel = isMarAway ? 'SEA' : oppName.split(' ').pop().substring(0,3).toUpperCase();
-          const homeLabel = isMarAway ? oppName.split(' ').pop().substring(0,3).toUpperCase() : 'SEA';
-          const innings   = ls.innings || [];
-          let awayRow = '', homeRow = '';
+          const awayLbl   = isMarAway ? 'SEA' : teamAbbr(oppName);
+          const homeLbl   = isMarAway ? teamAbbr(oppName) : 'SEA';
+          buildLinescore(ls, awayLbl, homeLbl,
+            document.getElementById('linescore-wrap'), true);
 
-          for (let n = 1; n <= ls.scheduledInnings; n++) {
-            const inn = innings.find(i => i.num === n);
-            const cls = n === ls.currentInning ? ' class="current-inning"' : '';
-            awayRow += inn ? `<td${cls}>${inn.away.runs ?? ''}</td>` : `<td${cls}></td>`;
-            homeRow += inn ? `<td${cls}>${inn.home.runs ?? '-'}</td>` : `<td${cls}></td>`;
+          // ---- Matchup line ----
+          const matchup = feed.liveData.plays?.currentPlay?.matchup;
+          if (matchup) {
+            document.getElementById('live-matchup').innerHTML =
+              `🏏 <span>${matchup.batter?.fullName ?? '—'}</span><br>vs <span>${matchup.pitcher?.fullName ?? '—'}</span>`;
           }
 
-          const headers = Array.from({length: ls.scheduledInnings}, (_,i) => `<th>${i+1}</th>`).join('');
-          document.getElementById('linescore-wrap').innerHTML = `
-            <table class="linescore-table">
-              <thead><tr><th></th>${headers}<th>R</th></tr></thead>
-              <tbody>
-                <tr><td class="team-label">${awayLabel}</td>${awayRow}<td class="total">${ls.teams.away.runs ?? 0}</td></tr>
-                <tr><td class="team-label">${homeLabel}</td>${homeRow}<td class="total">${ls.teams.home.runs ?? 0}</td></tr>
-              </tbody>
-            </table>`;
+          // ---- Base situation ----
+          const offense = ls.offense || {};
+          document.getElementById('base-1').classList.toggle('occupied', !!offense.first);
+          document.getElementById('base-2').classList.toggle('occupied', !!offense.second);
+          document.getElementById('base-3').classList.toggle('occupied', !!offense.third);
+
+          // ---- Last completed play ----
+          const allPlays = feed.liveData.plays?.allPlays ?? [];
+          const lastPlay = [...allPlays].reverse().find(p => p.about?.isComplete);
+          if (lastPlay?.result?.description) {
+            document.getElementById('live-last-play').textContent =
+              '⚾ ' + lastPlay.result.description;
+          }
+
         } catch(e) {
           document.getElementById('live-inning').textContent = live.status.detailedState;
         }
 
-        document.getElementById('live-card').style.display = 'block';
         clearInterval(refreshInterval);
-        refreshInterval = setInterval(load, 30_000);
+        refreshInterval = setInterval(load, 30000);
         document.getElementById('refresh-note').textContent = 'Refreshes every 30s (live game)';
+
       } else {
-        document.getElementById('live-card').style.display = 'none';
+        // Check for a scheduled game today (Preview / Warmup / Pre-Game)
+        const todayStr   = today();
+        const todayGame  = allGames.find(g =>
+          g.officialDate === todayStr && g.status.abstractGameState === 'Preview'
+        );
+
+        if (todayGame) {
+          // State B: today's upcoming game
+          showGCState('gc-today');
+          const { oppName, isAway } = marScore(todayGame);
+          document.getElementById('today-matchup').textContent =
+            `Mariners ${isAway ? '@' : 'vs'} ${oppName}`;
+          document.getElementById('today-venue').textContent = todayGame.venue?.name ?? '';
+          const gameTime = new Date(todayGame.gameDate);
+          document.getElementById('today-time').textContent =
+            gameTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+          document.getElementById('today-status').textContent = todayGame.status.detailedState;
+        } else if (lastGame) {
+          // State C: last completed game linescore
+          showGCState('gc-final');
+          const { marRuns, oppRuns, oppName, isAway } = marScore(lastGame);
+          document.getElementById('final-mar-runs').textContent = marRuns;
+          document.getElementById('final-opp-runs').textContent = oppRuns;
+          document.getElementById('final-opp-name').textContent = oppName;
+          try {
+            const ls        = await fetchJSON(`https://statsapi.mlb.com/api/v1/game/${lastGame.gamePk}/linescore`);
+            const isMarAway2 = lastGame.teams.away.team.id === TEAM_ID;
+            const awayLbl   = isMarAway2 ? 'SEA' : teamAbbr(oppName);
+            const homeLbl   = isMarAway2 ? teamAbbr(oppName) : 'SEA';
+            buildLinescore(ls, awayLbl, homeLbl,
+              document.getElementById('final-linescore-wrap'), false);
+          } catch(e) { /* linescore unavailable, scoreboard still shows */ }
+        }
+
         clearInterval(refreshInterval);
-        refreshInterval = setInterval(load, 60_000);
+        refreshInterval = setInterval(load, 60000);
         document.getElementById('refresh-note').textContent = 'Refreshes every 60s';
       }
 
