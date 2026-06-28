@@ -419,6 +419,34 @@
       font-size: 0.72rem;
       color: rgba(255,255,255,0.18);
     }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 560px) {
+      .grid { gap: 12px; padding: 0 12px; }
+
+      .game-row {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 14px;
+      }
+
+      .game-row-left {
+        flex: 1 1 100%;
+      }
+
+      .game-opponent { white-space: normal; }
+
+      .game-row-right {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+        padding-left: 23px; /* align with text past the dot */
+        gap: 10px;
+      }
+
+      .tally-stats { gap: 20px; }
+      .tally-divider { display: none; }
+      .tally-stat-num { font-size: clamp(2rem, 10vw, 3.5rem); }
+    }
   </style>
 </head>
 <body>
