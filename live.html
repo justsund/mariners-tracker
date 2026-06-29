@@ -108,13 +108,15 @@
     .hero-note { margin-top: 14px; font-size: .9rem; color: var(--silver); }
 
     /* Matchup */
-    .matchup { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+    .matchup { display: grid; grid-template-columns: 1fr auto 1fr; gap: 28px; align-items: center; max-width: 560px; margin: 0 auto; }
+    .matchup.three { grid-template-columns: 1fr 1fr 1fr; max-width: 720px; }
     .player { text-align: center; }
     .player img { width: 84px; height: 84px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 2px solid rgba(0,178,169,0.4); object-fit: cover; }
     .player .role { font-size: .62rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--light-teal); margin-top: 8px; }
     .player .pname { font-weight: 700; margin-top: 2px; font-size: .95rem; }
     .player .pstat { font-size: .78rem; color: var(--silver); margin-top: 4px; line-height: 1.5; }
     .vs { color: rgba(255,255,255,0.3); font-weight: 800; font-size: .9rem; }
+    .sv-note { margin-top: 8px; font-size: .72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); font-weight: 800; }
 
     /* Win prob */
     .wp-bar { height: 26px; border-radius: 13px; background: rgba(231,76,60,0.25); overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.1); }
@@ -296,7 +298,6 @@
       <button class="btn" id="btn-springfield" type="button">Springfield</button>
     </div>
     <div class="controls">
-      <button class="btn" id="btn-sound" type="button">Sound: Off</button>
       <button class="btn" id="btn-refresh" type="button">Refresh</button>
     </div>
   </header>
@@ -338,23 +339,23 @@
 
       <!-- Hero: more than 3 -->
       <div class="card hero" id="card-hero">
-        <div class="card-h">Did the Mariners score more than 3?</div>
+        <div class="card-h" id="hero-head">Did the Mariners score more than 3?</div>
         <div class="hero-verdict no" id="hero-verdict">NO</div>
         <div class="hero-meter" id="hero-meter"></div>
         <div class="hero-note" id="hero-note"></div>
       </div>
 
       <!-- Matchup -->
-      <div class="card" id="card-matchup">
+      <div class="card span2" id="card-matchup">
         <div class="card-h" id="matchup-head">At Bat</div>
-        <div class="matchup">
+        <div class="matchup" id="matchup">
           <div class="player">
             <img id="bat-img" alt="">
             <div class="role">At Bat</div>
             <div class="pname" id="bat-name">-</div>
             <div class="pstat" id="bat-stat"></div>
           </div>
-          <div class="vs">vs</div>
+          <div class="vs" id="vs-center">vs</div>
           <div class="player">
             <img id="pit-img" alt="">
             <div class="role">Pitching</div>
@@ -392,9 +393,8 @@
     const API = 'https://statsapi.mlb.com';
     const $ = id => document.getElementById(id);
 
-    let soundOn = false, pollTimer = null, gamePk = null;
+    let pollTimer = null, gamePk = null;
     let prev = { marRuns: null, outs: null, playIdx: null, strikes: null };
-    let audioCtx = null;
 
     /* ---------- design (Classic default, Springfield opt-in) ---------- */
     function setDesign(d) {
@@ -408,35 +408,6 @@
     // Honor ?design=springfield passed from the dashboard; default to Classic.
     setDesign(new URLSearchParams(location.search).get('design') === 'springfield' ? 'springfield' : 'classic');
 
-    /* ---------- sound (self-contained, Web Audio) ---------- */
-    function ensureAudio() { if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } }
-    function tone(freq, dur, type, gain) {
-      if (!soundOn || !audioCtx) return;
-      try {
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = type || 'sine'; o.frequency.value = freq;
-        g.gain.value = gain || 0.06; o.connect(g); g.connect(audioCtx.destination);
-        o.start(); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
-        o.stop(audioCtx.currentTime + dur);
-      } catch (e) {}
-    }
-    function sfxRun() { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => tone(f, 0.35, 'triangle', 0.08), i * 90)); }
-    function sfxStrike() { tone(180, 0.18, 'sawtooth', 0.05); }
-    function sfxOut() { tone(300, 0.22, 'square', 0.04); }
-    function sfxYes() { [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => tone(f, 0.5, 'triangle', 0.09), i * 110)); }
-    function sfxHomeRun() {
-      // Grandest cue: a low boom under a rising six-note fanfare. Reserved for
-      // a Mariners home run specifically.
-      tone(98, 0.6, 'sawtooth', 0.05);
-      [392, 523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => tone(f, 0.45, 'triangle', 0.09), i * 85));
-    }
-
-    $('btn-sound').onclick = () => {
-      soundOn = !soundOn; ensureAudio();
-      $('btn-sound').textContent = 'Sound: ' + (soundOn ? 'On' : 'Off');
-      $('btn-sound').classList.toggle('on', soundOn);
-      if (soundOn) tone(660, 0.1, 'sine', 0.05);
-    };
     $('btn-refresh').onclick = () => poll();
 
     /* ---------- confetti ---------- */
@@ -522,7 +493,7 @@
       // status badge
       const sw = $('status-wrap');
       if (state === 'Live') sw.innerHTML = '<span class="status-badge live"><span class="live-dot"></span>Live</span>';
-      else if (state === 'Preview') sw.innerHTML = '<span class="status-badge preview">' + (gd.status.detailedState || 'Scheduled') + '</span>';
+      else if (state === 'Preview') { const dt = gd.datetime && gd.datetime.dateTime ? new Date(gd.datetime.dateTime) : null; const ds = dt ? dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''; sw.innerHTML = '<span class="status-badge preview">' + (gd.status.detailedState || 'Scheduled') + (ds ? ' · ' + ds : '') + '</span>'; }
       else sw.innerHTML = '<span class="status-badge final">Final</span>';
 
       const ls = ld.linescore || {};
@@ -556,10 +527,9 @@
         const hr = isMarinersHR(lastCompletedPlay(feed), marIsHome);
         const crossed = prev.marRuns <= THRESHOLD && marRuns > THRESHOLD;
         if (hr) {
-          sfxHomeRun(); confetti(crossed ? 150 : 100);
-        } else {
-          sfxRun();
-          if (crossed) { confetti(120); sfxYes(); }
+          confetti(crossed ? 150 : 100);
+        } else if (crossed) {
+          confetti(120);
         }
       }
 
@@ -573,8 +543,6 @@
         $('b2').classList.toggle('on', !!off.second);
         $('b3').classList.toggle('on', !!off.third);
         renderMatchup(feed);
-        if (prev.strikes !== null && ls.strikes === 0 && prev.strikes >= 2 && (ls.outs || 0) > (prev.outs || 0)) sfxStrike();
-        if (prev.outs !== null && (ls.outs || 0) > (prev.outs || 0)) sfxOut();
         prev.strikes = ls.strikes; prev.outs = ls.outs;
       } else if (state === 'Final') {
         $('situation').style.display = 'none';
@@ -632,17 +600,37 @@
     function renderDecisions(feed) {
       const dec = feed.liveData.decisions;
       if (!dec) { $('bat-name').textContent = ''; $('pit-name').textContent = ''; return; }
-      $('bat-img').src = dec.winner ? headshot(dec.winner.id) : '';
-      $('bat-name').textContent = dec.winner ? dec.winner.fullName : '-';
-      document.querySelectorAll('#card-matchup .role')[0].textContent = 'Win';
-      $('bat-stat').innerHTML = '';
-      $('pit-img').src = dec.loser ? headshot(dec.loser.id) : '';
-      $('pit-name').textContent = dec.loser ? dec.loser.fullName : '-';
-      document.querySelectorAll('#card-matchup .role')[1].textContent = 'Loss';
-      $('pit-stat').innerHTML = dec.save ? `SV: ${dec.save.fullName}` : '';
+      decisionPitcher(feed, 'bat', dec.winner, 'Win');
+      decisionPitcher(feed, 'pit', dec.loser, 'Loss');
+      $('matchup').classList.toggle('three', !!dec.save);
+      if (dec.save) {
+        const bp = boxPlayer(feed, dec.save.id);
+        const s = bp && bp.seasonStats && bp.seasonStats.pitching;
+        const g = bp && bp.stats && bp.stats.pitching;
+        const lines = [];
+        if (g && g.inningsPitched) lines.push(`${g.inningsPitched} IP &middot; ${g.strikeOuts || 0} K`);
+        if (s) lines.push(`${s.saves} SV &middot; ${s.era} ERA`);
+        $('vs-center').innerHTML = `<img src="${headshot(dec.save.id)}" alt=""><div class="role">Save</div><div class="pname">${dec.save.fullName}</div><div class="pstat">${lines.join('<br>')}</div>`;
+        $('vs-center').className = 'player';
+      } else {
+        $('vs-center').className = 'vs'; $('vs-center').textContent = '';
+      }
+    }
+    function decisionPitcher(feed, side, p, role) {
+      document.querySelectorAll('#card-matchup .role')[side === 'bat' ? 0 : 1].textContent = role;
+      $(side + '-img').src = p ? headshot(p.id) : '';
+      $(side + '-name').textContent = p ? p.fullName : '-';
+      const bp = p && boxPlayer(feed, p.id);
+      const s = bp && bp.seasonStats && bp.seasonStats.pitching;
+      const g = bp && bp.stats && bp.stats.pitching;
+      const lines = [];
+      if (g && g.inningsPitched) lines.push(`${g.inningsPitched} IP &middot; ${g.strikeOuts || 0} K &middot; ${g.earnedRuns || 0} ER`);
+      if (s) lines.push(`${s.wins}-${s.losses} &middot; ${s.era} ERA`);
+      $(side + '-stat').innerHTML = lines.join('<br>') || '';
     }
 
     function renderHero(state, marRuns, marIsHome, gd) {
+      $('hero-head').textContent = state === 'Final' ? 'Did the Mariners score more than 3?' : 'Did the Mariners score more than 3 today?';
       const verdict = marRuns > THRESHOLD;
       const hv = $('hero-verdict');
       if (state === 'Preview') {
