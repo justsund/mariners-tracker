@@ -595,8 +595,9 @@
       flex-direction: column;
       gap: 8px;
     }
-    .seasons-bars { display:flex; align-items:flex-end; gap:10px; height:230px; padding-top:22px; margin-top:6px; }
-    .seasons-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+    .seasons-bars { display:flex; align-items:flex-start; gap:10px; padding-top:22px; margin-top:6px; }
+    .seasons-col { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; }
+    .seasons-track { width:100%; height:150px; display:flex; align-items:flex-end; }
     .seasons-bar { width:100%; border-radius:7px 7px 0 0; background:linear-gradient(180deg,#00B2A9,#007a76); min-height:8px; position:relative; transition:height .5s; }
     .seasons-bar.cur { background:linear-gradient(180deg,#FFC52F,#d99e16); }
     .seasons-bar .p { position:absolute; top:-20px; left:0; right:0; text-align:center; font-weight:800; font-size:.78rem; color:#fff; }
@@ -818,6 +819,11 @@
       /* More breathing room for linescore on mobile (single-column = wider card) */
       .linescore-table { font-size: 0.78rem; }
       .linescore-table th, .linescore-table td { padding: 5px 4px; min-width: 22px; }
+
+      /* By Season: scroll horizontally so all 10 seasons stay readable instead of clipping */
+      .seasons-bars { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 14px; padding-bottom: 8px; scrollbar-width: thin; }
+      .seasons-col { flex: 0 0 62px; min-width: 62px; }
+      .seasons-track { height: 130px; }
 
       .tt-label { display: none; }
     }
@@ -1521,7 +1527,7 @@
         return { y, pct: tot ? Math.round(under / tot * 100) : 0, w, l, tot, lossPct: l ? Math.round(lossLow / l * 100) : 0 };
       }));
       const LO = 30, HI = 56, ht = p => Math.max(8, Math.min(100, Math.round((p - LO) / (HI - LO) * 100)));
-      bars.innerHTML = data.map(d => `<div class="seasons-col" title="${d.y}: ${d.w}-${d.l} (${(d.w/(d.w+d.l)).toFixed(3).replace(/^0/,'')}) · ${d.lossPct}% of losses scored ≤3"><div class="seasons-bar ${d.y === SEASON ? 'cur' : ''}" style="height:${d.tot ? ht(d.pct) : 0}%"><span class="p">${d.tot ? d.pct + '%' : '-'}</span></div><div class="seasons-yr">${d.y}</div><div class="seasons-rec">${d.tot ? '<span class="w">' + d.w + '</span>-<span class="l">' + d.l + '</span> <span class="wp">(' + (d.w/(d.w+d.l)).toFixed(3).replace(/^0/,'') + ')</span>' : ''}</div><div class="seasons-lp">${d.tot ? d.lossPct + '% of L ≤3' : ''}</div></div>`).join('');
+      bars.innerHTML = data.map(d => `<div class="seasons-col" title="${d.y}: ${d.w}-${d.l} (${(d.w/(d.w+d.l)).toFixed(3).replace(/^0/,'')}) · ${d.lossPct}% of losses scored ≤3"><div class="seasons-track"><div class="seasons-bar ${d.y === SEASON ? 'cur' : ''}" style="height:${d.tot ? ht(d.pct) : 0}%"><span class="p">${d.tot ? d.pct + '%' : '-'}</span></div></div><div class="seasons-yr">${d.y}</div><div class="seasons-rec">${d.tot ? '<span class="w">' + d.w + '</span>-<span class="l">' + d.l + '</span> <span class="wp">(' + (d.w/(d.w+d.l)).toFixed(3).replace(/^0/,'') + ')</span>' : ''}</div><div class="seasons-lp">${d.tot ? d.lossPct + '% of L ≤3' : ''}</div></div>`).join('');
     } catch (e) { bars.innerHTML = '<div class="seasons-load">Season history unavailable.</div>'; seasonsDone = false; }
   }
 
