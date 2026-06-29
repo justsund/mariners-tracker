@@ -595,6 +595,17 @@
       flex-direction: column;
       gap: 8px;
     }
+    .seasons-bars { display:flex; align-items:flex-end; gap:10px; height:230px; padding-top:22px; margin-top:6px; }
+    .seasons-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+    .seasons-bar { width:100%; border-radius:7px 7px 0 0; background:linear-gradient(180deg,#00B2A9,#007a76); min-height:8px; position:relative; transition:height .5s; }
+    .seasons-bar.cur { background:linear-gradient(180deg,#FFC52F,#d99e16); }
+    .seasons-bar .p { position:absolute; top:-20px; left:0; right:0; text-align:center; font-weight:800; font-size:.78rem; color:#fff; }
+    .seasons-yr { margin-top:8px; font-size:.74rem; color:var(--silver); font-weight:700; }
+    .seasons-rec { font-size:.66rem; font-weight:800; margin-top:2px; }
+    .seasons-rec .w { color:var(--light-teal); } .seasons-rec .l { color:#E74C3C; } .seasons-rec .wp { color:var(--silver); }
+    .seasons-lp { font-size:.58rem; color:#FFC52F; opacity:.85; margin-top:1px; }
+    .seasons-note { color:var(--silver); font-size:.78rem; margin-top:14px; text-align:center; }
+    .seasons-load { color:var(--silver); padding:50px; text-align:center; width:100%; }
 
     .game-row {
       display: flex;
@@ -1004,6 +1015,13 @@
     body.springfield .games-record .rec-w,
     body.springfield .games-record .rec-l,
     body.springfield .games-record .rec-neutral { color: #000; }
+    body.springfield .seasons-yr { color: #000; }
+    body.springfield .seasons-bar { background: linear-gradient(180deg,#4A4EFF,#2e30b0); }
+    body.springfield .seasons-bar.cur { background: linear-gradient(180deg,#FFD90F,#d9a800); }
+    body.springfield .seasons-bar .p { color: #000; text-shadow: 1px 1px 0 #fff; }
+    body.springfield .seasons-rec .w { color: #2e30b0; } body.springfield .seasons-rec .l { color: #C62828; } body.springfield .seasons-rec .wp { color: rgba(0,0,0,0.6); }
+    body.springfield .seasons-lp { color: #b07a00; }
+    body.springfield .seasons-note, body.springfield .seasons-load { color: rgba(0,0,0,0.6); }
 
     body.springfield .trend-sub  { color: rgba(0,0,0,0.6); }
     body.springfield .trend-grid { stroke: rgba(0,0,0,0.1); }
@@ -1227,6 +1245,16 @@
         <span class="games-record" id="last10-record"></span>
       </div>
       <div class="games-list" id="games-list"></div>
+    </div>
+
+    <!-- By season (last 10) -->
+    <div class="card full-width">
+      <div class="games-section-label">
+        <span class="games-title">By Season</span>
+        <span class="games-record" id="seasons-cur"></span>
+      </div>
+      <div class="seasons-bars" id="seasons-bars"><div class="seasons-load">Loading 10 seasons...</div></div>
+      <div class="seasons-note">Share of games scoring 3 or fewer each season. Record (win pct) and share of losses where they scored 3 or fewer below each year. Gold = this season.</div>
     </div>
 
   </div>
@@ -1472,6 +1500,30 @@
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="trend-svg" role="img" aria-label="Cumulative percentage of games scoring three or fewer runs across the season">${grid}<path class="trend-area" d="${area}"/><path class="trend-line" d="${line}"/>${dot}${cur}${xl}</svg>`;
   }
   window.addEventListener('resize', () => { clearTimeout(window.__trendT); window.__trendT = setTimeout(renderTrend, 150); });
+
+  // Multi-season comparison: % of games scoring <=3 over the last 10 seasons.
+  // Lazy and cached so it never blocks the main page; fires once after first load.
+  let seasonsDone = false;
+  async function renderSeasons() {
+    if (seasonsDone) return; seasonsDone = true;
+    const bars = document.getElementById('seasons-bars');
+    const years = []; for (let y = SEASON - 9; y <= SEASON; y++) years.push(y);
+    try {
+      const data = await Promise.all(years.map(async y => {
+        const r = await fetchJSON(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&season=${y}&gameType=R&startDate=${y}-03-01&endDate=${y}-11-15`);
+        let under = 0, tot = 0, w = 0, l = 0, lossLow = 0;
+        for (const day of (r.dates || [])) for (const g of day.games) {
+          if (g.status.abstractGameState !== 'Final') continue;
+          const sea = g.teams.away.team.id === TEAM_ID ? g.teams.away : g.teams.home;
+          if (sea.score == null) continue; tot++; const low = sea.score <= THRESHOLD; if (low) under++;
+          if (sea.isWinner) w++; else { l++; if (low) lossLow++; }
+        }
+        return { y, pct: tot ? Math.round(under / tot * 100) : 0, w, l, tot, lossPct: l ? Math.round(lossLow / l * 100) : 0 };
+      }));
+      const LO = 30, HI = 56, ht = p => Math.max(8, Math.min(100, Math.round((p - LO) / (HI - LO) * 100)));
+      bars.innerHTML = data.map(d => `<div class="seasons-col" title="${d.y}: ${d.w}-${d.l} (${(d.w/(d.w+d.l)).toFixed(3).replace(/^0/,'')}) · ${d.lossPct}% of losses scored ≤3"><div class="seasons-bar ${d.y === SEASON ? 'cur' : ''}" style="height:${d.tot ? ht(d.pct) : 0}%"><span class="p">${d.tot ? d.pct + '%' : '-'}</span></div><div class="seasons-yr">${d.y}</div><div class="seasons-rec">${d.tot ? '<span class="w">' + d.w + '</span>-<span class="l">' + d.l + '</span> <span class="wp">(' + (d.w/(d.w+d.l)).toFixed(3).replace(/^0/,'') + ')</span>' : ''}</div><div class="seasons-lp">${d.tot ? d.lossPct + '% of L ≤3' : ''}</div></div>`).join('');
+    } catch (e) { bars.innerHTML = '<div class="seasons-load">Season history unavailable.</div>'; seasonsDone = false; }
+  }
 
   async function load() {
     try {
@@ -1775,6 +1827,7 @@
 
       trendGames = completed;
       renderTrend();
+      renderSeasons();
 
     } catch(err) {
       console.error(err);
