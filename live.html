@@ -32,6 +32,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
   <!--
     Standalone live game tracker. Open directly with ?gamePk=NNN, or with no
     params it auto-finds the current/next/most-recent Mariners game.
@@ -292,6 +293,91 @@
     body.springfield #loading, body.springfield #fatal { color: rgba(0,0,0,0.6); }
     body.springfield #fatal { color: #FF3B30; }
     body.springfield .spinner { border-color: rgba(0,0,0,0.12); border-top-color: #FF69B4; }
+
+    /* ====================================================================== */
+    /* GOTH MODE SKIN                                                           */
+    /*   Near-black, silver, blood-red. Cinzel headers, IM Fell plays.         */
+    /*   Mirrors the Springfield block above, goth palette, flat (no glow).    */
+    /* ====================================================================== */
+    body.goth {
+      font-family: 'Cinzel', Georgia, serif;
+      color: #E8E8E8;
+      background: #0D0D0D;
+      background-attachment: fixed;
+    }
+    body.goth .stripe { height: 3px; background: #2a2a2a; }
+
+    body.goth .logos img { filter: none; }
+    body.goth .status-badge { border: 1px solid rgba(255,255,255,0.2); box-shadow: none; color: #b0b0b0; font-family: 'Cinzel', serif; background: rgba(255,255,255,0.06); letter-spacing: 2px; }
+    body.goth .status-badge.live { background: rgba(255,255,255,0.06); }
+    body.goth .status-badge.preview { background: rgba(255,255,255,0.06); }
+    body.goth .status-badge.final { background: rgba(255,255,255,0.04); }
+    body.goth .live-dot { background: #8B1A1A; }
+
+    body.goth .btn {
+      font-family: 'Cinzel', serif; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06);
+      color: #9e9e9e; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; letter-spacing: 1.5px;
+    }
+    body.goth .btn:hover { transform: translateY(-1px); }
+    body.goth .btn.on { background: rgba(255,255,255,0.12); color: #E8E8E8; border-color: rgba(255,255,255,0.4); box-shadow: none; }
+
+    body.goth .card {
+      background: #161616; border: 0.5px solid rgba(255,255,255,0.14); border-radius: 14px;
+      box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+    }
+    body.goth .card-h { color: #9e9e9e; font-family: 'Cinzel', serif; letter-spacing: 3px; }
+
+    body.goth .team-runs, body.goth .hero-verdict { -webkit-text-stroke: 0; text-shadow: none; }
+    body.goth .big-time { color: #E8E8E8; font-weight: 400; letter-spacing: 0.5px; text-shadow: none; font-family: 'Cinzel', serif; }
+    body.goth .team-runs.mar { color: #E8E8E8; }
+    body.goth .team-runs.opp { color: #8a8a8a; }
+    body.goth .team-name { color: #9e9e9e; font-weight: 400; }
+    body.goth .score-mid { color: rgba(255,255,255,0.15); }
+    body.goth .inning { color: #969696; }
+    body.goth .inning .arrow { color: #8B1A1A; }
+
+    body.goth .hero-verdict.yes { color: #C8C8C8; }
+    body.goth .hero-verdict.no  { color: #8B1A1A; }
+    body.goth .hero-q, body.goth .hero-note { color: #969696; }
+    body.goth .run-pip { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.25); }
+    body.goth .run-pip.filled { background: #C8C8C8; border-color: #C8C8C8; color: #0D0D0D; box-shadow: none; }
+    body.goth .run-pip.fourth.filled { background: #fff; border-color: #fff; color: #0D0D0D; box-shadow: none; }
+
+    body.goth .pip { border-color: rgba(255,255,255,0.3); }
+    body.goth .pip.on.ball { background: #b0b0b0; border-color: #b0b0b0; }
+    body.goth .pip.on.strike { background: #8B1A1A; border-color: #8B1A1A; }
+    body.goth .pip.on.out { background: #E8E8E8; border-color: #E8E8E8; }
+    body.goth .count-grid .lbl { color: #969696; }
+    body.goth .base { border-color: rgba(255,255,255,0.3); }
+    body.goth .base.on { background: #C8C8C8; border-color: #C8C8C8; box-shadow: none; }
+
+    body.goth .player img { border: 1px solid rgba(255,255,255,0.2); background: #161616; box-shadow: none; }
+    body.goth .player .role { color: #9e9e9e; font-family: 'Cinzel', serif; }
+    body.goth .player .pname { color: #E8E8E8; }
+    body.goth .player .pstat { color: #969696; }
+    body.goth .vs { color: #7a7a7a; }
+
+    body.goth .wp-bar { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); }
+    body.goth .wp-fill { background: #8B1A1A; }
+    body.goth .wp-labels { color: #969696; }
+    body.goth .wp-labels b { color: #E8E8E8; }
+
+    body.goth .ls th { color: #8a8a8a; }
+    body.goth .ls th, body.goth .ls td { border-bottom: 1px solid rgba(255,255,255,0.07); }
+    body.goth .ls td.tm { color: #b0b0b0; }
+    body.goth .ls td.tot { color: #E8E8E8; }
+    body.goth .ls td.cur { background: rgba(255,255,255,0.08); }
+
+    body.goth .play { background: rgba(255,255,255,0.03); border-left-color: rgba(255,255,255,0.2); color: #9e9e9e; font-family: 'IM Fell English', serif; }
+    body.goth .play.scoring { border-left-color: #8B1A1A; background: rgba(139,26,26,0.15); color: #E8E8E8; }
+    body.goth .play .pt { color: #8a8a8a; }
+
+    body.goth .sub-c { color: #9e9e9e; }
+    body.goth .muted { color: #8a8a8a; }
+    body.goth .updated { color: #8a8a8a; }
+    body.goth #loading, body.goth #fatal { color: #8a8a8a; }
+    body.goth #fatal { color: #8B1A1A; }
+    body.goth .spinner { border-color: rgba(255,255,255,0.08); border-top-color: #9e9e9e; }
   </style>
 </head>
 <body>
@@ -313,6 +399,7 @@
     <div class="controls">
       <button class="btn" id="btn-classic" type="button">Classic</button>
       <button class="btn" id="btn-springfield" type="button">Springfield</button>
+      <button class="btn" id="btn-goth" type="button">Goth</button>
     </div>
     <div class="controls">
       <button class="btn" id="btn-refresh" type="button">Refresh</button>
@@ -413,17 +500,24 @@
     let pollTimer = null, gamePk = null;
     let prev = { marRuns: null, outs: null, playIdx: null, strikes: null };
 
-    /* ---------- design (Classic default, Springfield opt-in) ---------- */
+    /* ---------- design (Classic default, Springfield + Goth opt-in) ---------- */
     function setDesign(d) {
       const sf = d === 'springfield';
+      const goth = d === 'goth';
       document.body.classList.toggle('springfield', sf);
-      $('btn-classic').classList.toggle('on', !sf);
+      document.body.classList.toggle('goth', goth);
+      $('btn-classic').classList.toggle('on', !sf && !goth);
       $('btn-springfield').classList.toggle('on', sf);
+      $('btn-goth').classList.toggle('on', goth);
     }
     $('btn-classic').onclick = () => setDesign('classic');
     $('btn-springfield').onclick = () => setDesign('springfield');
-    // Honor ?design=springfield passed from the dashboard; default to Classic.
-    setDesign(new URLSearchParams(location.search).get('design') === 'springfield' ? 'springfield' : 'classic');
+    $('btn-goth').onclick = () => setDesign('goth');
+    // Honor ?design= passed from the dashboard; default to Classic.
+    (function () {
+      const d = new URLSearchParams(location.search).get('design');
+      setDesign(d === 'springfield' || d === 'goth' ? d : 'classic');
+    })();
 
     $('btn-refresh').onclick = () => poll();
 
@@ -432,6 +526,8 @@
       const c = $('confetti');
       const colors = document.body.classList.contains('springfield')
         ? ['#FFD90F', '#FF69B4', '#7ED957', '#4A4EFF', '#FF3B30']
+        : document.body.classList.contains('goth')
+        ? ['#8B1A1A', '#C8C8C8', '#999999', '#E8E8E8', '#444444']
         : ['#00B2A9', '#FFC52F', '#C4CED4', '#ffffff', '#005C5C'];
       for (let i = 0; i < (n || 80); i++) {
         const d = document.createElement('div');
