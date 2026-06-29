@@ -11,167 +11,747 @@
     gtag('js', new Date());
     gtag('config', 'G-KFBP0CD1MX');
   </script>
-  <title>Mariners Live Tracker</title>
+  <title>Did the Mariners Score More Than 3?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <!--
-    Standalone live game tracker. Open directly with ?gamePk=NNN, or with no
-    params it auto-finds the current/next/most-recent Mariners game.
-    Self-contained: no build step, no dependencies. Data: MLB Stats API.
-    This file does NOT affect index.html / mariners.html.
-  -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --navy: #0C2C56; --teal: #005C5C; --light-teal: #00B2A9;
-      --silver: #C4CED4; --white: #fff; --yes: #00B2A9; --no: #E74C3C;
-      --gold: #FFC52F;
+      --navy: #0C2C56;
+      --teal: #005C5C;
+      --light-teal: #00B2A9;
+      --silver: #C4CED4;
+      --white: #ffffff;
+      --yes: #00B2A9;
+      --no:  #E74C3C;
+      --card-bg: rgba(12, 44, 86, 0.55);
+      --card-border: rgba(0, 178, 169, 0.18);
     }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* Rich navy → teal gradient */
       background:
-        radial-gradient(ellipse at 80% -10%, rgba(0,92,92,0.55) 0%, transparent 55%),
-        radial-gradient(ellipse at 0% 110%, rgba(0,178,169,0.22) 0%, transparent 55%),
-        linear-gradient(160deg, #06121f 0%, #0C2C56 48%, #003a3a 100%);
+        radial-gradient(ellipse at 80% 0%, rgba(0,92,92,0.55) 0%, transparent 60%),
+        radial-gradient(ellipse at 10% 90%, rgba(0,178,169,0.2) 0%, transparent 50%),
+        linear-gradient(160deg, #081624 0%, #0C2C56 45%, #003a3a 100%);
       background-attachment: fixed;
-      color: var(--white); min-height: 100vh; padding: 0 0 50px;
-      overflow-x: hidden;
+      color: var(--white);
+      min-height: 100vh;
+      padding: 0 0 60px;
     }
-    .stripe { height: 5px; background: linear-gradient(90deg,#005C5C,#00B2A9 40%,#C4CED4 60%,#00B2A9 80%,#005C5C); }
 
-    header { text-align: center; padding: 22px 16px 10px; position: relative; }
-    .logos { display: flex; align-items: center; justify-content: center; gap: 18px; }
-    .logos img { width: 46px; height: 46px; filter: drop-shadow(0 0 10px rgba(0,178,169,0.5)); }
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 7px; margin: 12px auto 0;
-      padding: 5px 14px; border-radius: 20px; font-size: .72rem; font-weight: 800;
-      letter-spacing: 2px; text-transform: uppercase;
+    /* ---- Top stripe ---- */
+    .top-stripe {
+      height: 5px;
+      background: linear-gradient(90deg, #005C5C 0%, #00B2A9 40%, #C4CED4 60%, #00B2A9 80%, #005C5C 100%);
     }
-    .status-badge.live { background: rgba(231,76,60,0.16); border: 1px solid rgba(231,76,60,0.6); color: #ff7a6c; }
-    .status-badge.preview { background: rgba(255,197,47,0.15); border: 1px solid rgba(255,197,47,0.5); color: var(--gold); }
-    .status-badge.final { background: rgba(196,206,212,0.12); border: 1px solid rgba(196,206,212,0.35); color: var(--silver); }
-    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff5a48; animation: pulse 1.1s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.25;transform:scale(.7)} }
 
-    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
-    @media (min-width: 760px) { .grid { grid-template-columns: 1.3fr 1fr; } .span2 { grid-column: 1 / -1; } }
+    /* ---- Header ---- */
+    header {
+      text-align: center;
+      padding: 40px 16px 32px;
+      position: relative;
+    }
 
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,178,169,0.4), transparent);
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .header-logo svg {
+      width: 52px; height: 52px;
+      filter: drop-shadow(0 0 12px rgba(0,178,169,0.6));
+    }
+
+    .header-wordmark {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: var(--light-teal);
+    }
+
+    header h1 {
+      font-size: clamp(1.6rem, 5vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      text-shadow: 0 2px 24px rgba(0,178,169,0.25);
+    }
+
+    header h1 em {
+      font-style: normal;
+      color: var(--light-teal);
+    }
+
+    header p.subtitle {
+      margin-top: 10px;
+      color: rgba(196,206,212,0.55);
+      font-size: 0.82rem;
+      letter-spacing: 0.5px;
+    }
+
+    .sf-tagline {
+      display: none;
+      margin-top: 10px;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #000;
+      transition: opacity 0.5s ease;
+    }
+    .sf-tagline.fade { opacity: 0; }
+
+    /* ---- Layout ---- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      max-width: 1100px;
+      margin: 32px auto 0;
+      padding: 0 20px;
+    }
+
+    /* ---- Cards ---- */
     .card {
-      background: linear-gradient(160deg, rgba(12,56,100,0.78), rgba(8,30,58,0.9));
-      border: 1px solid rgba(0,178,169,0.28); border-radius: 18px; padding: 22px;
-      position: relative; overflow: hidden;
-      box-shadow: 0 6px 26px rgba(0,0,0,0.45), 0 1px 0 rgba(0,178,169,0.2) inset;
+      background: linear-gradient(160deg, rgba(12,56,100,0.75) 0%, rgba(8,36,70,0.85) 100%);
+      border: 1px solid rgba(0,178,169,0.28);
+      border-radius: 18px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow:
+        0 4px 24px rgba(0,0,0,0.45),
+        0 1px 0 rgba(0,178,169,0.25) inset,
+        0 -1px 0 rgba(0,0,0,0.3) inset;
     }
-    .card-h { font-size: .72rem; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: var(--light-teal); margin-bottom: 16px; }
 
-    /* Scoreboard */
-    .score { display: flex; align-items: center; justify-content: space-around; gap: 10px; }
-    .team { text-align: center; flex: 1; }
-    .team-name { font-size: .85rem; color: var(--silver); font-weight: 600; min-height: 2.4em; display:flex; align-items:flex-end; justify-content:center; }
-    .team-runs { font-size: clamp(3.2rem, 11vw, 5rem); font-weight: 900; line-height: 1; transition: transform .25s; }
-    .team-runs.mar { color: var(--light-teal); text-shadow: 0 0 28px rgba(0,178,169,0.5); }
-    .team-runs.opp { color: var(--silver); }
-    .team-runs.bump { animation: bump .5s cubic-bezier(.34,1.56,.64,1); }
-    @keyframes bump { 0%{transform:scale(1)} 35%{transform:scale(1.35)} 100%{transform:scale(1)} }
-    .score-mid { color: rgba(255,255,255,0.25); font-size: 2rem; }
-    .inning { text-align: center; margin-top: 12px; font-size: 1rem; color: var(--silver); font-weight: 600; }
-    .inning .arrow { color: var(--gold); }
+    /* teal top-edge glow */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 8%; right: 8%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,178,169,0.7), transparent);
+    }
 
-    /* Count + bases */
-    .situation { display: flex; align-items: center; justify-content: center; gap: 34px; margin-top: 18px; }
-    .count-grid { display: grid; grid-template-columns: auto repeat(4, 14px); gap: 6px 5px; align-items: center; }
-    .count-grid .lbl { font-size: .62rem; letter-spacing: 1px; color: rgba(196,206,212,0.6); text-transform: uppercase; }
-    .pip { width: 13px; height: 13px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); }
-    .pip.on.ball { background: var(--gold); border-color: var(--gold); }
-    .pip.on.strike { background: #ff5a48; border-color: #ff5a48; }
-    .pip.on.out { background: var(--silver); border-color: var(--silver); }
-    .pip.out-pip { width: 11px; height: 11px; }
-    .bases { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .base-row { display: flex; align-items: center; gap: 3px; }
-    .base { width: 16px; height: 16px; transform: rotate(45deg); border: 2px solid rgba(255,255,255,0.35); border-radius: 2px; background: transparent; transition: all .25s; }
-    .base.on { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 14px rgba(255,197,47,0.7); }
-    .base-home { width: 16px; height: 16px; }
+    .card.full-width { grid-column: 1 / -1; }
 
-    /* Hero "more than 3" */
-    .hero { text-align: center; }
-    .hero-q { font-size: .8rem; letter-spacing: 2px; text-transform: uppercase; color: var(--silver); margin-bottom: 8px; }
-    .hero-verdict { font-size: clamp(3.5rem, 14vw, 6rem); font-weight: 900; line-height: 1; letter-spacing: -2px; transition: color .3s; }
-    .hero-verdict.yes { color: var(--yes); text-shadow: 0 0 40px rgba(0,178,169,0.5); }
-    .hero-verdict.no  { color: var(--no);  text-shadow: 0 0 40px rgba(231,76,60,0.4); }
-    .hero-meter { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
-    .run-pip { width: 30px; height: 30px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.85rem; color: rgba(255,255,255,0.4); transition: all .3s; }
+    /* ---- Card labels ---- */
+    .card-label {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--light-teal);
+      margin-bottom: 18px;
+    }
+
+    /* ---- YES / NO hero card ---- */
+    .verdict-card {
+      text-align: center;
+      padding: 40px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .verdict-word {
+      font-size: clamp(5rem, 18vw, 8rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -3px;
+    }
+    .verdict-word.yes { color: var(--yes); text-shadow: 0 0 40px rgba(0,178,169,0.45); }
+    .verdict-word.no  { color: var(--no);  text-shadow: 0 0 40px rgba(231,76,60,0.45); }
+
+    .verdict-detail {
+      margin-top: 8px;
+      font-size: 0.92rem;
+      color: #FFC52F;
+      font-weight: 500;
+    }
+
+    .verdict-opponent {
+      margin-top: 14px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--white);
+    }
+    .verdict-meter { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
+    .run-pip { width: 30px; height: 30px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; color: rgba(255,255,255,0.4); transition: all .3s; }
     .run-pip.filled { background: var(--light-teal); border-color: var(--light-teal); color: #06242a; box-shadow: 0 0 16px rgba(0,178,169,0.5); }
     .run-pip.fourth { border-style: dashed; }
-    .run-pip.fourth.filled { background: var(--gold); border-color: var(--gold); color: #3a2c00; box-shadow: 0 0 20px rgba(255,197,47,0.7); }
-    .hero-note { margin-top: 14px; font-size: .9rem; color: var(--silver); }
+    .run-pip.fourth.filled { background: #FFC52F; border-color: #FFC52F; color: #3a2c00; box-shadow: 0 0 20px rgba(255,197,47,0.7); }
 
-    /* Matchup */
-    .matchup { display: grid; grid-template-columns: 1fr auto 1fr; gap: 28px; align-items: center; max-width: 560px; margin: 0 auto; }
-    .matchup.three { grid-template-columns: 1fr 1fr 1fr; max-width: 720px; }
-    .player { text-align: center; }
-    .player img { width: 84px; height: 84px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 2px solid rgba(0,178,169,0.4); object-fit: cover; }
-    .player .role { font-size: .62rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--light-teal); margin-top: 8px; }
-    .player .pname { font-weight: 700; margin-top: 2px; font-size: .95rem; }
-    .player .pstat { font-size: .78rem; color: var(--silver); margin-top: 4px; line-height: 1.5; }
-    .vs { color: rgba(255,255,255,0.3); font-weight: 800; font-size: .9rem; }
-    .sv-note { margin-top: 8px; font-size: .72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); font-weight: 800; }
+    /* ---- Game card badges ---- */
+    .live-badge, .final-badge, .today-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
 
-    /* Win prob */
-    .wp-bar { height: 26px; border-radius: 13px; background: rgba(231,76,60,0.25); overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.1); }
-    .wp-fill { height: 100%; background: linear-gradient(90deg, #008b85, var(--light-teal)); width: 50%; transition: width .6s ease; }
-    .wp-labels { display: flex; justify-content: space-between; font-size: .78rem; margin-top: 8px; color: var(--silver); }
-    .wp-labels b { color: #fff; }
+    .live-badge {
+      background: rgba(255,197,47,0.15);
+      border: 1px solid rgba(255,197,47,0.55);
+      color: #FFC52F;
+    }
 
-    /* Linescore */
-    .ls { width: 100%; border-collapse: collapse; font-size: .72rem; }
-    .ls th, .ls td { padding: 5px 4px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.07); min-width: 18px; }
-    .ls th { color: rgba(255,255,255,0.3); font-weight: 600; }
-    .ls td.tm { text-align: left; font-weight: 700; color: var(--silver); padding-right: 8px; }
-    .ls td.tot { font-weight: 700; color: #fff; }
-    .ls td.cur { background: rgba(0,178,169,0.18); border-radius: 4px; }
+    .final-badge {
+      background: rgba(255,197,47,0.15);
+      border: 1px solid rgba(255,197,47,0.55);
+      color: #FFC52F;
+    }
 
-    /* Plays */
-    .plays { display: flex; flex-direction: column; gap: 8px; max-height: 230px; overflow-y: auto; }
-    .play { padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.04); border-left: 3px solid rgba(0,178,169,0.4); font-size: .82rem; color: var(--silver); }
-    .play.scoring { border-left-color: var(--gold); background: rgba(255,197,47,0.08); color: #fff; }
-    .play .pt { font-size: .62rem; color: rgba(196,206,212,0.55); text-transform: uppercase; letter-spacing: 1px; }
+    .today-badge {
+      background: rgba(255,197,47,0.15);
+      border: 1px solid rgba(255,197,47,0.55);
+      color: #FFC52F;
+    }
 
-    /* Preview / final big text */
-    .big-time { text-align: center; font-size: clamp(2rem, 7vw, 3rem); font-weight: 800; margin: 8px 0; }
-    .sub-c { text-align: center; color: var(--silver); }
-    .muted { color: rgba(196,206,212,0.5); font-size: .8rem; }
+    .final-topline {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .final-topline .final-badge { margin-bottom: 0; }
+    .final-date {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: rgba(0,178,169,0.12);
+      border: 1px solid rgba(0,178,169,0.35);
+      color: var(--light-teal);
+    }
 
-    /* Controls */
-    .controls { display: flex; justify-content: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-    .btn { font: inherit; cursor: pointer; border-radius: 999px; padding: 7px 16px; font-size: .75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(0,178,169,0.45); background: rgba(12,44,86,0.6); color: var(--silver); transition: all .15s; }
-    .btn:hover { transform: translateY(-1px); }
-    .btn.on { background: var(--light-teal); color: #06242a; border-color: var(--light-teal); }
+    .live-dot {
+      width: 7px; height: 7px;
+      background: #FFC52F;
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
 
-    .updated { text-align: center; font-size: .72rem; color: rgba(255,255,255,0.3); margin-top: 18px; }
-    #loading, #fatal { text-align: center; padding: 90px 20px; color: var(--silver); }
-    #fatal { display: none; color: #ff8a7c; }
-    .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.12); border-top-color: var(--light-teal); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 16px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .game-time {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--white);
+      margin-top: 16px;
+    }
+
+    .game-status-text {
+      text-align: center;
+      font-size: 0.8rem;
+      color: rgba(196,206,212,0.5);
+      margin-top: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .today-vs {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--silver);
+      margin-top: 20px;
+    }
+
+    .today-venue {
+      text-align: center;
+      font-size: 0.78rem;
+      color: rgba(196,206,212,0.45);
+      margin-top: 4px;
+    }
+
+    /* ---- Last 10 W-L record ---- */
+    .games-record {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 18px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: rgba(196,206,212,0.7);
+    }
+    .games-record .rec-grp { white-space: nowrap; }
+
+    .games-record .rec-w { color: var(--yes); }
+    .games-record .rec-l { color: var(--no); }
+    .games-record .rec-neutral { color: #FFC52F; }
+
+    /* ---- Season trend chart ---- */
+    .trend-sub { color: rgba(196,206,212,0.6); font-size: 0.85rem; margin: -6px 0 16px; }
+    .trend-chart { width: 100%; }
+    .trend-svg { display: block; width: 100%; height: auto; }
+    .trend-grid { stroke: rgba(255,255,255,0.08); stroke-width: 1; }
+    .trend-ref  { stroke: rgba(196,206,212,0.35); stroke-width: 1; stroke-dasharray: 4 4; }
+    .trend-area { fill: rgba(255,197,47,0.13); stroke: none; }
+    .trend-line { fill: none; stroke: #FFC52F; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+    .trend-dot  { fill: #FFC52F; }
+    .trend-label { fill: rgba(196,206,212,0.55); font-size: 13px; font-family: inherit; }
+    .trend-cur  { fill: #FFC52F; font-size: 14px; font-weight: 700; font-family: inherit; }
+
+    .scoreboard {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .scoreboard-team { flex: 1; text-align: center; }
+
+    .scoreboard-team-name {
+      font-size: 0.8rem;
+      color: var(--silver);
+      margin-bottom: 6px;
+      font-weight: 600;
+      /* Reserve two lines so a wrapped opponent name (e.g. "Cleveland
+         Guardians") doesn't push its run total lower than the other side. */
+      min-height: 2.4em;
+      line-height: 1.2;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .scoreboard-runs { font-size: 3.2rem; font-weight: 800; }
+    .scoreboard-runs.mariners { color: var(--light-teal); }
+    .scoreboard-runs.opponent { color: var(--silver); }
+
+    .scoreboard-divider { font-size: 2rem; color: rgba(255,255,255,0.2); transform: translateY(1.15rem); }
+
+    .inning-info  { text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--silver); }
+    .inning-detail{ text-align: center; margin-top: 4px; font-size: 0.75rem; color: rgba(255,255,255,0.38); }
+
+    /* center Final card state */
+    #gc-final { text-align: center; }
+    #gc-live  { text-align: center; }
+
+    .final-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin: 12px 0 10px;
+    }
+    .final-decisions {
+      font-size: 0.72rem;
+      color: rgba(196,206,212,0.6);
+      text-align: center;
+      padding: 0 6px;
+    }
+    .final-decisions strong { color: #fff; font-weight: 600; }
+    .decision-label {
+      font-weight: 700;
+      font-size: 0.62rem;
+      letter-spacing: 0.05em;
+      color: rgba(196,206,212,0.35);
+      margin-right: 3px;
+    }
+    .decisions-wl {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 4px;
+    }
+    .decisions-sv { margin-top: 2px; }
+
+    .inning-window-note {
+      font-size: 0.68rem;
+      color: rgba(196,206,212,0.38);
+      text-align: center;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .linescore-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 0.72rem;
+    }
+    .linescore-table th, .linescore-table td {
+      padding: 4px 3px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      min-width: 20px;
+    }
+    .linescore-table th { color: rgba(255,255,255,0.3); font-weight: 600; }
+    .linescore-table td.team-label { text-align:left; color:var(--silver); font-weight:700; padding-right:10px; }
+    .linescore-table td.total { font-weight:700; color:var(--white); }
+    .linescore-table td.current-inning { background:rgba(0,178,169,0.15); border-radius:4px; }
+
+    /* ---- Live situation (bases + matchup) ---- */
+    .live-situation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin: 10px 0 4px;
+    }
+    .matchup-line {
+      font-size: 0.75rem;
+      color: var(--silver);
+      text-align: left;
+      line-height: 1.6;
+      max-width: 160px;
+    }
+    .matchup-line span { color: var(--white); font-weight: 600; }
+
+    /* Base diamond */
+    .bases-diamond {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .base-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .base {
+      width: 14px;
+      height: 14px;
+      transform: rotate(45deg);
+      border: 2px solid rgba(255,255,255,0.35);
+      border-radius: 2px;
+      background: transparent;
+      transition: background 0.2s;
+    }
+    .base.occupied {
+      background: #FFC52F;
+      border-color: #FFC52F;
+    }
+    .base-home {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Last play text */
+    .last-play {
+      font-size: 0.72rem;
+      color: rgba(196,206,212,0.7);
+      font-style: italic;
+      margin: 4px auto 8px;
+      max-width: 320px;
+      min-height: 1.2em;
+    }
+
+    /* ---- Streak card ---- */
+    .streak-card {
+      padding: 28px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .streak-number {
+      font-size: clamp(7rem, 20vw, 12rem);
+      font-weight: 900;
+      line-height: 0.88;
+      letter-spacing: -5px;
+      color: var(--no);
+      text-shadow: 0 4px 40px rgba(231,76,60,0.4);
+    }
+    .streak-number.zero {
+      color: var(--yes);
+      text-shadow: 0 4px 40px rgba(0,178,169,0.4);
+    }
+    .streak-label {
+      margin-top: 14px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    /* ---- Season Tally - full-width centered ---- */
+    .tally-card {
+      text-align: center;
+    }
+
+    .tally-card .card-label {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .tally-stats {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: clamp(24px, 6vw, 80px);
+      flex-wrap: wrap;
+    }
+
+    .tally-stat { text-align: center; }
+
+    .tally-stat-num {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+    .tally-stat-num.over  { color: var(--yes); text-shadow: 0 0 30px rgba(0,178,169,0.4); }
+    .tally-stat-num.under { color: var(--no);  text-shadow: 0 0 30px rgba(231,76,60,0.3); }
+    .tally-stat-num.pct   { color: var(--silver); }
+
+    .tally-stat-desc {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(196,206,212,0.6);
+    }
+
+    .tally-divider {
+      width: 1px;
+      height: 60px;
+      background: rgba(196,206,212,0.15);
+      align-self: center;
+      flex-shrink: 0;
+    }
+
+    .tally-bar-wrap {
+      margin-top: 28px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .tally-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .tally-bar-labels .label-over  { color: var(--yes); }
+    .tally-bar-labels .label-under { color: var(--no); }
+
+    .tally-bar {
+      height: 10px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+    .tally-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #c0392b, #E74C3C);
+      border-radius: 5px;
+      transition: width 0.8s ease;
+    }
+
+    /* ---- Recent games ---- */
+    .games-section-label {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .games-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--light-teal);
+    }
+
+    .games-list {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .game-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(0,178,169,0.12);
+      font-size: 1rem;
+      gap: 8px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .game-row:hover { background: rgba(0,178,169,0.08); border-color: rgba(0,178,169,0.25); }
+
+    .game-row-left { display:flex; align-items:center; gap:14px; flex:1; min-width:0; }
+
+    .game-dot {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .game-dot.over  { background: #FFC52F; box-shadow: 0 0 8px rgba(255,197,47,0.8); }
+    .game-dot.under { background: #FFC52F; box-shadow: 0 0 8px rgba(255,197,47,0.8); }
+
+    .game-opponent { color: var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:600; font-size: 1rem; }
+    .game-date     { color: rgba(196,206,212,0.55); font-size:0.82rem; margin-top:3px; }
+
+    .game-row-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+
+    .game-score { font-weight:700; font-size:1rem; white-space:nowrap; }
+    .game-score.win  { color: var(--yes); }
+    .game-score.loss { color: var(--no); }
+
+    .game-verdict {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .game-verdict.yes { background:rgba(0,178,169,0.12); color:var(--light-teal); border:1px solid rgba(0,178,169,0.4); }
+    .game-verdict.no  { background:rgba(231,76,60,0.13); color:#ff6b6b; border:1px solid rgba(231,76,60,0.35); }
+
+    /* ---- Loading / error ---- */
+    #loading {
+      text-align: center;
+      padding: 100px 20px;
+      color: var(--silver);
+    }
+    .spinner {
+      width: 42px; height: 42px;
+      border: 3px solid rgba(255,255,255,0.12);
+      border-top-color: var(--light-teal);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 18px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #app { display: none; }
 
-    /* Confetti */
-    #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 90; overflow: hidden; }
-    .confo { position: absolute; width: 9px; height: 14px; top: -20px; opacity: 0; animation: fall linear forwards; }
-    @keyframes fall { 0% { transform: translateY(-20px) rotate(0); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 1; } }
+    #error { display:none; text-align:center; padding:60px 20px; color:var(--no); }
+    #app   { display:none; }
 
-    /* ============================================================
-       SPRINGFIELD THEME (opt-in: body.springfield)
-       Sky gradient, Fredoka/Nunito, thick black outlines, Simpson
-       yellow/pink/green highlights, white cards with hard shadows.
-       Matches the established language in mariners.html.
-       ============================================================ */
-    .clouds { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; display: none; }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.18);
+    }
+
+    /* ====================================================================== */
+    /* THEME TOGGLE CONTROL                                                    */
+    /* ====================================================================== */
+    .theme-toggle {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+    }
+    .tt-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(196,206,212,0.5);
+      margin-right: 4px;
+    }
+    .tt-btn {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid rgba(0,178,169,0.45);
+      background: rgba(12,44,86,0.6);
+      color: var(--silver);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: transform 0.15s, background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .tt-btn:hover { transform: translateY(-1px); }
+    .tt-btn.active {
+      background: var(--light-teal);
+      color: #06242a;
+      border-color: var(--light-teal);
+      box-shadow: 0 0 16px rgba(0,178,169,0.5);
+    }
+    .open-live-btn {
+      display: block;
+      width: 100%;
+      margin: 18px auto 2px;
+      font: inherit;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border: 1px solid rgba(0,178,169,0.45);
+      background: rgba(0,178,169,0.12);
+      color: var(--light-teal);
+      transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+    .open-live-btn:hover { transform: translateY(-1px); background: rgba(0,178,169,0.2); box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+    .open-live-btn .arrow { margin-left: 6px; }
+
+    /* ====================================================================== */
+    /* DRIFTING CLOUDS (Springfield only)                                     */
+    /* ====================================================================== */
+    .clouds {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      display: none;
+    }
     body.springfield .clouds { display: block; }
-    .cloud { position: absolute; filter: drop-shadow(0 6px 0 rgba(0,0,0,0.05)); }
+    .cloud {
+      position: absolute;
+      filter: drop-shadow(0 6px 0 rgba(0,0,0,0.05));
+    }
     .cloud svg { display: block; }
-    @keyframes drift { from { transform: translateX(-30vw); } to { transform: translateX(130vw); } }
+    @keyframes drift {
+      from { transform: translateX(-30vw); }
+      to   { transform: translateX(130vw); }
+    }
     .cloud.c1 { top: 6%;  animation: drift 75s  linear infinite; animation-delay: -10s; }
     .cloud.c2 { top: 26%; animation: drift 115s linear infinite; animation-delay: -60s; }
     .cloud.c2 svg { transform: scale(1.5); }
@@ -179,556 +759,1031 @@
     .cloud.c3 svg { transform: scale(0.85); }
     .cloud.c4 { top: 72%; animation: drift 140s linear infinite; animation-delay: -95s; opacity: 0.7; }
     .cloud.c4 svg { transform: scale(1.1); }
-    header, .wrap, .stripe, #loading, #fatal, #confetti { position: relative; z-index: 1; }
 
+    /* keep all real content above the cloud layer */
+    .top-stripe, .theme-toggle, header, #loading, #error, #app, footer {
+      position: relative;
+      z-index: 1;
+    }
+    .theme-toggle { z-index: 60; }
+
+    /* theme-conditional copy helpers */
+    .theme-springfield { display: none; }
+    body.springfield .theme-default { display: none; }
+    body.springfield .theme-springfield { display: inline; }
+    body.springfield .sf-tagline { display: block; }
+
+    /* ---- Mobile ---- */
+    @media (max-width: 560px) {
+      .grid { gap: 12px; padding: 0 12px; }
+
+      .game-row {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 14px;
+      }
+
+      .game-row-left {
+        flex: 1 1 100%;
+      }
+
+      .game-opponent { white-space: normal; }
+
+      .game-row-right {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+        padding-left: 23px; /* align with text past the dot */
+        gap: 10px;
+      }
+
+      .tally-stats { gap: 20px; }
+      .tally-divider { display: none; }
+      .tally-stat-num { font-size: clamp(2rem, 10vw, 3.5rem); }
+
+      /* Live card - stack matchup + diamond vertically on small screens */
+      .live-situation { flex-direction: column; gap: 10px; }
+      .matchup-line { text-align: center; max-width: 100%; }
+
+      /* More breathing room for linescore on mobile (single-column = wider card) */
+      .linescore-table { font-size: 0.78rem; }
+      .linescore-table th, .linescore-table td { padding: 5px 4px; min-width: 22px; }
+
+      .tt-label { display: none; }
+    }
+
+    /* ====================================================================== */
+    /* SPRINGFIELD MODE SKIN                                              */
+    /*   Bright cartoon sky, thick black outlines, flat fills, bouncy copy.   */
+    /* ====================================================================== */
     body.springfield {
       font-family: 'Nunito', sans-serif;
       color: #000;
       background: linear-gradient(180deg, #cdeffb 0%, #9bd9f1 50%, #74c6e8 100%);
       background-attachment: fixed;
+      /* Smooth cartoon outline for big display numbers. Uses layered shadows
+         instead of -webkit-text-stroke, which spikes at sharp glyph corners. */
       --toon-outline:
         -2px -2px 0 #000, -2px 0 0 #000, -2px 2px 0 #000,
          0   -2px 0 #000,                 0   2px 0 #000,
          2px -2px 0 #000,  2px 0 0 #000,  2px 2px 0 #000,
         -3px  0   0 #000,  3px 0 0 #000,  0  -3px 0 #000, 0 3px 0 #000;
     }
-    body.springfield .stripe { height: 6px; background: linear-gradient(90deg, #FF3B30, #FFD90F, #7ED957, #4A4EFF, #FF69B4); }
 
-    body.springfield .logos img { filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.3)); }
-    body.springfield .status-badge { border: 2px solid #000; box-shadow: 2px 2px 0 #000; color: #000; font-family: 'Fredoka', sans-serif; }
-    body.springfield .status-badge.live { background: #FFD90F; }
-    body.springfield .status-badge.preview { background: #FFD90F; }
-    body.springfield .status-badge.final { background: #fff; }
-    body.springfield .live-dot { background: #FF3B30; }
-
-    body.springfield .btn {
-      font-family: 'Fredoka', sans-serif; border: 3px solid #000; background: #fff;
-      color: #000; box-shadow: 3px 3px 0 #000; backdrop-filter: none; -webkit-backdrop-filter: none;
+    body.springfield .top-stripe {
+      height: 6px;
+      background: linear-gradient(90deg, #FF3B30, #FFD90F, #7ED957, #4A4EFF, #FF69B4);
     }
-    body.springfield .btn:hover { transform: translateY(-2px) scale(1.03); }
-    body.springfield .btn.on { background: #FF69B4; color: #000; border-color: #000; box-shadow: 3px 3px 0 #000; }
 
-    body.springfield .card {
-      background: #fff; border: 3px solid #000; border-radius: 22px;
-      box-shadow: 6px 6px 0 #000; backdrop-filter: none; -webkit-backdrop-filter: none;
+    /* Header */
+    body.springfield header::after {
+      background: linear-gradient(90deg, transparent, rgba(0,0,0,0.25), transparent);
     }
-    body.springfield .card-h { color: #FF69B4; font-family: 'Fredoka', sans-serif; }
-
-    /* Big display numbers: cartoon outline via layered shadow (no spurs).
-       The time string is excluded: a heavy outline on longer text reads as
-       chunky/mushy, so it gets a clean Fredoka treatment instead. */
-    body.springfield .team-runs, body.springfield .hero-verdict {
-      -webkit-text-stroke: 0; text-shadow: var(--toon-outline);
+    body.springfield .header-logo img {
+      filter: drop-shadow(3px 3px 0 rgba(0,0,0,0.3)) !important;
     }
-    body.springfield .big-time {
+    body.springfield .header-wordmark {
       color: #000;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-shadow: 2px 2px 0 rgba(0,0,0,0.10);
+      font-family: 'Fredoka', sans-serif;
     }
-    body.springfield .team-runs.mar { color: #FFD90F; }
-    body.springfield .team-runs.opp { color: #87CEEB; }
-    body.springfield .team-name { color: #000; font-weight: 800; }
-    body.springfield .score-mid { color: #000; }
-    body.springfield .inning { color: rgba(0,0,0,0.65); }
-    body.springfield .inning .arrow { color: #FF3B30; }
+    body.springfield header h1 {
+      font-family: 'Fredoka', sans-serif;
+      color: #000;
+      text-shadow: none;
+    }
+    body.springfield header h1 em {
+      color: #000;
+      background: #FFD90F;
+      padding: 0 0.22em;
+      border-radius: 8px;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+    body.springfield header p.subtitle { color: rgba(0,0,0,0.55); }
 
-    body.springfield .hero-verdict.yes { color: #7ED957; }
-    body.springfield .hero-verdict.no  { color: #FF3B30; }
-    body.springfield .hero-q, body.springfield .hero-note { color: rgba(0,0,0,0.65); }
+    /* Toggle control */
+    body.springfield .tt-label { color: rgba(0,0,0,0.55); }
+    body.springfield .tt-btn {
+      font-family: 'Fredoka', sans-serif;
+      border: 3px solid #000;
+      background: #fff;
+      color: #000;
+      box-shadow: 3px 3px 0 #000;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    body.springfield .tt-btn:hover { transform: translateY(-2px) scale(1.03); }
+    body.springfield .tt-btn.active {
+      background: #FF69B4;
+      color: #000;
+      border-color: #000;
+      box-shadow: 3px 3px 0 #000;
+    }
+    body.springfield .open-live-btn {
+      font-family: 'Fredoka', sans-serif;
+      border: 3px solid #000;
+      background: #FFD90F;
+      color: #000;
+      box-shadow: 4px 4px 0 #000;
+      border-radius: 14px;
+    }
+    body.springfield .open-live-btn:hover { transform: translateY(-2px) scale(1.01); background: #FFE34D; box-shadow: 4px 4px 0 #000; }
+
+    /* Cards */
+    body.springfield .card {
+      background: #fff;
+      border: 3px solid #000;
+      border-radius: 22px;
+      box-shadow: 6px 6px 0 #000;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    body.springfield .card::after { display: none; }
+    body.springfield .card-label {
+      color: #FF69B4;
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    /* Verdict */
+    /* Big display numbers: cartoon outline via layered shadow (no spurs). */
+    body.springfield .verdict-word,
+    body.springfield .scoreboard-runs,
+    body.springfield .streak-number,
+    body.springfield .tally-stat-num {
+      -webkit-text-stroke: 0;
+      text-shadow: var(--toon-outline);
+    }
+    body.springfield .verdict-word.yes { color: #7ED957; }
+    body.springfield .verdict-word.no  { color: #FF3B30; }
+    body.springfield .verdict-detail { color: rgba(0,0,0,0.65); }
+    body.springfield .verdict-opponent { color: #000; font-weight: 800; }
     body.springfield .run-pip { border-color: #000; color: rgba(0,0,0,0.45); }
     body.springfield .run-pip.filled { background: #FFD90F; border-color: #000; color: #000; box-shadow: 2px 2px 0 #000; }
     body.springfield .run-pip.fourth.filled { background: #7ED957; border-color: #000; color: #000; box-shadow: 2px 2px 0 #000; }
 
-    body.springfield .pip { border-color: #000; }
-    body.springfield .pip.on.ball { background: #FFD90F; border-color: #000; }
-    body.springfield .pip.on.strike { background: #FF3B30; border-color: #000; }
-    body.springfield .pip.on.out { background: #000; border-color: #000; }
-    body.springfield .count-grid .lbl { color: rgba(0,0,0,0.55); }
+    /* Badges */
+    body.springfield .live-badge,
+    body.springfield .final-badge,
+    body.springfield .today-badge {
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0 #000;
+      color: #000;
+      font-family: 'Fredoka', sans-serif;
+    }
+    body.springfield .live-badge  { background: #FFD90F; }
+    body.springfield .final-badge { background: #FFD90F; }
+    body.springfield .today-badge { background: #FFD90F; }
+    body.springfield .final-date {
+      background: #fff;
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0 #000;
+      color: #000;
+      font-family: 'Fredoka', sans-serif;
+    }
+    body.springfield .live-dot    { background: #FF3B30; }
+
+    /* Scoreboard */
+    body.springfield .scoreboard-team-name { color: #000; font-weight: 800; }
+    body.springfield .scoreboard-runs.mariners { color: #FFD90F; }
+    body.springfield .scoreboard-runs.opponent { color: #87CEEB; }
+    body.springfield .scoreboard-divider { color: #000; }
+    body.springfield .game-time { color: #000; font-family: 'Fredoka', sans-serif; }
+    body.springfield .game-status-text,
+    body.springfield .today-venue,
+    body.springfield .inning-info,
+    body.springfield .inning-detail { color: rgba(0,0,0,0.6); }
+    body.springfield .today-vs { color: #000; font-weight: 800; }
+
+    /* Linescore */
+    body.springfield .linescore-table th { color: rgba(0,0,0,0.45); }
+    body.springfield .linescore-table th,
+    body.springfield .linescore-table td { border-bottom: 1px solid rgba(0,0,0,0.12); }
+    body.springfield .linescore-table td.team-label { color: #000; }
+    body.springfield .linescore-table td.total { color: #000; }
+    body.springfield .linescore-table td.current-inning { background: #FFD90F; }
+    body.springfield .inning-window-note { color: rgba(0,0,0,0.4); }
+
+    /* Bases + matchup */
     body.springfield .base { border-color: #000; }
-    body.springfield .base.on { background: #FFD90F; border-color: #000; box-shadow: 0 0 0 2px rgba(0,0,0,0.15); }
+    body.springfield .base.occupied { background: #FFD90F; border-color: #000; }
+    body.springfield .matchup-line { color: #000; }
+    body.springfield .matchup-line span { color: #4A4EFF; }
+    body.springfield .last-play { color: rgba(0,0,0,0.6); }
 
-    body.springfield .player img { border: 2px solid #000; background: #fff; box-shadow: 3px 3px 0 rgba(0,0,0,0.2); }
-    body.springfield .player .role { color: #FF69B4; }
-    body.springfield .player .pname { color: #000; }
-    body.springfield .player .pstat { color: rgba(0,0,0,0.6); }
-    body.springfield .vs { color: rgba(0,0,0,0.3); }
+    /* Final decisions */
+    body.springfield .final-divider { border-top: 1px solid rgba(0,0,0,0.12); }
+    body.springfield .final-decisions { color: rgba(0,0,0,0.6); }
+    body.springfield .final-decisions strong { color: #000; }
+    body.springfield .decision-label { color: rgba(0,0,0,0.4); }
 
-    body.springfield .wp-bar { background: rgba(255,59,48,0.18); border: 2px solid #000; }
-    body.springfield .wp-fill { background: #7ED957; }
-    body.springfield .wp-labels { color: rgba(0,0,0,0.6); }
-    body.springfield .wp-labels b { color: #000; }
+    /* Streak */
+    body.springfield .streak-number { color: #FF3B30; }
+    body.springfield .streak-number.zero { color: #7ED957; }
+    body.springfield .streak-label { color: #000; }
 
-    body.springfield .ls th { color: rgba(0,0,0,0.45); }
-    body.springfield .ls th, body.springfield .ls td { border-bottom: 1px solid rgba(0,0,0,0.12); }
-    body.springfield .ls td.tm { color: #000; }
-    body.springfield .ls td.tot { color: #000; }
-    body.springfield .ls td.cur { background: #FFD90F; }
+    /* Season tally */
+    body.springfield .tally-stat-num.under { color: #FF3B30; }
+    body.springfield .tally-stat-num.over  { color: #7ED957; }
+    body.springfield #tally-pct { color: #FFD90F !important; text-shadow: var(--toon-outline) !important; }
+    body.springfield .tally-stat-desc { color: rgba(0,0,0,0.6); }
+    body.springfield .tally-divider { background: rgba(0,0,0,0.2); }
+    body.springfield .tally-bar {
+      height: 14px;
+      background: #fff;
+      border: 2px solid #000;
+    }
+    body.springfield .tally-bar-fill { background: #FF69B4; }
+    body.springfield .tally-bar-labels .label-under,
+    body.springfield .tally-bar-labels .label-over { color: #000; }
 
-    body.springfield .play { background: rgba(0,0,0,0.04); border-left-color: #000; color: rgba(0,0,0,0.7); }
-    body.springfield .play.scoring { border-left-color: #FFD90F; background: rgba(255,217,15,0.18); color: #000; }
-    body.springfield .play .pt { color: rgba(0,0,0,0.5); }
+    /* Recent games */
+    body.springfield .games-title {
+      color: #FF69B4;
+      font-family: 'Fredoka', sans-serif;
+    }
+    body.springfield .games-record { color: rgba(0,0,0,0.55); }
+    body.springfield .games-record .rec-w,
+    body.springfield .games-record .rec-l,
+    body.springfield .games-record .rec-neutral { color: #000; }
 
-    body.springfield .sub-c { color: rgba(0,0,0,0.7); }
-    body.springfield .muted { color: rgba(0,0,0,0.45); }
-    body.springfield .updated { color: rgba(0,0,0,0.4); }
-    body.springfield #loading, body.springfield #fatal { color: rgba(0,0,0,0.6); }
-    body.springfield #fatal { color: #FF3B30; }
-    body.springfield .spinner { border-color: rgba(0,0,0,0.12); border-top-color: #FF69B4; }
+    body.springfield .trend-sub  { color: rgba(0,0,0,0.6); }
+    body.springfield .trend-grid { stroke: rgba(0,0,0,0.1); }
+    body.springfield .trend-ref  { stroke: rgba(0,0,0,0.3); }
+    body.springfield .trend-area { fill: rgba(74,78,255,0.12); }
+    body.springfield .trend-line { stroke: #4A4EFF; }
+    body.springfield .trend-dot  { fill: #4A4EFF; }
+    body.springfield .trend-label { fill: rgba(0,0,0,0.55); }
+    body.springfield .trend-cur  { fill: #4A4EFF; }
+    body.springfield .game-row {
+      background: #fff;
+      border: 2.5px solid #000;
+      box-shadow: 3px 3px 0 #000;
+      border-radius: 14px;
+    }
+    body.springfield .game-row:hover {
+      background: #FFF7C2;
+      border-color: #000;
+      transform: translateY(-2px);
+    }
+    body.springfield .game-dot.over  { background: #FFD90F; border: 2px solid #000; box-shadow: none; }
+    body.springfield .game-dot.under { background: #FFD90F; border: 2px solid #000; box-shadow: none; }
+    body.springfield .game-opponent { color: #000; }
+    body.springfield .game-date { color: rgba(0,0,0,0.55); }
+    body.springfield .game-score { color: #000 !important; }
+    body.springfield .game-verdict.yes { background: #7ED957; color: #000; border: 2px solid #000; }
+    body.springfield .game-verdict.no  { background: #FF3B30; color: #000; border: 2px solid #000; }
+
+    /* Loading / error / footer */
+    body.springfield #loading { color: #000; }
+    body.springfield .spinner { border: 3px solid rgba(0,0,0,0.15); border-top-color: #FF69B4; }
+    body.springfield #error { color: #FF3B30; }
+    body.springfield footer { color: rgba(0,0,0,0.45); }
   </style>
 </head>
 <body>
-  <div class="stripe"></div>
-  <div id="confetti"></div>
-  <div class="clouds" aria-hidden="true">
-    <div class="cloud c1"><svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg></div>
-    <div class="cloud c2"><svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg></div>
-    <div class="cloud c3"><svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg></div>
-    <div class="cloud c4"><svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg></div>
+
+<!-- Drifting clouds (Springfield mode only) -->
+<div class="clouds" aria-hidden="true">
+  <div class="cloud c1">
+    <svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg>
   </div>
+  <div class="cloud c2">
+    <svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg>
+  </div>
+  <div class="cloud c3">
+    <svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg>
+  </div>
+  <div class="cloud c4">
+    <svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg>
+  </div>
+</div>
 
-  <header>
-    <div class="logos">
-      <img id="logo-away" alt="">
-      <div id="status-wrap"></div>
-      <img id="logo-home" alt="">
+<div class="top-stripe"></div>
+
+<!-- Design toggle -->
+<div class="theme-toggle" role="group" aria-label="Choose a design">
+  <span class="tt-label">Design</span>
+  <button id="btn-classic" class="tt-btn active" type="button" onclick="setTheme('classic')">🔱 Classic</button>
+  <button id="btn-springfield" class="tt-btn" type="button" onclick="setTheme('springfield')">☁️ Springfield</button>
+</div>
+
+<header>
+  <div class="header-logo">
+    <img src="https://www.mlbstatic.com/team-logos/136.svg" alt="Seattle Mariners" style="width:52px;height:52px;filter:drop-shadow(0 0 12px rgba(0,178,169,0.6));" />
+    <div class="header-wordmark">Seattle Mariners</div>
+  </div>
+  <h1>Did the Mariners score<br><em>more than 3 runs?</em></h1>
+  <p class="subtitle" id="last-updated"></p>
+  <p class="sf-tagline" id="sf-tagline"></p>
+</header>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <p>
+    <span class="theme-default">Loading Mariners data...</span>
+    <span class="theme-springfield">Crunching baseball numbers... probably.</span>
+  </p>
+</div>
+
+<div id="error">
+  <p>
+    <span class="theme-default">Could not load game data. Check your connection and refresh.</span>
+    <span class="theme-springfield">Well, that wasn't supposed to happen. Try a refresh.</span>
+  </p>
+</div>
+
+<div id="app">
+  <div class="grid">
+
+    <!-- Verdict card -->
+    <div class="card verdict-card">
+      <div class="card-label" id="verdict-label">Last Completed Game</div>
+      <div class="verdict-word" id="verdict-word">-</div>
+      <div class="verdict-meter" id="verdict-meter"></div>
+      <div class="verdict-opponent" id="verdict-opponent"></div>
+      <div class="verdict-detail"  id="verdict-detail"></div>
     </div>
-    <div class="controls">
-      <button class="btn" id="btn-classic" type="button">Classic</button>
-      <button class="btn" id="btn-springfield" type="button">Springfield</button>
-    </div>
-    <div class="controls">
-      <button class="btn" id="btn-refresh" type="button">Refresh</button>
-    </div>
-  </header>
 
-  <div id="loading"><div class="spinner"></div><p>Finding the Mariners game...</p></div>
-  <div id="fatal"><p id="fatal-msg"></p></div>
+    <!-- Game spotlight card (always visible, 3 states) -->
+    <div class="card" id="game-card">
 
-  <div id="app" class="wrap">
-    <div class="grid">
-
-      <!-- Scoreboard -->
-      <div class="card" id="card-score">
-        <div class="card-h" id="score-head">Scoreboard</div>
-        <div class="score">
-          <div class="team">
-            <div class="team-name" id="away-name">Away</div>
-            <div class="team-runs opp" id="away-runs">0</div>
+      <!-- State A: Live -->
+      <div id="gc-live" style="display:none;">
+        <div class="live-badge"><div class="live-dot"></div> Live</div>
+        <div class="scoreboard">
+          <div class="scoreboard-team">
+            <div class="scoreboard-team-name">Mariners</div>
+            <div class="scoreboard-runs mariners" id="live-mar-runs">0</div>
           </div>
-          <div class="score-mid">-</div>
-          <div class="team">
-            <div class="team-name" id="home-name">Home</div>
-            <div class="team-runs opp" id="home-runs">0</div>
+          <div class="scoreboard-divider">–</div>
+          <div class="scoreboard-team">
+            <div class="scoreboard-team-name" id="live-opp-name">Opponent</div>
+            <div class="scoreboard-runs opponent" id="live-opp-runs">0</div>
           </div>
         </div>
-        <div class="inning" id="inning"></div>
-        <div class="situation" id="situation" style="display:none;">
-          <div class="count-grid" id="count"></div>
-          <div class="bases">
-            <div class="base" id="b2"></div>
+        <div class="inning-info"   id="live-inning"></div>
+        <div class="inning-detail" id="live-count"></div>
+        <div class="live-situation">
+          <div class="matchup-line" id="live-matchup"></div>
+          <div class="bases-diamond" id="live-bases">
+            <div class="base second"  id="base-2"></div>
             <div class="base-row">
-              <div class="base" id="b3"></div>
+              <div class="base third" id="base-3"></div>
               <div class="base-home"></div>
-              <div class="base" id="b1"></div>
+              <div class="base first" id="base-1"></div>
             </div>
           </div>
         </div>
-        <div id="pre-fin"></div>
+        <div class="last-play" id="live-last-play"></div>
+        <div id="linescore-wrap"></div>
       </div>
 
-      <!-- Hero: more than 3 -->
-      <div class="card hero" id="card-hero">
-        <div class="card-h" id="hero-head">Did the Mariners score more than 3?</div>
-        <div class="hero-verdict no" id="hero-verdict">NO</div>
-        <div class="hero-meter" id="hero-meter"></div>
-        <div class="hero-note" id="hero-note"></div>
+      <!-- State B: Today's upcoming game -->
+      <div id="gc-today" style="display:none;">
+        <div class="today-badge">Today's Game</div>
+        <div class="today-vs" id="today-matchup"></div>
+        <div class="today-venue" id="today-venue"></div>
+        <div class="game-time" id="today-time"></div>
+        <div class="game-status-text" id="today-status"></div>
       </div>
 
-      <!-- Matchup -->
-      <div class="card span2" id="card-matchup">
-        <div class="card-h" id="matchup-head">At Bat</div>
-        <div class="matchup" id="matchup">
-          <div class="player">
-            <img id="bat-img" alt="">
-            <div class="role">At Bat</div>
-            <div class="pname" id="bat-name">-</div>
-            <div class="pstat" id="bat-stat"></div>
+      <!-- State C: Last completed game linescore -->
+      <div id="gc-final" style="display:none;">
+        <div class="final-topline">
+          <span class="final-date" id="final-date"></span>
+          <span class="final-badge">Final</span>
+        </div>
+        <div class="scoreboard">
+          <div class="scoreboard-team">
+            <div class="scoreboard-team-name">Mariners</div>
+            <div class="scoreboard-runs mariners" id="final-mar-runs">-</div>
           </div>
-          <div class="vs" id="vs-center">vs</div>
-          <div class="player">
-            <img id="pit-img" alt="">
-            <div class="role">Pitching</div>
-            <div class="pname" id="pit-name">-</div>
-            <div class="pstat" id="pit-stat"></div>
+          <div class="scoreboard-divider">–</div>
+          <div class="scoreboard-team">
+            <div class="scoreboard-team-name" id="final-opp-name">-</div>
+            <div class="scoreboard-runs opponent" id="final-opp-runs">-</div>
           </div>
         </div>
+        <div id="final-linescore-wrap"></div>
+        <div id="final-decisions"></div>
       </div>
 
-      <!-- Win probability -->
-      <div class="card" id="card-wp" style="display:none;">
-        <div class="card-h">Win Probability</div>
-        <div class="wp-bar"><div class="wp-fill" id="wp-fill"></div></div>
-        <div class="wp-labels"><span id="wp-mar"><b>Mariners</b></span><span id="wp-opp"></span></div>
-      </div>
-
-      <!-- Linescore -->
-      <div class="card span2" id="card-ls">
-        <div class="card-h">Linescore</div>
-        <div id="linescore"></div>
-      </div>
-
-      <!-- Plays -->
-      <div class="card span2" id="card-plays">
-        <div class="card-h">Play by Play</div>
-        <div class="plays" id="plays"></div>
-      </div>
+      <!-- Launch the full live tracker (shown when a game is in the spotlight) -->
+      <button class="open-live-btn" id="open-live-btn" type="button" style="display:none;">
+        Open Full Live Tracker<span class="arrow">&rarr;</span>
+      </button>
 
     </div>
-    <div class="updated" id="updated"></div>
+
+    <!-- Streak card -->
+    <div class="card streak-card">
+      <div class="card-label">Consecutive Games Scoring ≤ 3 Runs</div>
+      <div class="streak-number" id="streak-num">0</div>
+    </div>
+
+    <!-- Season tally - full width, centered -->
+    <div class="card full-width tally-card">
+      <div class="card-label">2026 Season Tally</div>
+      <div class="tally-stats">
+        <div class="tally-stat">
+          <div class="tally-stat-num under" id="tally-under">0</div>
+          <div class="tally-stat-desc">Scored ≤ 3 runs</div>
+        </div>
+        <div class="tally-divider"></div>
+        <div class="tally-stat">
+          <div class="tally-stat-num over" id="tally-over">0</div>
+          <div class="tally-stat-desc">Scored &gt; 3 runs</div>
+        </div>
+        <div class="tally-divider"></div>
+        <div class="tally-stat">
+          <div class="tally-stat-num" id="tally-pct" style="color:#FFC52F;text-shadow:0 0 30px rgba(255,197,47,0.4);">-</div>
+          <div class="tally-stat-desc">of games ≤ 3 runs</div>
+        </div>
+      </div>
+      <div class="tally-bar-wrap">
+        <div class="tally-bar-labels">
+          <span class="label-under" id="tally-under-label"></span>
+          <span class="label-over"  id="tally-over-label"></span>
+        </div>
+        <div class="tally-bar">
+          <div class="tally-bar-fill" id="tally-bar-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Season trend -->
+    <div class="card full-width">
+      <div class="games-section-label">
+        <span class="games-title">Season Trend</span>
+        <span class="games-record"><span class="rec-grp rec-neutral" id="trend-current"></span></span>
+      </div>
+      <p class="trend-sub">Running share of games where the Mariners scored 3 or fewer runs, by game number.</p>
+      <div id="trend-chart" class="trend-chart"></div>
+    </div>
+
+    <!-- Recent games -->
+    <div class="card full-width">
+      <div class="games-section-label">
+        <span class="games-title">Last 10 Games</span>
+        <span class="games-record" id="last10-record"></span>
+      </div>
+      <div class="games-list" id="games-list"></div>
+    </div>
+
   </div>
+</div>
 
-  <script>
-    const TEAM_ID = 136, THRESHOLD = 3;
-    const API = 'https://statsapi.mlb.com';
-    const $ = id => document.getElementById(id);
+<footer>
+  Data: MLB Stats API &nbsp;·&nbsp; <span id="refresh-note">Refreshes every 60s</span>
+</footer>
 
-    let pollTimer = null, gamePk = null;
-    let prev = { marRuns: null, outs: null, playIdx: null, strikes: null };
+<!-- Theme toggle logic. Classic is always the default landing design;
+     Springfield is opt-in per visit and not persisted.
+     In Springfield, the tagline rotates through Simpsons quotes. -->
+<script>
+  (function () {
+    const QUOTES = [
+      "D'oh! The Mariners again.",
+      "Mariners bullpen? Eat my shorts.",
+      "Ay, caramba! They lost AGAIN?!",
+      "Don't have a cow, man. It's just another Mariners loss.",
+      "Mmm... a Mariners win. (drools) ...someday.",
+      "Worst. Season. Ever.",
+      "Me root for a winner? That's unpossible.",
+      "I'm a Mariners fan! ...I'm Idaho.",
+      "The Mariners are my favorite. My cat's breath smells like cat food.",
+      "I watched the Mariners and I bent my Wookiee.",
+      "Stupid sexy Mariners. Always breaking my heart.",
+      "To the Mariners! The cause of, and solution to, all of my problems.",
+      "Marge, the Mariners are losing. I'm going to Moe's.",
+      "Everything's coming up Mariners! ...so, terribly.",
+      "I choo-choo-choose the Mariners. Why do I do this to myself?",
+      "Don't make me run, I'm full of expired hope.",
+      "I was saying 'Boo-urns.' Also, the Mariners lost.",
+      "Local Man Yells At Mariners.",
+      "And I, for one, welcome our new last-place overlords.",
+      "Mariners fans, I've said it before: hope simply doesn't work.",
+      "Won't somebody PLEASE think of the bullpen?!",
+      "The Mariners lost? Ha-ha!",
+      "Mariners offense? Smell ya later.",
+      "The Mariners are batting. Smithers, release the hounds.",
+      "Another Mariners collapse... eeexcellent.",
+      "Smithers, who are these Mariners and why do they keep losing?",
+      "Family. Religion. Friendship. Three things the Mariners will let you down on.",
+      "Sir, the Mariners lost again. Shall I draw you a bath?",
+      "The Mariners lost. Thank you, come again.",
+      "Did the Mariners win? Works on contingency? No, money down!",
+      "The Mariners, with their crazy excuses.",
+      "You call them the Mariners, despite the fact that they are clearly grounded into a double play?",
+      "A winning streak? At this time of season, localized entirely within the Mariners?! May I see it? ...No.",
+      "The Mariners are a perfectly cromulent disappointment.",
+      "Nothing embiggens a losing streak like the Mariners.",
+      "(Ralph, smiling on the bus) I'm a Mariners fan!",
+      "Mariners, choke, purple monkey dishwasher.",
+      "Cowabunga, dude... another Mariners loss.",
+      "I'm a Mariners fan! S-M-R-T!",
+      "I watch the Mariners. The goggles do nothing!",
+      "Up and at them... and the Mariners blow the lead.",
+      "Why you little...! (Homer, watching the Mariners)",
+      "Save me, Jeebus! The Mariners are batting!",
+      "Three runs and no lead? Why can't the Mariners have no runs and three leads?",
+      "Trying is the first step toward failure. The Mariners know this well.",
+      "The Mariners don't strike. They just show up and do it really half-assed.",
+      "Mariners, you tried your best and you failed miserably. The lesson is: never try.",
+      "Stats are meaningless. You could use stats to prove the Mariners are even remotely good.",
+      "Oh, so the Mariners have offense in October now? ...They don't.",
+      "In this house, we obey the laws of the Mariners: thou shalt be let down.",
+      "I didn't think it was possible, but the Mariners both suck AND blow.",
+      "Worst Mariners loss ever. / You say that so often it's lost all meaning.",
+      "Can't talk. Mariners blowing it.",
+      "Just because I don't care about the Mariners doesn't mean they don't hurt me.",
+      "Operator! Give me the number for 911! The Mariners loaded the bases!",
+      "A Mariners title is make-believe, like elves, gremlins, and Eskimos.",
+      "The Mariners. Is there anything they CAN do?",
+      "The Mariners... now there's a permanent solution to feeling happy.",
+      "I'm not gonna lie to you, Marge. This Mariners team is a journey of pain.",
+      "There's no such thing as a Mariners win. It's just something they made up to sell tickets.",
+      "Hi, I'm Troy McClure! You may remember the Mariners from such collapses as 'The 2001 Season' and 'Every Year Since.'",
+      "Disco Stu doesn't root for the Mariners. But Disco Stu doesn't advertise.",
+      "Hi-diddly-ho! Could the Mariners win-arino just one game?",
+      "Mariners losing again? Okily-dokily. The Lord is testing me.",
+      "I'm a Mariners fan... who the hell are these guys leaving runners on base?",
+      "Rootin' for a winner? That's a paddlin'.",
+      "I'm seeing double here... four runs! ...no, still three.",
+      "You don't make friends with the Mariners! You don't make friends with the Mariners!",
+      "It takes two to choke: the starter and the bullpen.",
+      "Marge, it's the Mariners. I can't be expected to feel things.",
+      "Glayvin! By my calculations the Mariners should be good. The math, it has betrayed me!",
+      "Fat Tony says: it would be a shame if something happened to that lead. ...It did.",
+      "The Mariners are like Moe's bar: nobody wins, everyone leaves sad.",
+      "According to my readings, the Mariners' magic number is 'ha, no.'",
+      "I eateded the whole season.",
+      "The Mariners' run differential is, as we say in jazz, off.",
+      "Lisa, the Mariners are an affront to the very concept of competence.",
+      "Two words: Mar. Iners. (Dad, that's one word.)",
+      "Dental plan. Mariners offense. Dental plan. Mariners offense.",
+      "Hey hey! The Mariners! ...Kids, I think this is a rerun.",
+      "Inflammable means flammable? And the Mariners mean heartbreak? What a country!",
+      "I used to root for a contender. Then they changed what a contender was.",
+      "The doctor said I'd have fewer nosebleeds if I'd just stop watching the Mariners.",
+      "Hello, darkness, my old friend. Hello, Mariners, same thing.",
+      "Every time the Mariners lose, an angel gets its wings clipped.",
+      "We're number... well, we're a number.",
+      "Kent Brockman here. The Mariners' offense remains, in a word, dormant.",
+      "I, Chief Wiggum, hereby arrest the Mariners for impersonating a baseball team.",
+      "I'm a rageaholic! I'm addicted to rageahol! ...it's the Mariners.",
+      "They're the best team money can't buy a win for.",
+      "The Mariners put the 'L' in 'Seattle.' Wait... there are two. Perfect.",
+      "I've watched the Mariners lose in ways science cannot explain.",
+      "Won't somebody think of the run support?!",
+      "The Mariners: proudly snatching defeat from the jaws of victory since forever.",
+      "I call the big one 'Bitey.' I call the Mariners 'Quiet.'",
+      "The Mariners are why Daddy drinks, Lisa.",
+      "It's not the Mariners who are wrong. It's the scoreboard. ...No, it's the Mariners.",
+      "D'oh-fense. That's the whole problem.",
+      "Comic Book Guy here: the most disappointing collection of at-bats I have ever witnessed.",
+      "Boo-hoo, Seattle. Try again next year. And the year after. And the...",
+      "Mmm... home runs.",
+    ];
 
-    /* ---------- design (Classic default, Springfield opt-in) ---------- */
-    function setDesign(d) {
-      const sf = d === 'springfield';
+    let sfIndex = Math.floor(Math.random() * QUOTES.length);
+    let sfInterval = null;
+
+    function rotateSFTagline() {
+      const el = document.getElementById('sf-tagline');
+      if (!el) return;
+      // Fade fully out, hold invisible, swap the text, then fade back in.
+      // The 600ms wait is deliberately longer than the 0.5s opacity transition,
+      // so the old saying is completely gone before the new one appears: the
+      // two never overlap or crossfade.
+      el.classList.add('fade');
+      setTimeout(function () {
+        sfIndex = (sfIndex + 1) % QUOTES.length;
+        el.textContent = QUOTES[sfIndex];
+        void el.offsetWidth; // commit opacity:0 + new text before fading in
+        el.classList.remove('fade');
+      }, 600);
+    }
+
+    window.setTheme = function (t) {
+      var sf = t === 'springfield';
       document.body.classList.toggle('springfield', sf);
-      $('btn-classic').classList.toggle('on', !sf);
-      $('btn-springfield').classList.toggle('on', sf);
-    }
-    $('btn-classic').onclick = () => setDesign('classic');
-    $('btn-springfield').onclick = () => setDesign('springfield');
-    // Honor ?design=springfield passed from the dashboard; default to Classic.
-    setDesign(new URLSearchParams(location.search).get('design') === 'springfield' ? 'springfield' : 'classic');
+      var c = document.getElementById('btn-classic');
+      var s = document.getElementById('btn-springfield');
+      if (c) c.classList.toggle('active', !sf);
+      if (s) s.classList.toggle('active', sf);
 
-    $('btn-refresh').onclick = () => poll();
-
-    /* ---------- confetti ---------- */
-    function confetti(n) {
-      const c = $('confetti');
-      const colors = document.body.classList.contains('springfield')
-        ? ['#FFD90F', '#FF69B4', '#7ED957', '#4A4EFF', '#FF3B30']
-        : ['#00B2A9', '#FFC52F', '#C4CED4', '#ffffff', '#005C5C'];
-      for (let i = 0; i < (n || 80); i++) {
-        const d = document.createElement('div');
-        d.className = 'confo';
-        d.style.left = Math.random() * 100 + 'vw';
-        d.style.background = colors[i % colors.length];
-        d.style.animationDuration = (1.8 + Math.random() * 1.6) + 's';
-        d.style.animationDelay = (Math.random() * 0.4) + 's';
-        c.appendChild(d);
-        setTimeout(() => d.remove(), 3800);
+      clearInterval(sfInterval); // avoid stacking intervals on repeat selects
+      if (sf) {
+        var el = document.getElementById('sf-tagline');
+        if (el) el.textContent = QUOTES[sfIndex];
+        sfInterval = setInterval(rotateSFTagline, 30000);
       }
+    };
+
+    // Always start on Classic.
+    setTheme('classic');
+  })();
+</script>
+
+<script>
+  const TEAM_ID   = 136;
+  const SEASON    = 2026;
+  const THRESHOLD = 3;
+
+  let refreshInterval = null;
+
+  function today() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  async function fetchJSON(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  }
+
+  function marScore(game) {
+    const away  = game.teams.away;
+    const home  = game.teams.home;
+    const isAway = away.team.id === TEAM_ID;
+    const mar   = isAway ? away : home;
+    const opp   = isAway ? home : away;
+    return {
+      marRuns: mar.score ?? 0,
+      oppRuns: opp.score ?? 0,
+      oppName: opp.team.name,
+      isWin:   mar.isWinner ?? false,
+      isAway
+    };
+  }
+
+  function fmtDate(officialDate) {
+    const [y,m,d] = officialDate.split('-');
+    return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+
+  let trendGames = [];
+  function renderTrend() {
+    const el = document.getElementById('trend-chart');
+    if (!el) return;
+    const games = trendGames, n = games.length;
+    const curEl = document.getElementById('trend-current');
+    if (!n) {
+      el.innerHTML = '<p class="trend-sub">No completed games yet this season.</p>';
+      if (curEl) curEl.textContent = '';
+      return;
     }
-
-    /* ---------- data helpers ---------- */
-    async function getJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
-    function dstr(off) { const d = new Date(); d.setDate(d.getDate() + (off || 0)); return d.toISOString().slice(0, 10); }
-    function teamAbbr(g, side) { return (g.gameData.teams[side].abbreviation) || g.gameData.teams[side].name.split(' ').pop().slice(0, 3).toUpperCase(); }
-    function headshot(id) { return `https://midfield.mlbstatic.com/v1/people/${id}/spots/120`; }
-    function logo(id) { return `https://www.mlbstatic.com/team-logos/${id}.svg`; }
-
-    async function resolveGamePk() {
-      const u = new URLSearchParams(location.search);
-      if (u.get('gamePk')) return u.get('gamePk');
-      // window around today first
-      const url = `${API}/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&startDate=${dstr(-1)}&endDate=${dstr(1)}`;
-      let data = await getJSON(url);
-      let games = [];
-      for (const d of (data.dates || [])) for (const g of d.games) games.push(g);
-      let pick = games.find(g => g.status.abstractGameState === 'Live')
-        || games.find(g => g.status.abstractGameState === 'Preview')
-        || games.slice().reverse().find(g => g.status.abstractGameState === 'Final');
-      if (pick) return pick.gamePk;
-      // fall back to most recent final this season
-      const yr = new Date().getFullYear();
-      data = await getJSON(`${API}/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&season=${yr}&gameType=R&startDate=${yr}-03-01&endDate=${dstr(0)}`);
-      const finals = [];
-      for (const d of (data.dates || [])) for (const g of d.games) if (g.status.abstractGameState === 'Final') finals.push(g);
-      if (finals.length) return finals[finals.length - 1].gamePk;
-      throw new Error('No Mariners game found.');
+    let under = 0; const pts = [];
+    for (let i = 0; i < n; i++) {
+      if (marScore(games[i]).marRuns <= THRESHOLD) under++;
+      pts.push(under / (i + 1) * 100);
     }
+    const seasonPct = Math.round(under / n * 100);
+    if (curEl) curEl.textContent = `${seasonPct}% scored ≤3 (${under} of ${n})`;
 
-    function boxPlayer(feed, id) {
-      const t = feed.liveData.boxscore.teams;
-      return (t.home.players['ID' + id]) || (t.away.players['ID' + id]) || null;
-    }
+    const W = Math.max(el.clientWidth || 900, 320), H = 300;
+    const padL = 46, padR = 18, padT = 18, padB = 34;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const X = i => padL + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+    const Y = p => padT + (1 - p / 100) * plotH;
 
-    // Most recent fully-completed play in the feed.
-    function lastCompletedPlay(feed) {
-      const plays = (feed.liveData.plays && feed.liveData.plays.allPlays) || [];
-      for (let i = plays.length - 1; i >= 0; i--) {
-        if (plays[i].about && plays[i].about.isComplete) return plays[i];
+    let grid = '';
+    [0, 25, 50, 75, 100].forEach(v => {
+      const yy = Y(v).toFixed(1);
+      grid += `<line class="${v === 50 ? 'trend-ref' : 'trend-grid'}" x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}"/>`;
+      grid += `<text class="trend-label" x="${padL - 8}" y="${(parseFloat(yy) + 4).toFixed(1)}" text-anchor="end">${v}%</text>`;
+    });
+
+    let line = '';
+    for (let i = 0; i < n; i++) line += `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(pts[i]).toFixed(1)}`;
+    const area = `M${X(0).toFixed(1)},${Y(0).toFixed(1)}` +
+      pts.map((p, i) => `L${X(i).toFixed(1)},${Y(p).toFixed(1)}`).join('') +
+      `L${X(n - 1).toFixed(1)},${Y(0).toFixed(1)}Z`;
+
+    let xl = `<text class="trend-label" x="${X(0).toFixed(1)}" y="${H - 10}" text-anchor="start">1</text>`;
+    if (n > 1) xl += `<text class="trend-label" x="${X(n - 1).toFixed(1)}" y="${H - 10}" text-anchor="end">${n}</text>`;
+    if (n > 6) { const m = Math.floor((n - 1) / 2); xl += `<text class="trend-label" x="${X(m).toFixed(1)}" y="${H - 10}" text-anchor="middle">${m + 1}</text>`; }
+
+    const lp = pts[n - 1];
+    const dot = `<circle class="trend-dot" cx="${X(n - 1).toFixed(1)}" cy="${Y(lp).toFixed(1)}" r="4.5"/>`;
+    const cur = `<text class="trend-cur" x="${(X(n - 1) - 8).toFixed(1)}" y="${(Y(lp) - 10).toFixed(1)}" text-anchor="end">${Math.round(lp)}%</text>`;
+
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" class="trend-svg" role="img" aria-label="Cumulative percentage of games scoring three or fewer runs across the season">${grid}<path class="trend-area" d="${area}"/><path class="trend-line" d="${line}"/>${dot}${cur}${xl}</svg>`;
+  }
+  window.addEventListener('resize', () => { clearTimeout(window.__trendT); window.__trendT = setTimeout(renderTrend, 150); });
+
+  async function load() {
+    try {
+      const endDate  = today();
+      const schedURL = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&season=${SEASON}&gameType=R&startDate=${SEASON}-03-01&endDate=${endDate}`;
+      const data     = await fetchJSON(schedURL);
+
+      const allGames = [];
+      for (const day of (data.dates || []))
+        for (const g of day.games)
+          allGames.push({ ...g, officialDate: day.date });
+
+      const completed = allGames.filter(g => g.status.abstractGameState === 'Final');
+      const live      = allGames.find(g  => g.status.abstractGameState === 'Live');
+
+      // ---- Season tally ----
+      let over = 0, under = 0;
+      for (const g of completed) {
+        marScore(g).marRuns > THRESHOLD ? over++ : under++;
       }
-      return null;
-    }
-    // True when the given play is a home run hit by the Mariners.
-    function isMarinersHR(play, marIsHome) {
-      if (!play || !play.result || play.result.eventType !== 'home_run') return false;
-      const battingIsHome = play.about && !play.about.isTopInning; // home bats in the bottom half
-      return battingIsHome === marIsHome;
-    }
+      const total = over + under;
+      const pct   = total ? Math.round(under / total * 100) : 0;
 
-    /* ---------- render ---------- */
-    function render(feed) {
-      const gd = feed.gameData, ld = feed.liveData;
-      const state = gd.status.abstractGameState;
-      const homeId = gd.teams.home.id, awayId = gd.teams.away.id;
-      const marIsHome = homeId === TEAM_ID;
-      const marSide = marIsHome ? 'home' : 'away';
+      document.getElementById('tally-over').textContent         = over;
+      document.getElementById('tally-under').textContent        = under;
+      document.getElementById('tally-pct').textContent          = pct + '%';
+      document.getElementById('tally-bar-fill').style.width     = pct + '%';
+      document.getElementById('tally-over-label').textContent   = `${over} games`;
+      document.getElementById('tally-under-label').textContent  = `${under} games`;
 
-      $('logo-home').src = logo(homeId); $('logo-away').src = logo(awayId);
-      $('home-name').textContent = gd.teams.home.teamName || gd.teams.home.name;
-      $('away-name').textContent = gd.teams.away.teamName || gd.teams.away.name;
-      $('home-runs').className = 'team-runs ' + (marIsHome ? 'mar' : 'opp');
-      $('away-runs').className = 'team-runs ' + (marIsHome ? 'opp' : 'mar');
-
-      // status badge
-      const sw = $('status-wrap');
-      if (state === 'Live') sw.innerHTML = '<span class="status-badge live"><span class="live-dot"></span>Live</span>';
-      else if (state === 'Preview') { const dt = gd.datetime && gd.datetime.dateTime ? new Date(gd.datetime.dateTime) : null; const ds = dt ? dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''; sw.innerHTML = '<span class="status-badge preview">' + (gd.status.detailedState || 'Scheduled') + (ds ? ' · ' + ds : '') + '</span>'; }
-      else sw.innerHTML = '<span class="status-badge final">Final</span>';
-
-      const ls = ld.linescore || {};
-      const homeR = (ls.teams && ls.teams.home.runs) || 0;
-      const awayR = (ls.teams && ls.teams.away.runs) || 0;
-      const marRuns = marIsHome ? homeR : awayR;
-
-      // PREVIEW
-      if (state === 'Preview') {
-        $('situation').style.display = 'none';
-        $('inning').textContent = '';
-        $('home-runs').textContent = '-'; $('away-runs').textContent = '-';
-        const t = gd.datetime && gd.datetime.dateTime ? new Date(gd.datetime.dateTime) : null;
-        const pp = gd.probablePitchers || {};
-        $('pre-fin').innerHTML =
-          `<div class="big-time">${t ? t.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZoneName:'short'}) : 'TBD'}</div>
-           <div class="sub-c">${gd.venue ? gd.venue.name : ''}</div>
-           <div class="sub-c muted" style="margin-top:10px;">Probable: ${(pp.away&&pp.away.fullName)||'TBD'} vs ${(pp.home&&pp.home.fullName)||'TBD'}</div>`;
-        $('matchup-head').textContent = 'Probable Pitchers';
-        setProbable(gd, feed);
-      } else {
-        $('pre-fin').innerHTML = '';
-        $('home-runs').textContent = homeR; $('away-runs').textContent = awayR;
-        $('matchup-head').textContent = state === 'Final' ? 'Decisions' : 'At Bat';
-      }
-
-      // bump animation on Mariners run change
-      if (prev.marRuns !== null && marRuns > prev.marRuns) {
-        const el = marIsHome ? $('home-runs') : $('away-runs');
-        el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
-        const hr = isMarinersHR(lastCompletedPlay(feed), marIsHome);
-        const crossed = prev.marRuns <= THRESHOLD && marRuns > THRESHOLD;
-        if (hr) {
-          confetti(crossed ? 150 : 100);
-        } else if (crossed) {
-          confetti(120);
+      // ---- Verdict: live game if one's in progress, else last completed ----
+      const lastGame = completed[completed.length - 1];
+      const verdictGame = live || lastGame;
+      if (verdictGame) {
+        const { marRuns, oppRuns, oppName, isWin } = marScore(verdictGame);
+        const verdict = marRuns > THRESHOLD;
+        document.getElementById('verdict-label').textContent = live ? 'Current Game' : 'Last Completed Game';
+        const vw = document.getElementById('verdict-word');
+        vw.textContent = verdict ? 'YES' : 'NO';
+        vw.className   = 'verdict-word ' + (verdict ? 'yes' : 'no');
+        let pips = '';
+        for (let i = 1; i <= 4; i++) {
+          pips += `<div class="run-pip ${i === 4 ? 'fourth' : ''} ${marRuns >= i ? 'filled' : ''}">${i === 4 ? '4+' : i}</div>`;
         }
+        document.getElementById('verdict-meter').innerHTML = pips;
+        document.getElementById('verdict-opponent').textContent =
+          verdict ? `They scored more than ${THRESHOLD} runs`
+                  : (live ? `${marRuns} so far, need ${THRESHOLD + 1 - marRuns} more`
+                          : `They did NOT score more than ${THRESHOLD} runs`);
+        document.getElementById('verdict-detail').textContent = live
+          ? `Mariners ${marRuns}, ${oppName} ${oppRuns} · in progress`
+          : `Mariners ${marRuns}, ${oppName} ${oppRuns} (${isWin ? 'W' : 'L'}) · ${fmtDate(lastGame.officialDate)}`;
       }
 
-      // LIVE situation
-      if (state === 'Live') {
-        $('situation').style.display = 'flex';
-        $('inning').innerHTML = `<span class="arrow">${ls.isTopInning ? '&#9650;' : '&#9660;'}</span> ${ls.inningState || ''} ${ls.currentInningOrdinal || ''}`;
-        renderCount(ls);
-        const off = ls.offense || {};
-        $('b1').classList.toggle('on', !!off.first);
-        $('b2').classList.toggle('on', !!off.second);
-        $('b3').classList.toggle('on', !!off.third);
-        renderMatchup(feed);
-        prev.strikes = ls.strikes; prev.outs = ls.outs;
-      } else if (state === 'Final') {
-        $('situation').style.display = 'none';
-        $('inning').textContent = 'Final' + (ls.currentInning && ls.currentInning > 9 ? ` / ${ls.currentInning}` : '');
-        renderDecisions(feed);
+      // ---- Streak ----
+      let streak = 0;
+      for (let i = completed.length - 1; i >= 0; i--) {
+        if (marScore(completed[i]).marRuns <= THRESHOLD) streak++;
+        else break;
+      }
+      const sEl = document.getElementById('streak-num');
+      sEl.textContent = streak;
+      sEl.className   = 'streak-number' + (streak === 0 ? ' zero' : '');
+      // ---- Recent games (last 10) ----
+      const recent = completed.slice(-10).reverse();
+      const last10Wins   = recent.filter(g => marScore(g).isWin).length;
+      const last10Losses = recent.length - last10Wins;
+      const last10Under  = recent.filter(g => marScore(g).marRuns <= THRESHOLD).length;
+      document.getElementById('last10-record').innerHTML =
+        `<span class="rec-grp"><span class="rec-w">${last10Wins}W</span> – <span class="rec-l">${last10Losses}L</span></span><span class="rec-grp rec-neutral">${last10Under} ≤3 runs</span>`;
+
+      const list = document.getElementById('games-list');
+      list.innerHTML = '';
+      for (const g of recent) {
+        const { marRuns, oppRuns, oppName, isWin, isAway } = marScore(g);
+        const isOver = marRuns > THRESHOLD;
+        const row    = document.createElement('div');
+        row.className = 'game-row';
+        row.innerHTML = `
+          <div class="game-row-left">
+            <div class="game-dot ${isOver ? 'over' : 'under'}"></div>
+            <div>
+              <div class="game-opponent">${isAway ? '@ ' : 'vs '}${oppName}</div>
+              <div class="game-date">${fmtDate(g.officialDate)}</div>
+            </div>
+          </div>
+          <div class="game-row-right">
+            <div class="game-score ${isWin ? 'win' : 'loss'}">${marRuns}–${oppRuns} ${isWin ? 'W' : 'L'}</div>
+            <div class="game-verdict ${isOver ? 'yes' : 'no'}">${isOver ? 'YES' : 'NO'}</div>
+          </div>`;
+        list.appendChild(row);
       }
 
-      // hero
-      renderHero(state, marRuns, marIsHome, gd);
-      // linescore + plays
-      renderLinescore(ls, teamAbbr(feed, 'away'), teamAbbr(feed, 'home'), state === 'Live' ? ls.currentInning : 0);
-      renderPlays(ld);
-      renderWinProb(state, marSide);
+      // ---- Shared linescore builder (sliding 9-inning window, R/H/E) ----
+      function buildLinescore(ls, awayLabel, homeLabel, wrapEl, isLive) {
+        const innings    = ls.innings || [];
+        const totalInns  = Math.max(ls.scheduledInnings || 9, innings.length, ls.currentInning || 0);
+        const WIN        = 9; // columns to display
+        const startInn   = totalInns > WIN ? totalInns - WIN + 1 : 1;
+        const endInn     = Math.max(totalInns, WIN);
 
-      prev.marRuns = marRuns;
-      $('score-head').textContent = `${gd.teams.away.teamName} at ${gd.teams.home.teamName}`;
-      $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
-      $('loading').style.display = 'none'; $('app').style.display = 'block';
-    }
+        let awayRow = '', homeRow = '';
+        for (let n = startInn; n <= endInn; n++) {
+          const inn    = innings.find(i => i.num === n);
+          const isCur  = isLive && n === ls.currentInning;
+          const cls    = isCur ? ' class="current-inning"' : '';
+          const homeVal = isCur && ls.isTopInning !== false ? '' : (inn?.home?.runs ?? '');
+          awayRow += `<td${cls}>${inn?.away?.runs ?? ''}</td>`;
+          homeRow += `<td${cls}>${homeVal}</td>`;
+        }
 
-    function renderCount(ls) {
-      const mk = (n, max, cls) => { let s = ''; for (let i = 0; i < max; i++) s += `<span class="pip ${cls} ${i < (n||0) ? 'on' : ''} ${cls === 'out' ? 'out-pip' : ''}"></span>`; return s; };
-      $('count').innerHTML =
-        `<span class="lbl">B</span>${mk(ls.balls, 4, 'ball')}` +
-        `<span class="lbl">S</span>${mk(ls.strikes, 3, 'strike')}<span></span>` +
-        `<span class="lbl">O</span>${mk(ls.outs, 3, 'out')}<span></span>`;
-    }
+        const headers = Array.from({length: endInn - startInn + 1}, (_,i) =>
+          `<th>${startInn + i}</th>`).join('');
+        const note = startInn > 1
+          ? `<div class="inning-window-note">Showing innings ${startInn}–${endInn}</div>` : '';
 
-    function renderMatchup(feed) {
-      const cp = feed.liveData.plays && feed.liveData.plays.currentPlay;
-      const m = cp && cp.matchup; if (!m) return;
-      const bat = m.batter, pit = m.pitcher;
-      $('bat-img').src = headshot(bat.id); $('bat-name').textContent = bat.fullName || '-';
-      $('pit-img').src = headshot(pit.id); $('pit-name').textContent = pit.fullName || '-';
-      const bp = boxPlayer(feed, bat.id), pp = boxPlayer(feed, pit.id);
-      const bs = bp && bp.seasonStats && bp.seasonStats.batting;
-      const bg = bp && bp.stats && bp.stats.batting;
-      $('bat-stat').innerHTML = bs ? `${bg ? (bg.summary || '') + ' today<br>' : ''}AVG ${bs.avg} &middot; ${bs.homeRuns} HR &middot; ${bs.rbi} RBI` : '';
-      const ps = pp && pp.seasonStats && pp.seasonStats.pitching;
-      const pg = pp && pp.stats && pp.stats.pitching;
-      $('pit-stat').innerHTML = ps ? `${pg ? `${pg.numberOfPitches||0} P &middot; ${pg.strikeOuts||0} K today<br>` : ''}ERA ${ps.era} &middot; ${ps.wins}-${ps.losses}` : '';
-    }
+        wrapEl.innerHTML = `
+          <table class="linescore-table">
+            <thead><tr><th></th>${headers}<th>R</th><th>H</th><th>E</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="team-label">${awayLabel}</td>${awayRow}
+                <td class="total">${ls.teams.away.runs  ?? 0}</td>
+                <td class="total">${ls.teams.away.hits  ?? 0}</td>
+                <td class="total">${ls.teams.away.errors ?? 0}</td>
+              </tr>
+              <tr>
+                <td class="team-label">${homeLabel}</td>${homeRow}
+                <td class="total">${ls.teams.home.runs  ?? 0}</td>
+                <td class="total">${ls.teams.home.hits  ?? 0}</td>
+                <td class="total">${ls.teams.home.errors ?? 0}</td>
+              </tr>
+            </tbody>
+          </table>${note}`;
+      }
 
-    function setProbable(gd, feed) {
-      const pp = gd.probablePitchers || {};
-      const marIsHome = gd.teams.home.id === TEAM_ID;
-      const marP = marIsHome ? pp.home : pp.away, oppP = marIsHome ? pp.away : pp.home;
-      $('bat-img').src = marP ? headshot(marP.id) : ''; $('bat-name').textContent = marP ? marP.fullName : 'TBD';
-      $('pit-img').src = oppP ? headshot(oppP.id) : ''; $('pit-name').textContent = oppP ? oppP.fullName : 'TBD';
-      $('bat-stat').innerHTML = 'Mariners starter'; $('pit-stat').innerHTML = 'Opponent starter';
-      document.querySelectorAll('#card-matchup .role')[0].textContent = 'Mariners';
-      document.querySelectorAll('#card-matchup .role')[1].textContent = 'Opponent';
-    }
+      function teamAbbr(name) {
+        return name.split(' ').pop().substring(0, 3).toUpperCase();
+      }
 
-    function renderDecisions(feed) {
-      const dec = feed.liveData.decisions;
-      if (!dec) { $('bat-name').textContent = ''; $('pit-name').textContent = ''; return; }
-      decisionPitcher(feed, 'bat', dec.winner, 'Win');
-      decisionPitcher(feed, 'pit', dec.loser, 'Loss');
-      $('matchup').classList.toggle('three', !!dec.save);
-      if (dec.save) {
-        const bp = boxPlayer(feed, dec.save.id);
-        const s = bp && bp.seasonStats && bp.seasonStats.pitching;
-        const g = bp && bp.stats && bp.stats.pitching;
-        const lines = [];
-        if (g && g.inningsPitched) lines.push(`${g.inningsPitched} IP &middot; ${g.strikeOuts || 0} K`);
-        if (s) lines.push(`${s.saves} SV &middot; ${s.era} ERA`);
-        $('vs-center').innerHTML = `<img src="${headshot(dec.save.id)}" alt=""><div class="role">Save</div><div class="pname">${dec.save.fullName}</div><div class="pstat">${lines.join('<br>')}</div>`;
-        $('vs-center').className = 'player';
+      function ordSuffix(n) {
+        const s = ['th','st','nd','rd'];
+        const v = n % 100;
+        return s[(v-20)%10] || s[v] || s[0];
+      }
+
+      // ---- Game spotlight card ----
+      function showGCState(state) {
+        ['gc-live','gc-today','gc-final'].forEach(id =>
+          document.getElementById(id).style.display = id === state ? 'block' : 'none'
+        );
+      }
+      let spotlightPk = null;
+
+      if (live) {
+        // State A: live game
+        showGCState('gc-live');
+        spotlightPk = live.gamePk;
+        const { marRuns, oppRuns, oppName } = marScore(live);
+        document.getElementById('live-mar-runs').textContent = marRuns;
+        document.getElementById('live-opp-runs').textContent = oppRuns;
+        document.getElementById('live-opp-name').textContent = oppName;
+
+        try {
+          const feed = await fetchJSON(`https://statsapi.mlb.com/api/v1.1/game/${live.gamePk}/feed/live`);
+          const ls   = feed.liveData.linescore;
+
+          document.getElementById('live-inning').textContent =
+            `${ls.inningState} of the ${ls.currentInningOrdinal}`;
+          document.getElementById('live-count').textContent =
+            `${ls.balls ?? 0}-${ls.strikes ?? 0}, ${ls.outs ?? 0} out${ls.outs !== 1 ? 's' : ''}`;
+
+          const isMarAway = live.teams.away.team.id === TEAM_ID;
+          const awayLbl   = isMarAway ? 'SEA' : teamAbbr(oppName);
+          const homeLbl   = isMarAway ? teamAbbr(oppName) : 'SEA';
+          buildLinescore(ls, awayLbl, homeLbl,
+            document.getElementById('linescore-wrap'), true);
+
+          // ---- Matchup line ----
+          const matchup = feed.liveData.plays?.currentPlay?.matchup;
+          if (matchup) {
+            document.getElementById('live-matchup').innerHTML =
+              `<span>${matchup.batter?.fullName ?? '-'}</span><br>vs <span>${matchup.pitcher?.fullName ?? '-'}</span>`;
+          }
+
+          // ---- Base situation ----
+          const offense = ls.offense || {};
+          document.getElementById('base-1').classList.toggle('occupied', !!offense.first);
+          document.getElementById('base-2').classList.toggle('occupied', !!offense.second);
+          document.getElementById('base-3').classList.toggle('occupied', !!offense.third);
+
+          // ---- Last completed play ----
+          const allPlays = feed.liveData.plays?.allPlays ?? [];
+          const lastPlay = [...allPlays].reverse().find(p => p.about?.isComplete);
+          if (lastPlay?.result?.description) {
+            document.getElementById('live-last-play').textContent =
+              lastPlay.result.description;
+          }
+
+        } catch(e) {
+          document.getElementById('live-inning').textContent = live.status.detailedState;
+        }
+
+        clearInterval(refreshInterval);
+        refreshInterval = setInterval(load, 30000);
+        document.getElementById('refresh-note').textContent = 'Refreshes every 30s (live game)';
+
       } else {
-        $('vs-center').className = 'vs'; $('vs-center').textContent = '';
-      }
-    }
-    function decisionPitcher(feed, side, p, role) {
-      document.querySelectorAll('#card-matchup .role')[side === 'bat' ? 0 : 1].textContent = role;
-      $(side + '-img').src = p ? headshot(p.id) : '';
-      $(side + '-name').textContent = p ? p.fullName : '-';
-      const bp = p && boxPlayer(feed, p.id);
-      const s = bp && bp.seasonStats && bp.seasonStats.pitching;
-      const g = bp && bp.stats && bp.stats.pitching;
-      const lines = [];
-      if (g && g.inningsPitched) lines.push(`${g.inningsPitched} IP &middot; ${g.strikeOuts || 0} K &middot; ${g.earnedRuns || 0} ER`);
-      if (s) lines.push(`${s.wins}-${s.losses} &middot; ${s.era} ERA`);
-      $(side + '-stat').innerHTML = lines.join('<br>') || '';
-    }
+        // Check for a scheduled game today (Preview / Warmup / Pre-Game)
+        const todayStr   = today();
+        const todayGame  = allGames.find(g =>
+          g.officialDate === todayStr && g.status.abstractGameState === 'Preview'
+        );
 
-    function renderHero(state, marRuns, marIsHome, gd) {
-      $('hero-head').textContent = state === 'Final' ? 'Did the Mariners score more than 3?' : 'Did the Mariners score more than 3 today?';
-      const verdict = marRuns > THRESHOLD;
-      const hv = $('hero-verdict');
-      if (state === 'Preview') {
-        hv.textContent = 'TBD'; hv.className = 'hero-verdict'; hv.style.color = 'var(--silver)';
-        $('hero-meter').innerHTML = ''; $('hero-note').textContent = 'First pitch coming up.';
-        return;
-      }
-      hv.style.color = '';
-      hv.textContent = verdict ? 'YES' : 'NO';
-      hv.className = 'hero-verdict ' + (verdict ? 'yes' : 'no');
-      let m = '';
-      for (let i = 1; i <= 4; i++) {
-        const filled = marRuns >= i;
-        m += `<div class="run-pip ${i === 4 ? 'fourth' : ''} ${filled ? 'filled' : ''}">${i === 4 ? '4+' : i}</div>`;
-      }
-      $('hero-meter').innerHTML = m;
-      $('hero-note').textContent = state === 'Final'
-        ? (verdict ? `They scored ${marRuns}. Yes.` : `They scored ${marRuns}. No.`)
-        : (verdict ? `Up to ${marRuns} runs. They cleared it.` : `${marRuns} so far, need ${THRESHOLD + 1 - marRuns} more.`);
-    }
+        if (todayGame) {
+          // State B: today's upcoming game
+          showGCState('gc-today');
+          spotlightPk = todayGame.gamePk;
+          const { oppName, isAway } = marScore(todayGame);
+          document.getElementById('today-matchup').textContent =
+            `Mariners ${isAway ? '@' : 'vs'} ${oppName}`;
+          document.getElementById('today-venue').textContent = todayGame.venue?.name ?? '';
+          const gameTime = new Date(todayGame.gameDate);
+          document.getElementById('today-time').textContent =
+            gameTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+          document.getElementById('today-status').textContent = todayGame.status.detailedState;
+        } else if (lastGame) {
+          // State C: last completed game linescore
+          showGCState('gc-final');
+          spotlightPk = lastGame.gamePk;
+          const { marRuns, oppRuns, oppName, isAway } = marScore(lastGame);
+          document.getElementById('final-date').textContent = fmtDate(lastGame.officialDate);
+          document.getElementById('final-mar-runs').textContent = marRuns;
+          document.getElementById('final-opp-runs').textContent = oppRuns;
+          document.getElementById('final-opp-name').textContent = oppName;
+          try {
+            const feed       = await fetchJSON(`https://statsapi.mlb.com/api/v1.1/game/${lastGame.gamePk}/feed/live`);
+            const ls         = feed.liveData.linescore;
+            const isMarAway2 = lastGame.teams.away.team.id === TEAM_ID;
+            const awayLbl    = isMarAway2 ? 'SEA' : teamAbbr(oppName);
+            const homeLbl    = isMarAway2 ? teamAbbr(oppName) : 'SEA';
+            buildLinescore(ls, awayLbl, homeLbl,
+              document.getElementById('final-linescore-wrap'), false);
 
-    function renderLinescore(ls, awayAbbr, homeAbbr, curInning) {
-      const innings = ls.innings || [];
-      if (!innings.length && !(ls.teams)) { $('linescore').innerHTML = '<p class="muted">No linescore yet.</p>'; return; }
-      const total = Math.max(ls.scheduledInnings || 9, innings.length, ls.currentInning || 0);
-      const WIN = 9, start = total > WIN ? total - WIN + 1 : 1, end = Math.max(total, WIN);
-      let head = '', aRow = '', hRow = '';
-      for (let n = start; n <= end; n++) {
-        head += `<th>${n}</th>`;
-        const inn = innings.find(i => i.num === n);
-        const cur = n === curInning ? ' class="cur"' : '';
-        aRow += `<td${cur}>${(inn && inn.away && inn.away.runs != null) ? inn.away.runs : ''}</td>`;
-        hRow += `<td${cur}>${(inn && inn.home && inn.home.runs != null) ? inn.home.runs : ''}</td>`;
+            // ---- Pitching decisions ----
+            const dec = feed.liveData.decisions;
+            if (dec) {
+              const wName  = dec.winner?.fullName ?? '-';
+              const lName  = dec.loser?.fullName  ?? '-';
+              const svName = dec.save?.fullName;
+              // Pull W/L records from boxscore
+              function record(teamSide, personId) {
+                const bs = feed.liveData.boxscore?.teams;
+                if (!bs) return '';
+                const info = Object.values(bs[teamSide]?.players ?? {})
+                  .find(p => p.person?.id === personId);
+                const s = info?.seasonStats?.pitching;
+                return s ? ` (${s.wins}–${s.losses})` : '';
+              }
+              const winSide  = isMarAway2 ? 'home' : 'away';
+              const loseSide = isMarAway2 ? 'away' : 'home';
+              const svLine = svName
+                ? `<div class="decisions-sv"><span class="decision-label">SV</span> <strong>${svName}</strong></div>`
+                : '';
+              document.getElementById('final-decisions').innerHTML =
+                `<hr class="final-divider">
+                 <div class="final-decisions">
+                   <div class="decisions-wl">
+                     <span><span class="decision-label">W</span> <strong>${wName}</strong>${record(winSide, dec.winner?.id)}</span>
+                     <span><span class="decision-label">L</span> <strong>${lName}</strong>${record(loseSide, dec.loser?.id)}</span>
+                   </div>
+                   ${svLine}
+                 </div>`;
+            }
+
+          } catch(e) { /* extras unavailable, scoreboard still shows */ }
+        }
+
+        clearInterval(refreshInterval);
+        refreshInterval = setInterval(load, 60000);
+        document.getElementById('refresh-note').textContent = 'Refreshes every 60s';
       }
-      const tt = ls.teams || { away: {}, home: {} };
-      $('linescore').innerHTML =
-        `<table class="ls"><thead><tr><th></th>${head}<th>R</th><th>H</th><th>E</th></tr></thead><tbody>
-          <tr><td class="tm">${awayAbbr}</td>${aRow}<td class="tot">${tt.away.runs||0}</td><td class="tot">${tt.away.hits||0}</td><td class="tot">${tt.away.errors||0}</td></tr>
-          <tr><td class="tm">${homeAbbr}</td>${hRow}<td class="tot">${tt.home.runs||0}</td><td class="tot">${tt.home.hits||0}</td><td class="tot">${tt.home.errors||0}</td></tr>
-        </tbody></table>`;
-    }
 
-    function renderPlays(ld) {
-      const all = (ld.plays && ld.plays.allPlays) || [];
-      const done = all.filter(p => p.about && p.about.isComplete).slice(-12).reverse();
-      if (!done.length) { $('plays').innerHTML = '<p class="muted">No plays yet.</p>'; return; }
-      $('plays').innerHTML = done.map(p => {
-        const scoring = p.about && p.about.hasReview === false && p.result && p.result.rbi > 0;
-        const half = p.about ? ((p.about.isTopInning ? 'Top ' : 'Bot ') + (p.about.inning || '')) : '';
-        return `<div class="play ${p.result && p.result.rbi ? 'scoring' : ''}"><div class="pt">${half}</div>${(p.result && p.result.description) || ''}</div>`;
-      }).join('');
-    }
-
-    async function renderWinProb(state, marSide) {
-      if (state !== 'Live') { $('card-wp').style.display = 'none'; return; }
-      try {
-        const wp = await getJSON(`${API}/api/v1/game/${gamePk}/winProbability`);
-        if (!wp || !wp.length) { $('card-wp').style.display = 'none'; return; }
-        const last = wp[wp.length - 1];
-        const homeWP = last.homeTeamWinProbability;
-        if (homeWP == null) { $('card-wp').style.display = 'none'; return; }
-        const marWP = marSide === 'home' ? homeWP : (100 - homeWP);
-        $('card-wp').style.display = 'block';
-        $('wp-fill').style.width = marWP + '%';
-        $('wp-mar').innerHTML = `<b>Mariners ${Math.round(marWP)}%</b>`;
-        $('wp-opp').textContent = `Opp ${Math.round(100 - marWP)}%`;
-      } catch (e) { $('card-wp').style.display = 'none'; }
-    }
-
-    /* ---------- poll loop ---------- */
-    let backoff = 0;
-    async function poll() {
-      try {
-        const feed = await getJSON(`${API}/api/v1.1/game/${gamePk}/feed/live`);
-        render(feed);
-        backoff = 0;
-        const state = feed.gameData.status.abstractGameState;
-        clearTimeout(pollTimer);
-        if (state === 'Live') pollTimer = setTimeout(poll, 8000);
-        else if (state === 'Preview') pollTimer = setTimeout(poll, 30000);
-        // Final: stop polling
-      } catch (e) {
-        backoff = Math.min(backoff + 1, 5);
-        clearTimeout(pollTimer);
-        pollTimer = setTimeout(poll, 5000 * backoff);
+      // Wire the "open full live tracker" button to the spotlighted game.
+      const liveBtn = document.getElementById('open-live-btn');
+      if (spotlightPk) {
+        liveBtn.style.display = 'block';
+        liveBtn.onclick = () => {
+          const design = document.body.classList.contains('springfield') ? 'springfield' : 'classic';
+          window.open('live.html?gamePk=' + spotlightPk + '&design=' + design, '_blank', 'noopener');
+        };
+      } else {
+        liveBtn.style.display = 'none';
       }
-    }
 
-    (async function init() {
-      try {
-        gamePk = await resolveGamePk();
-        await poll();
-      } catch (e) {
-        $('loading').style.display = 'none';
-        $('fatal').style.display = 'block';
-        $('fatal-msg').textContent = e.message || 'Could not load the game.';
-      }
-    })();
-  </script>
+      document.getElementById('last-updated').textContent =
+        'Updated ' + new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('app').style.display     = 'block';
+
+      trendGames = completed;
+      renderTrend();
+
+    } catch(err) {
+      console.error(err);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display   = 'block';
+    }
+  }
+
+  load();
+</script>
 </body>
 </html>
