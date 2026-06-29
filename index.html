@@ -32,6 +32,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -612,8 +613,9 @@
       flex-direction: column;
       gap: 8px;
     }
-    .seasons-bars { display:flex; align-items:flex-start; gap:10px; padding-top:22px; margin-top:6px; }
-    .seasons-col { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; }
+    .seasons-bars { display:flex; align-items:flex-start; gap:10px; padding-top:22px; margin-top:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:thin; padding-bottom:6px; }
+    /* Fixed-width columns so ~10 seasons show by default; older seasons scroll into view (newest first). */
+    .seasons-col { flex:0 0 calc((100% - 90px) / 10); min-width:0; display:flex; flex-direction:column; align-items:center; }
     .seasons-track { width:100%; height:150px; display:flex; align-items:flex-end; }
     .seasons-bar { width:100%; border-radius:7px 7px 0 0; background:linear-gradient(180deg,#00B2A9,#007a76); min-height:8px; position:relative; transition:height .5s; }
     .seasons-bar.cur { background:linear-gradient(180deg,#FFC52F,#d99e16); }
@@ -801,6 +803,8 @@
     body.springfield .theme-default { display: none; }
     body.springfield .theme-springfield { display: inline; }
     body.springfield .sf-tagline { display: block; }
+    body.goth .theme-default { display: none; }
+    body.goth .goth-tagline  { display: block; }
 
     /* ---- Mobile ---- */
     @media (max-width: 560px) {
@@ -837,7 +841,7 @@
       .linescore-table { font-size: 0.78rem; }
       .linescore-table th, .linescore-table td { padding: 5px 4px; min-width: 22px; }
 
-      /* By Season: scroll horizontally so all 10 seasons stay readable instead of clipping */
+      /* By Season on mobile: narrower fixed columns, swipe through the seasons */
       .seasons-bars { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 14px; padding-bottom: 8px; scrollbar-width: thin; }
       .seasons-col { flex: 0 0 62px; min-width: 62px; }
       .seasons-track { height: 130px; }
@@ -1078,6 +1082,242 @@
     body.springfield .spinner { border: 3px solid rgba(0,0,0,0.15); border-top-color: #FF69B4; }
     body.springfield #error { color: #FF3B30; }
     body.springfield footer { color: rgba(0,0,0,0.45); }
+
+    /* ====================================================================== */
+    /* GOTH MODE SKIN                                                           */
+    /*   Near-black, silver, blood-red. Cinzel headers, IM Fell body.          */
+    /* ====================================================================== */
+    body.goth {
+      font-family: 'Cinzel', Georgia, serif;
+      color: #E8E8E8;
+      background: #0D0D0D;
+      background-attachment: fixed;
+    }
+
+    body.goth .top-stripe {
+      height: 3px;
+      background: #2a2a2a;
+    }
+
+    /* Header */
+    body.goth header::after {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    }
+    body.goth .header-wordmark {
+      color: #9e9e9e;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 6px;
+    }
+    body.goth header h1 {
+      font-family: 'Cinzel', serif;
+      color: #E8E8E8;
+      text-shadow: none;
+      font-weight: 900;
+    }
+    body.goth header h1 em {
+      color: #fff;
+      background: none;
+      font-style: normal;
+    }
+    body.goth header p.subtitle { color: #969696; }
+
+    /* Tagline (goth mode) */
+    .goth-tagline {
+      display: none;
+      margin-top: 10px;
+      font-family: 'IM Fell English', Georgia, serif;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: #969696;
+      transition: opacity 0.4s ease;
+      min-height: 1.4em;
+    }
+    .goth-tagline.fade { opacity: 0; }
+    body.goth .goth-tagline { display: block; }
+
+    /* Toggle control */
+    body.goth .tt-label { color: #8a8a8a; }
+    body.goth .tt-btn {
+      font-family: 'Cinzel', serif;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.06);
+      color: #9e9e9e;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      letter-spacing: 1.5px;
+    }
+    body.goth .tt-btn:hover { transform: translateY(-1px); }
+    body.goth .tt-btn.active {
+      background: rgba(255,255,255,0.12);
+      color: #E8E8E8;
+      border-color: rgba(255,255,255,0.4);
+      box-shadow: none;
+    }
+    body.goth .open-live-btn {
+      font-family: 'Cinzel', serif;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.06);
+      color: #b0b0b0;
+      letter-spacing: 1.5px;
+    }
+    body.goth .open-live-btn:hover {
+      background: rgba(255,255,255,0.1);
+      box-shadow: none;
+    }
+
+    /* Cards */
+    body.goth .card {
+      background: #161616;
+      border: 0.5px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    body.goth .card::after { display: none; }
+    body.goth .card-label {
+      color: #9e9e9e;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 3px;
+    }
+
+    /* Verdict */
+    body.goth .verdict-word { text-shadow: none; }
+    body.goth .verdict-word.yes { color: #C8C8C8; }
+    body.goth .verdict-word.no  { color: #8B1A1A; }
+    body.goth .verdict-detail   { color: #969696; }
+    body.goth .verdict-opponent { color: #b0b0b0; font-weight: 400; font-family: 'Cinzel', serif; }
+    body.goth .run-pip { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.25); }
+    body.goth .run-pip.filled { background: #C8C8C8; border-color: #C8C8C8; color: #0D0D0D; box-shadow: none; }
+    body.goth .run-pip.fourth.filled { background: #fff; border-color: #fff; color: #0D0D0D; box-shadow: none; }
+
+    /* Badges */
+    body.goth .live-badge,
+    body.goth .final-badge,
+    body.goth .today-badge {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #b0b0b0;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 2px;
+    }
+    body.goth .final-date {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #9e9e9e;
+      font-family: 'Cinzel', serif;
+    }
+    body.goth .live-dot { background: #8B1A1A; }
+
+    /* Scoreboard */
+    body.goth .scoreboard-team-name { color: #9e9e9e; font-weight: 400; }
+    body.goth .scoreboard-runs.mariners { color: #E8E8E8; }
+    body.goth .scoreboard-runs.opponent { color: #8a8a8a; }
+    body.goth .scoreboard-divider       { color: rgba(255,255,255,0.15); }
+    body.goth .game-time   { color: #E8E8E8; font-family: 'Cinzel', serif; }
+    body.goth .game-status-text,
+    body.goth .today-venue,
+    body.goth .inning-info,
+    body.goth .inning-detail { color: #969696; }
+    body.goth .today-vs { color: #b0b0b0; font-weight: 400; }
+
+    /* Linescore */
+    body.goth .linescore-table th { color: #8a8a8a; }
+    body.goth .linescore-table th,
+    body.goth .linescore-table td { border-bottom: 1px solid rgba(255,255,255,0.07); }
+    body.goth .linescore-table td.team-label { color: #b0b0b0; }
+    body.goth .linescore-table td.total { color: #E8E8E8; }
+    body.goth .linescore-table td.current-inning { background: rgba(255,255,255,0.08); }
+    body.goth .inning-window-note { color: #8a8a8a; }
+
+    /* Bases + matchup */
+    body.goth .base { border-color: rgba(255,255,255,0.3); }
+    body.goth .base.occupied { background: #C8C8C8; border-color: #C8C8C8; }
+    body.goth .matchup-line { color: #9e9e9e; }
+    body.goth .matchup-line span { color: #E8E8E8; }
+    body.goth .last-play { color: #969696; font-family: 'IM Fell English', serif; }
+
+    /* Final decisions */
+    body.goth .final-divider  { border-top: 1px solid rgba(255,255,255,0.08); }
+    body.goth .final-decisions { color: #969696; }
+    body.goth .final-decisions strong { color: #E8E8E8; }
+    body.goth .decision-label { color: #7a7a7a; }
+
+    /* Streak */
+    body.goth .streak-number { color: #8B1A1A; text-shadow: none; }
+    body.goth .streak-number.zero { color: #C8C8C8; text-shadow: none; }
+    body.goth .streak-label { color: #9e9e9e; font-family: 'Cinzel', serif; }
+
+    /* Season tally */
+    body.goth .tally-stat-num.under { color: #8B1A1A; text-shadow: none; }
+    body.goth .tally-stat-num.over  { color: #C8C8C8; text-shadow: none; }
+    body.goth #tally-pct { color: #9e9e9e !important; text-shadow: none !important; }
+    body.goth .tally-stat-desc { color: #969696; font-family: 'Cinzel', serif; letter-spacing: 1px; }
+    body.goth .tally-divider { background: rgba(255,255,255,0.08); }
+    body.goth .tally-bar {
+      background: rgba(255,255,255,0.06);
+      border: none;
+    }
+    body.goth .tally-bar-fill { background: #8B1A1A; }
+    body.goth .tally-bar-labels .label-under { color: #8B1A1A; }
+    body.goth .tally-bar-labels .label-over  { color: #b0b0b0; }
+
+    /* Trend chart */
+    body.goth .trend-sub   { color: #969696; }
+    body.goth .trend-grid  { stroke: rgba(255,255,255,0.06); }
+    body.goth .trend-ref   { stroke: rgba(255,255,255,0.2); }
+    body.goth .trend-area  { fill: rgba(139,26,26,0.12); }
+    body.goth .trend-line  { stroke: #8B1A1A; }
+    body.goth .trend-dot   { fill: #8B1A1A; }
+    body.goth .trend-label { fill: #8a8a8a; }
+    body.goth .trend-cur   { fill: #C8C8C8; }
+
+    /* Recent games */
+    body.goth .games-title {
+      color: #b0b0b0;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 3px;
+    }
+    body.goth .games-record { color: #8a8a8a; }
+    body.goth .games-record .rec-w { color: #C8C8C8; }
+    body.goth .games-record .rec-l { color: #8B1A1A; }
+    body.goth .games-record .rec-neutral { color: #969696; }
+
+    /* By season bars */
+    body.goth .seasons-yr  { color: #969696; }
+    body.goth .seasons-bar { background: linear-gradient(180deg, #444, #333); }
+    body.goth .seasons-bar.cur { background: linear-gradient(180deg, #C8C8C8, #b0b0b0); }
+    body.goth .seasons-bar .p { color: #E8E8E8; text-shadow: none; }
+    body.goth .seasons-rec .w  { color: #C8C8C8; }
+    body.goth .seasons-rec .l  { color: #8B1A1A; }
+    body.goth .seasons-rec .wp { color: #8a8a8a; }
+    body.goth .seasons-lp  { color: #8a8a8a; }
+    body.goth .seasons-note,
+    body.goth .seasons-load { color: #8a8a8a; }
+
+    /* Game rows */
+    body.goth .game-row {
+      background: rgba(255,255,255,0.03);
+      border: 0.5px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    body.goth .game-row:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.2);
+    }
+    body.goth .game-dot.over  { background: #C8C8C8; box-shadow: none; }
+    body.goth .game-dot.under { background: #8B1A1A; box-shadow: none; }
+    body.goth .game-opponent  { color: #E8E8E8; }
+    body.goth .game-date      { color: #8a8a8a; }
+    body.goth .game-score     { color: #b0b0b0 !important; }
+    body.goth .game-verdict.yes { background: rgba(200,200,200,0.08); color: #C8C8C8; border: 1px solid rgba(200,200,200,0.25); }
+    body.goth .game-verdict.no  { background: rgba(139,26,26,0.15);   color: #8B1A1A; border: 1px solid rgba(139,26,26,0.4); }
+
+    /* Loading / error / footer */
+    body.goth #loading { color: #8a8a8a; }
+    body.goth .spinner  { border: 3px solid rgba(255,255,255,0.08); border-top-color: #9e9e9e; }
+    body.goth #error    { color: #8B1A1A; }
+    body.goth footer    { color: #7a7a7a; }
   </style>
 </head>
 <body>
@@ -1105,6 +1345,7 @@
   <span class="tt-label">Design</span>
   <button id="btn-classic" class="tt-btn active" type="button" onclick="setTheme('classic')">🔱 Classic</button>
   <button id="btn-springfield" class="tt-btn" type="button" onclick="setTheme('springfield')">☁️ Springfield</button>
+  <button id="btn-goth" class="tt-btn" type="button" onclick="setTheme('goth')">🖤 Goth</button>
 </div>
 
 <header>
@@ -1115,6 +1356,7 @@
   <h1>Did the Mariners score<br><em>more than 3 runs?</em></h1>
   <p class="subtitle" id="last-updated"></p>
   <p class="sf-tagline" id="sf-tagline"></p>
+  <p class="goth-tagline" id="goth-tagline"></p>
 </header>
 
 <div id="loading">
@@ -1217,7 +1459,7 @@
 
     <!-- Streak card -->
     <div class="card streak-card">
-      <div class="card-label">Consecutive Games Scoring ≤ 3 Runs</div>
+      <div class="card-label" id="streak-label">Consecutive Games Scoring ≤ 3 Runs</div>
       <div class="streak-number" id="streak-num">0</div>
     </div>
 
@@ -1276,8 +1518,8 @@
         <span class="games-title">By Season</span>
         <span class="games-record" id="seasons-cur"></span>
       </div>
-      <div class="seasons-bars" id="seasons-bars"><div class="seasons-load">Loading 10 seasons...</div></div>
-      <div class="seasons-note">Share of games scoring 3 or fewer each season. Record (win pct) and share of losses where they scored 3 or fewer below each year. Gold = this season.</div>
+      <div class="seasons-bars" id="seasons-bars"><div class="seasons-load">Loading season history...</div></div>
+      <div class="seasons-note">Share of games scoring 3 or fewer each season. Record (win pct) and share of losses where they scored 3 or fewer below each year. Gold = this season. Newest first; scroll for older seasons.</div>
     </div>
 
   </div>
@@ -1396,8 +1638,72 @@
       "Mmm... home runs.",
     ];
 
+    const GOTH_QUOTES = [
+      "Once upon a midnight dreary, the lineup stranded three.",
+      "Quoth the bullpen: Nevermore.",
+      "Deep into that darkness peering — still no runs.",
+      "Only this, and nothing more.",
+      "The runs shall not return. Nevermore.",
+      "While I nodded, nearly napping, the rally died without a clapping.",
+      "Tell-tale heart: the sound of leaving runners stranded on base.",
+      "For the moon never beams without bringing me runs left on third.",
+      "The thousand injuries of the Mariners' bullpen I had borne as best I could.",
+      "The pall of long ago — three runs or fewer, the Mariners go.",
+      "All that we see or seem is but a run or fewer, within a run or fewer.",
+      "The masque of the red strikeout.",
+      "The pit, the pendulum, and the runner on third who never came home.",
+      "In my dreams — they score in my dreams. Only there.",
+      "Take thy lineup from my sight. Quoth the closer: Nevermore.",
+      "From the depths of some lone abysmal wasteland — the cleanup spot, empty.",
+      "I became insane, with long intervals of horrible sanity watching the Mariners.",
+      "They came. They batted. They perished quietly into that good night.",
+      "Rage, rage against the dying of the rally.",
+      "Do not go gentle into that scoreless inning.",
+      "It was the worst of times. It was also the worst of times.",
+      "Call me Ishmael. I have been watching the Mariners for years. I need help.",
+      "The horror. The horror. Two runs. Final.",
+      "Hell is empty and all the devils are playing outfield for Seattle.",
+      "A rose by any other name would still leave runners stranded.",
+      "To be, or not to score — that is the question.",
+      "What light through yonder window breaks? 'Tis not a Mariners rally.",
+      "In the kingdom of the scoreless, the two-run double is king.",
+      "Darkness there, and nothing more.",
+      "Three runs and no more. Three runs, forevermore.",
+      "It is a truth universally acknowledged that the Mariners cannot score.",
+      "She walks in beauty, like the night. The Mariners walk in defeat, like always.",
+      "Methought I heard a voice cry 'Score no more!'",
+      "Boys don't score. Boys don't score.",
+      "It's Friday, I'm in love — with the idea of the Mariners scoring four.",
+      "Close to me, this feeling of three runs and no more.",
+      "A forest of groundouts. A clearing of strikeouts.",
+      "Pictures of the bullpen blowing leads.",
+      "Lullaby: the spider of the closer descends in the ninth.",
+      "Disintegration. That is the Mariners' game plan.",
+      "Let's go to bed. Let's go to bed. The game is over.",
+      "The walk, the walk, the walk cure: three runners loaded. Still no runs.",
+      "Love will tear us apart. So will the batting order.",
+      "She's lost control again. The Mariners never had it.",
+      "Atmosphere: three thousand fans witnessing zero runs scored.",
+      "Unknown pleasures: watching the Mariners threaten to score.",
+      "Bela Lugosi's dead. The rally is dead. Two to nothing. Final.",
+      "This corrosion of the lead.",
+      "The dead souls of the seventh inning stretch.",
+      "And the bullpen blows, and the bullpen blows, and they score no more.",
+      "Vision thing: scoring four runs. Still a distant dream.",
+      "Dominion — over the basepaths, never over the scoreboard.",
+      "Seattle, city of grey skies and greyer at-bats.",
+      "The rain falls on the righteous and the unrighteous alike. Also on the Mariners.",
+      "Three runs is a kind of dying.",
+      "The void stares back at the runner stranded on second.",
+      "In the abyss of a three-run night, something stares back.",
+      "There is beauty in the suffering of a Mariners loss. No — there isn't. It just hurts.",
+      "We are all Mariners fans now. Weep.",
+    ];
+
     let sfIndex = Math.floor(Math.random() * QUOTES.length);
+    let gothIndex = Math.floor(Math.random() * GOTH_QUOTES.length);
     let sfInterval = null;
+    let gothInterval = null;
 
     function rotateSFTagline() {
       const el = document.getElementById('sf-tagline');
@@ -1415,19 +1721,42 @@
       }, 600);
     }
 
+    function rotateGothTagline() {
+      const el = document.getElementById('goth-tagline');
+      if (!el) return;
+      // Same fade-out, swap, fade-in pattern as Springfield, but 400ms hold.
+      el.classList.add('fade');
+      setTimeout(function () {
+        gothIndex = (gothIndex + 1) % GOTH_QUOTES.length;
+        el.textContent = GOTH_QUOTES[gothIndex];
+        void el.offsetWidth;
+        el.classList.remove('fade');
+      }, 400);
+    }
+
     window.setTheme = function (t) {
       var sf = t === 'springfield';
+      var goth = t === 'goth';
       document.body.classList.toggle('springfield', sf);
+      document.body.classList.toggle('goth', goth);
       var c = document.getElementById('btn-classic');
       var s = document.getElementById('btn-springfield');
-      if (c) c.classList.toggle('active', !sf);
+      var g = document.getElementById('btn-goth');
+      if (c) c.classList.toggle('active', !sf && !goth);
       if (s) s.classList.toggle('active', sf);
+      if (g) g.classList.toggle('active', goth);
 
       clearInterval(sfInterval); // avoid stacking intervals on repeat selects
+      clearInterval(gothInterval);
       if (sf) {
         var el = document.getElementById('sf-tagline');
         if (el) el.textContent = QUOTES[sfIndex];
         sfInterval = setInterval(rotateSFTagline, 30000);
+      }
+      if (goth) {
+        var elG = document.getElementById('goth-tagline');
+        if (elG) elG.textContent = GOTH_QUOTES[gothIndex];
+        gothInterval = setInterval(rotateGothTagline, 20000);
       }
     };
 
@@ -1530,7 +1859,7 @@
   async function renderSeasons() {
     if (seasonsDone) return; seasonsDone = true;
     const bars = document.getElementById('seasons-bars');
-    const years = []; for (let y = SEASON - 9; y <= SEASON; y++) years.push(y);
+    const years = []; for (let y = SEASON; y >= 2000; y--) years.push(y);
     try {
       const data = await Promise.all(years.map(async y => {
         const r = await fetchJSON(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&season=${y}&gameType=R&startDate=${y}-03-01&endDate=${y}-11-15`);
@@ -1601,15 +1930,25 @@
           : `Mariners ${marRuns}, ${oppName} ${oppRuns} (${isWin ? 'W' : 'L'}) · ${fmtDate(lastGame.officialDate)}`;
       }
 
-      // ---- Streak ----
-      let streak = 0;
-      for (let i = completed.length - 1; i >= 0; i--) {
-        if (marScore(completed[i]).marRuns <= THRESHOLD) streak++;
-        else break;
+      // ---- Streak (adaptive) ----
+      // Track whichever run the team is currently on: celebrate a hot streak of
+      // scoring more than 3, or flag a cold streak of scoring 3 or fewer. The
+      // direction follows the most recent completed game.
+      let streak = 0, streakOver = false;
+      if (completed.length) {
+        streakOver = marScore(completed[completed.length - 1]).marRuns > THRESHOLD;
+        for (let i = completed.length - 1; i >= 0; i--) {
+          if ((marScore(completed[i]).marRuns > THRESHOLD) === streakOver) streak++;
+          else break;
+        }
       }
       const sEl = document.getElementById('streak-num');
       sEl.textContent = streak;
-      sEl.className   = 'streak-number' + (streak === 0 ? ' zero' : '');
+      // "zero" class carries the celebratory color; use it for a hot run (or none).
+      sEl.className   = 'streak-number' + (streakOver || streak === 0 ? ' zero' : '');
+      document.getElementById('streak-label').textContent = streakOver
+        ? 'Consecutive Games Scoring More Than 3 Runs'
+        : 'Consecutive Games Scoring ≤ 3 Runs';
       // ---- Recent games (last 10) ----
       const recent = completed.slice(-10).reverse();
       const last10Wins   = recent.filter(g => marScore(g).isWin).length;
@@ -1835,7 +2174,9 @@
       if (spotlightPk) {
         liveBtn.style.display = 'block';
         liveBtn.onclick = () => {
-          const design = document.body.classList.contains('springfield') ? 'springfield' : 'classic';
+          const design = document.body.classList.contains('springfield') ? 'springfield'
+                       : document.body.classList.contains('goth')        ? 'goth'
+                       : 'classic';
           window.open('live.html?gamePk=' + spotlightPk + '&design=' + design, '_blank', 'noopener');
         };
       } else {
