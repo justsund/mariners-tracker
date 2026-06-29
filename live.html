@@ -592,9 +592,10 @@
       const marP = marIsHome ? pp.home : pp.away, oppP = marIsHome ? pp.away : pp.home;
       $('bat-img').src = marP ? headshot(marP.id) : ''; $('bat-name').textContent = marP ? marP.fullName : 'TBD';
       $('pit-img').src = oppP ? headshot(oppP.id) : ''; $('pit-name').textContent = oppP ? oppP.fullName : 'TBD';
-      $('bat-stat').innerHTML = 'Mariners starter'; $('pit-stat').innerHTML = 'Opponent starter';
+      const oppTeam = (gd.teams[marIsHome ? 'away' : 'home'].teamName) || 'Opponent';
+      $('bat-stat').innerHTML = 'Mariners starter'; $('pit-stat').innerHTML = oppTeam + ' starter';
       document.querySelectorAll('#card-matchup .role')[0].textContent = 'Mariners';
-      document.querySelectorAll('#card-matchup .role')[1].textContent = 'Opponent';
+      document.querySelectorAll('#card-matchup .role')[1].textContent = oppTeam;
     }
 
     function renderDecisions(feed) {
