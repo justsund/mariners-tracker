@@ -192,6 +192,7 @@
     .spp-ring.k  { border:2px solid #fff; }
     .spp-ring.ch { border:2px dashed #FFC52F; }
     .spp-hint { font-style:italic; opacity:0.6; font-size:.64rem; }
+    .spp-kicon { vertical-align:middle; margin-right:4px; }
     body.goth .spp-ring.k { border-color:#E8E8E8; }
     body.springfield .sp-btn { border:2px solid #000; background:#fff; color:#000; box-shadow:2px 2px 0 #000; }
     body.springfield .sp-btn.on { background:#FF69B4; color:#000; border-color:#000; }
@@ -564,6 +565,12 @@
         <div class="hero-note" id="hero-note"></div>
       </div>
 
+      <!-- Linescore -->
+      <div class="card span2" id="card-ls">
+        <div class="card-h">Linescore</div>
+        <div id="linescore"></div>
+      </div>
+
       <!-- Last Pitch -->
       <div class="card" id="card-last-pitch" style="display:none;">
         <div class="card-h">Last Pitch</div>
@@ -632,7 +639,8 @@
         <svg id="spp-svg" viewBox="0 0 200 220" class="pz-svg" aria-label="Starting pitcher pitch location chart"></svg>
         <div class="pz-legend spp-legend">
           <span><span class="pz-dot" style="background:#00B2A9"></span>Hit</span>
-          <span><span class="spp-ring k" style="background:#E74C3C"></span>Strikeout</span>
+          <span><svg class="spp-kicon" width="15" height="15" viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6.6" fill="#E74C3C"/><text x="7.5" y="7.5" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="800" font-family="system-ui,sans-serif" fill="#fff">K</text></svg>Strikeout (swinging)</span>
+          <span><svg class="spp-kicon" width="15" height="15" viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6.6" fill="#E74C3C"/><text x="7.5" y="7.5" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="800" font-family="system-ui,sans-serif" fill="#fff" transform="translate(15 0) scale(-1 1)">K</text></svg>Caught looking</span>
           <span><span class="spp-ring ch" style="background:#C4CED4"></span>Challenge</span>
           <span class="spp-hint">Hover a dot for pitch detail</span>
         </div>
@@ -656,12 +664,6 @@
           </div>
           <div class="spray-meta" id="spray-meta"></div>
         </div>
-      </div>
-
-      <!-- Linescore -->
-      <div class="card span2" id="card-ls">
-        <div class="card-h">Linescore</div>
-        <div id="linescore"></div>
       </div>
 
       <!-- Plays -->
@@ -1558,6 +1560,7 @@
           pitchEvents.forEach((ev, idx) => {
             total++;
             const det = ev.details || {};
+            const code = det.call && det.call.code;
             const isKp = isK && idx === pitchEvents.length - 1;
             const isCh = overturned && !!det.hasReview;
             const isHp = !!det.isInPlay && isHit;
@@ -1574,6 +1577,7 @@
               szTop: ev.pitchData.strikeZoneTop,
               szBottom: ev.pitchData.strikeZoneBottom,
               isK: isKp, isHit: isHp, isChallenge: isCh,
+              kLooking: isKp && code === 'C',
               speed: ev.pitchData.startSpeed,
               type: det.type && det.type.description,
               spin: brk.spinRate,
@@ -1655,6 +1659,7 @@
       const dots = sorted.map(p => {
         const cx = svgX(p.px).toFixed(1), cy = svgY(p.pz).toFixed(1);
         const fill = p.isHit ? TEAL : p.isK ? '#E74C3C' : '#C4CED4';
+        const r = p.isK ? 7 : 5.5;
         const title = [
           p.batter,
           p.result,
@@ -1665,10 +1670,14 @@
           (p.isHit && p.exitVelo) ? `${p.exitVelo.toFixed(0)} mph EV` : '',
           (p.isHit && p.dist)     ? `${Math.round(p.dist)} ft` : '',
         ].filter(Boolean).join(' · ');
-        let rings = '';
-        if (p.isChallenge) rings += `<circle cx="${cx}" cy="${cy}" r="8" fill="none" stroke="#FFC52F" stroke-width="1.4" stroke-dasharray="2.5 2"/>`;
-        if (p.isK)         rings += `<circle cx="${cx}" cy="${cy}" r="7.5" fill="none" stroke="${isGoth ? '#E8E8E8' : '#fff'}" stroke-width="1.8"/>`;
-        return `<circle cx="${cx}" cy="${cy}" r="5.5" fill="${fill}" opacity="0.9" stroke="rgba(0,0,0,0.4)" stroke-width="0.6" style="cursor:pointer"><title>${title}</title></circle>${rings}`;
+        let marks = '';
+        if (p.isChallenge) marks += `<circle cx="${cx}" cy="${cy}" r="${(r + 2.5).toFixed(1)}" fill="none" stroke="#FFC52F" stroke-width="1.4" stroke-dasharray="2.5 2"/>`;
+        // Scorebook notation: K for a swinging strikeout, backwards K for caught looking.
+        if (p.isK) {
+          const flip = p.kLooking ? ` transform="translate(${(2 * parseFloat(cx)).toFixed(1)} 0) scale(-1 1)"` : '';
+          marks += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="800" font-family="system-ui,sans-serif" fill="${isGoth ? '#0D0D0D' : '#fff'}"${flip} style="pointer-events:none">K</text>`;
+        }
+        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" opacity="0.92" stroke="rgba(0,0,0,0.4)" stroke-width="0.6" style="cursor:pointer"><title>${title}</title></circle>${marks}`;
       }).join('');
 
       $('spp-svg').innerHTML = `
