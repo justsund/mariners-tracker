@@ -515,6 +515,15 @@
       color: var(--white);
     }
 
+    /* Season benchmarks under the current streak (longest run each direction) */
+    .streak-bests { margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.12); }
+    .streak-bests-eyebrow { font-size:0.66rem; letter-spacing:2px; text-transform:uppercase; color:rgba(196,206,212,0.6); font-weight:800; margin-bottom:16px; }
+    .streak-best { display:flex; align-items:center; justify-content:center; gap:10px; margin:11px 0; }
+    .streak-best .sb-num { font-weight:900; line-height:1; min-width:46px; text-align:right; font-size:2.1rem; }
+    .streak-best .sb-lbl { font-size:1.2rem; font-weight:800; color:#FFC52F; text-align:left; white-space:nowrap; line-height:1; }
+    .streak-best.over  .sb-num { color: var(--yes); }
+    .streak-best.under .sb-num { color: var(--no); }
+
     /* ---- Season Tally - full-width centered ---- */
     .tally-card {
       text-align: center;
@@ -1017,6 +1026,11 @@
     body.springfield .streak-number { color: #FF3B30; }
     body.springfield .streak-number.zero { color: #7ED957; }
     body.springfield .streak-label { color: #000; }
+    body.springfield .streak-bests { border-top-color: rgba(0,0,0,0.15); }
+    body.springfield .streak-bests-eyebrow { color: rgba(0,0,0,0.55); }
+    body.springfield .streak-best .sb-lbl { color: #b07a00; }
+    body.springfield .streak-best.over  .sb-num { color: #2e7d32; }
+    body.springfield .streak-best.under .sb-num { color: #C62828; }
 
     /* Season tally */
     body.springfield .tally-stat-num.under { color: #FF3B30; }
@@ -1247,6 +1261,11 @@
     body.goth .streak-number { color: #8B1A1A; text-shadow: none; }
     body.goth .streak-number.zero { color: #C8C8C8; text-shadow: none; }
     body.goth .streak-label { color: #9e9e9e; font-family: 'Cinzel', serif; }
+    body.goth .streak-bests { border-top-color: rgba(255,255,255,0.1); }
+    body.goth .streak-bests-eyebrow { color: #9e9e9e; }
+    body.goth .streak-best .sb-lbl { color: #b0b0b0; }
+    body.goth .streak-best.over  .sb-num { color: #C8C8C8; }
+    body.goth .streak-best.under .sb-num { color: #8B1A1A; }
 
     /* Season tally */
     body.goth .tally-stat-num.under { color: #8B1A1A; text-shadow: none; }
@@ -1461,6 +1480,11 @@
     <div class="card streak-card">
       <div class="card-label" id="streak-label">Consecutive Games Scoring ≤ 3 Runs</div>
       <div class="streak-number" id="streak-num">0</div>
+      <div class="streak-bests" id="streak-bests" style="display:none;">
+        <div class="streak-bests-eyebrow">Longest This Season</div>
+        <div class="streak-best" id="streak-best-1"><span class="sb-num"></span><span class="sb-lbl"></span></div>
+        <div class="streak-best" id="streak-best-2"><span class="sb-num"></span><span class="sb-lbl"></span></div>
+      </div>
     </div>
 
     <!-- Season tally - full width, centered -->
@@ -1976,6 +2000,22 @@
       document.getElementById('streak-label').textContent = streakOver
         ? 'Consecutive Games Scoring More Than 3 Runs'
         : 'Consecutive Games Scoring ≤ 3 Runs';
+
+      // ---- Season benchmarks: longest run in each direction, matching one first ----
+      const seasonRuns = streakGames.map(runsOf);
+      const longestRun = pred => { let best = 0, cur = 0; for (const r of seasonRuns) { if (pred(r)) { cur++; if (cur > best) best = cur; } else cur = 0; } return best; };
+      const longestOver  = longestRun(r => r > THRESHOLD);
+      const longestUnder = longestRun(r => r <= THRESHOLD);
+      const benches = streakOver
+        ? [{ n: longestOver, lbl: 'more than 3', cls: 'over' }, { n: longestUnder, lbl: '3 or fewer', cls: 'under' }]
+        : [{ n: longestUnder, lbl: '3 or fewer', cls: 'under' }, { n: longestOver, lbl: 'more than 3', cls: 'over' }];
+      [1, 2].forEach((slot, i) => {
+        const row = document.getElementById('streak-best-' + slot);
+        row.className = 'streak-best ' + benches[i].cls;
+        row.querySelector('.sb-num').textContent = benches[i].n;
+        row.querySelector('.sb-lbl').textContent = benches[i].lbl;
+      });
+      document.getElementById('streak-bests').style.display = (longestOver || longestUnder) ? 'block' : 'none';
       // ---- Recent games (last 10) ----
       const recent = completed.slice(-10).reverse();
       const last10Wins   = recent.filter(g => marScore(g).isWin).length;
