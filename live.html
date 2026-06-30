@@ -265,6 +265,9 @@
     .btn { font: inherit; cursor: pointer; border-radius: 999px; padding: 7px 16px; font-size: .75rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(0,178,169,0.45); background: rgba(12,44,86,0.6); color: var(--silver); transition: all .15s; }
     .btn:hover { transform: translateY(-1px); }
     .btn.on { background: var(--light-teal); color: #06242a; border-color: var(--light-teal); }
+    .past-banner { margin: 16px 0 0; padding: 10px 16px; text-align: center; border-radius: 12px; font-size: .8rem; font-weight: 700; letter-spacing: .5px; color: var(--gold); background: rgba(255,197,47,0.12); border: 1px solid rgba(255,197,47,0.4); }
+    body.springfield .past-banner { color: #000; background: #FFD90F; border: 2px solid #000; box-shadow: 3px 3px 0 #000; border-radius: 8px; }
+    body.goth .past-banner { color: #9e9e9e; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.18); font-family: 'IM Fell English', serif; }
 
     .updated { text-align: center; font-size: .72rem; color: rgba(255,255,255,0.3); margin-top: 18px; }
     #loading, #fatal { text-align: center; padding: 90px 20px; color: var(--silver); }
@@ -504,12 +507,17 @@
     <div class="controls">
       <button class="btn" id="btn-refresh" type="button">Refresh</button>
     </div>
+    <div class="controls" id="view-controls">
+      <button class="btn" id="btn-lastgame" type="button" style="display:none;">Last Game's Stats</button>
+      <button class="btn" id="btn-today" type="button" style="display:none;">Back to Today</button>
+    </div>
   </header>
 
   <div id="loading"><div class="spinner"></div><p>Finding the Mariners game...</p></div>
   <div id="fatal"><p id="fatal-msg"></p></div>
 
   <div id="app" class="wrap">
+    <div id="past-banner" class="past-banner" style="display:none;"></div>
     <div class="grid">
 
       <!-- Scoreboard -->
@@ -669,6 +677,59 @@
 
     $('btn-refresh').onclick = () => poll();
 
+    /* ---------- last completed game viewer (shown when today's game is upcoming) ---------- */
+    let viewingPast = false, todayGamePk = null;
+
+    async function lastFinalGamePk() {
+      const yr = new Date().getFullYear();
+      const data = await getJSON(`${API}/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&season=${yr}&gameType=R&startDate=${yr}-03-01&endDate=${dstr(0)}`);
+      const finals = [];
+      for (const d of (data.dates || [])) for (const g of d.games) if (g.status.abstractGameState === 'Final') finals.push(g);
+      return finals.length ? finals[finals.length - 1].gamePk : null;
+    }
+
+    async function showLastGame() {
+      const btn = $('btn-lastgame'), label = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Loading...';
+      try {
+        const pk = await lastFinalGamePk();
+        if (!pk) { btn.textContent = 'No game found'; setTimeout(() => { btn.textContent = label; }, 1800); return; }
+        viewingPast = true;
+        gamePk = pk;
+        prev.marRuns = null;        // skip bump/confetti when swapping games
+        clearTimeout(pollTimer);    // stop the upcoming-game poll
+        await poll();
+      } finally {
+        btn.textContent = label; btn.disabled = false;
+      }
+    }
+
+    async function backToToday() {
+      viewingPast = false;
+      gamePk = todayGamePk;
+      prev.marRuns = null;
+      clearTimeout(pollTimer);
+      await poll();
+    }
+
+    function updateViewControls(state) {
+      const banner = $('past-banner'), lg = $('btn-lastgame'), td = $('btn-today');
+      if (viewingPast) {
+        lg.style.display = 'none'; td.style.display = '';
+        banner.textContent = "Viewing the last completed game. Today's game has not started yet.";
+        banner.style.display = 'block';
+      } else if (state === 'Preview') {
+        lg.style.display = ''; td.style.display = 'none';
+        banner.style.display = 'none';
+      } else {
+        lg.style.display = 'none'; td.style.display = 'none';
+        banner.style.display = 'none';
+      }
+    }
+
+    $('btn-lastgame').onclick = showLastGame;
+    $('btn-today').onclick = backToToday;
+
     /* ---------- confetti ---------- */
     function confetti(n) {
       const c = $('confetti');
@@ -709,11 +770,8 @@
         || games.slice().reverse().find(g => g.status.abstractGameState === 'Final');
       if (pick) return pick.gamePk;
       // fall back to most recent final this season
-      const yr = new Date().getFullYear();
-      data = await getJSON(`${API}/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&season=${yr}&gameType=R&startDate=${yr}-03-01&endDate=${dstr(0)}`);
-      const finals = [];
-      for (const d of (data.dates || [])) for (const g of d.games) if (g.status.abstractGameState === 'Final') finals.push(g);
-      if (finals.length) return finals[finals.length - 1].gamePk;
+      const pk = await lastFinalGamePk();
+      if (pk) return pk;
       throw new Error('No Mariners game found.');
     }
 
@@ -756,6 +814,8 @@
       if (state === 'Live') sw.innerHTML = '<span class="status-badge live"><span class="live-dot"></span>Live</span>';
       else if (state === 'Preview') { const dt = gd.datetime && gd.datetime.dateTime ? new Date(gd.datetime.dateTime) : null; const ds = dt ? dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''; sw.innerHTML = '<span class="status-badge preview">' + (gd.status.detailedState || 'Scheduled') + (ds ? ' · ' + ds : '') + '</span>'; }
       else sw.innerHTML = '<span class="status-badge final">Final</span>';
+
+      updateViewControls(state);
 
       const ls = ld.linescore || {};
       const homeR = (ls.teams && ls.teams.home.runs) || 0;
@@ -1443,6 +1503,7 @@
     (async function init() {
       try {
         gamePk = await resolveGamePk();
+        todayGamePk = gamePk;
         await poll();
       } catch (e) {
         $('loading').style.display = 'none';
