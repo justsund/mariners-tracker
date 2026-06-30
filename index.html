@@ -1891,6 +1891,24 @@
       const completed = allGames.filter(g => g.status.abstractGameState === 'Final');
       const live      = allGames.find(g  => g.status.abstractGameState === 'Live');
 
+      // Pull the in-progress game's live feed once so the verdict, the headline
+      // score, the box score, and the streak all read the SAME fresh numbers.
+      // The schedule endpoint lags the feed, which is why the box score could
+      // outrun the headline score; sourcing both from the feed keeps them in sync.
+      let liveFeed = null, liveMarRuns = null, liveOppRuns = null;
+      if (live) {
+        try { liveFeed = await fetchJSON(`https://statsapi.mlb.com/api/v1.1/game/${live.gamePk}/feed/live`); }
+        catch (e) { liveFeed = null; }
+        if (liveFeed) {
+          try {
+            const lt = liveFeed.liveData.linescore.teams;
+            const marAway = live.teams.away.team.id === TEAM_ID;
+            liveMarRuns = marAway ? lt.away.runs : lt.home.runs;
+            liveOppRuns = marAway ? lt.home.runs : lt.away.runs;
+          } catch (e) { liveMarRuns = liveOppRuns = null; }
+        }
+      }
+
       // ---- Season tally ----
       let over = 0, under = 0;
       for (const g of completed) {
@@ -1910,7 +1928,11 @@
       const lastGame = completed[completed.length - 1];
       const verdictGame = live || lastGame;
       if (verdictGame) {
-        const { marRuns, oppRuns, oppName, isWin } = marScore(verdictGame);
+        const vs = marScore(verdictGame);
+        const oppName = vs.oppName, isWin = vs.isWin;
+        // Prefer the live feed's fresh runs for an in-progress game.
+        const marRuns = (live && verdictGame === live && liveMarRuns != null) ? liveMarRuns : vs.marRuns;
+        const oppRuns = (live && verdictGame === live && liveOppRuns != null) ? liveOppRuns : vs.oppRuns;
         const verdict = marRuns > THRESHOLD;
         document.getElementById('verdict-label').textContent = live ? 'Current Game' : 'Last Completed Game';
         const vw = document.getElementById('verdict-word');
@@ -1930,15 +1952,20 @@
           : `Mariners ${marRuns}, ${oppName} ${oppRuns} (${isWin ? 'W' : 'L'}) · ${fmtDate(lastGame.officialDate)}`;
       }
 
-      // ---- Streak (adaptive) ----
+      // ---- Streak (adaptive, live-aware) ----
       // Track whichever run the team is currently on: celebrate a hot streak of
-      // scoring more than 3, or flag a cold streak of scoring 3 or fewer. The
-      // direction follows the most recent completed game.
+      // scoring more than 3, or flag a cold streak of scoring 3 or fewer. Count
+      // the in-progress game once the Mariners cross the line in it (you can't
+      // un-score), so a hot streak updates live; a live game still at 3 or fewer
+      // is left out, since it isn't decided yet.
       let streak = 0, streakOver = false;
-      if (completed.length) {
-        streakOver = marScore(completed[completed.length - 1]).marRuns > THRESHOLD;
-        for (let i = completed.length - 1; i >= 0; i--) {
-          if ((marScore(completed[i]).marRuns > THRESHOLD) === streakOver) streak++;
+      const runsOf = g => (g === live && liveMarRuns != null) ? liveMarRuns : marScore(g).marRuns;
+      const streakGames = completed.slice();
+      if (live && liveMarRuns != null && liveMarRuns > THRESHOLD) streakGames.push(live);
+      if (streakGames.length) {
+        streakOver = runsOf(streakGames[streakGames.length - 1]) > THRESHOLD;
+        for (let i = streakGames.length - 1; i >= 0; i--) {
+          if ((runsOf(streakGames[i]) > THRESHOLD) === streakOver) streak++;
           else break;
         }
       }
@@ -2044,13 +2071,18 @@
         // State A: live game
         showGCState('gc-live');
         spotlightPk = live.gamePk;
-        const { marRuns, oppRuns, oppName } = marScore(live);
+        const lsMar  = marScore(live);
+        const oppName = lsMar.oppName;
+        const marRuns = liveMarRuns != null ? liveMarRuns : lsMar.marRuns;
+        const oppRuns = liveOppRuns != null ? liveOppRuns : lsMar.oppRuns;
         document.getElementById('live-mar-runs').textContent = marRuns;
         document.getElementById('live-opp-runs').textContent = oppRuns;
         document.getElementById('live-opp-name').textContent = oppName;
 
         try {
-          const feed = await fetchJSON(`https://statsapi.mlb.com/api/v1.1/game/${live.gamePk}/feed/live`);
+          // Reuse the feed fetched at the top of load() so the headline score and
+          // the box score come from one snapshot (no box score outrunning it).
+          const feed = liveFeed || await fetchJSON(`https://statsapi.mlb.com/api/v1.1/game/${live.gamePk}/feed/live`);
           const ls   = feed.liveData.linescore;
 
           document.getElementById('live-inning').textContent =
@@ -2090,8 +2122,8 @@
         }
 
         clearInterval(refreshInterval);
-        refreshInterval = setInterval(load, 30000);
-        document.getElementById('refresh-note').textContent = 'Refreshes every 30s (live game)';
+        refreshInterval = setInterval(load, 15000);
+        document.getElementById('refresh-note').textContent = 'Refreshes every 15s (live game)';
 
       } else {
         // Check for a scheduled game today (Preview / Warmup / Pre-Game)
