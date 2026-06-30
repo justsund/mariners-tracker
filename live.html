@@ -140,6 +140,88 @@
     .wp-bar { height: 26px; border-radius: 13px; background: rgba(231,76,60,0.25); overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.1); }
     .wp-fill { height: 100%; background: linear-gradient(90deg, #008b85, var(--light-teal)); width: 50%; transition: width .6s ease; }
     .wp-labels { display: flex; justify-content: space-between; font-size: .78rem; margin-top: 8px; color: var(--silver); }
+
+    /* ---- Win Probability line graph ---- */
+    .wp-graph { width: 100%; display: block; margin-top: 10px; overflow: visible; }
+
+    /* ---- Pitch Zone ---- */
+    .pz-ab-label { font-size: .72rem; color: var(--silver); text-align: center; margin-bottom: 8px; min-height: 1.1em; }
+    .pz-svg { width: 100%; display: block; max-width: 220px; margin: 0 auto; }
+    .pz-legend { display: flex; justify-content: center; gap: 14px; margin-top: 8px; font-size: .68rem; color: var(--silver); align-items: center; }
+    .pz-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
+    .pz-dot.strike { background: #E74C3C; }
+    .pz-dot.ball   { background: #3EC88C; }
+    .pz-dot.foul   { background: #FFC52F; }
+    .pz-dot.inp    { background: #00B2A9; }
+
+    /* ---- Last Pitch ---- */
+    .lp-speed { font-size: clamp(2.8rem, 10vw, 4rem); font-weight: 900; text-align: center; color: var(--light-teal); line-height: 1; }
+    .lp-mph   { text-align: center; font-size: .68rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--silver); margin-bottom: 14px; }
+    .lp-row   { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: .8rem; }
+    .lp-row:last-child { border-bottom: none; }
+    .lp-key   { color: rgba(196,206,212,0.6); }
+    .lp-val   { font-weight: 600; color: #fff; text-align: right; }
+
+    /* ---- Pitcher Arsenal ---- */
+    .arsenal-bars { display: flex; flex-direction: column; gap: 8px; }
+    .arsenal-row  { display: grid; grid-template-columns: 120px 1fr 38px 70px; gap: 8px; align-items: center; font-size: .78rem; }
+    @media (max-width: 500px) { .arsenal-row { grid-template-columns: 90px 1fr 34px 56px; } }
+    .arsenal-name { color: var(--silver); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .arsenal-bar-wrap { background: rgba(255,255,255,0.07); border-radius: 4px; height: 10px; overflow: hidden; }
+    .arsenal-bar  { height: 100%; border-radius: 4px; transition: width .4s ease; }
+    .arsenal-pct  { text-align: right; font-weight: 700; color: #fff; }
+    .arsenal-speed{ color: rgba(196,206,212,0.7); font-size: .72rem; text-align: right; }
+
+    /* ---- Spray Chart ---- */
+    .spray-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .spray-svg  { width: 100%; max-width: 300px; display: block; }
+    .spray-meta { font-size: .78rem; color: var(--silver); text-align: center; min-height: 1.2em; }
+
+    /* ---- Exit Velocity Toast ---- */
+    .ev-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: rgba(12,44,86,0.95); border: 1px solid rgba(0,178,169,0.5);
+      border-radius: 12px; padding: 10px 22px; display: flex; gap: 14px; align-items: center;
+      font-weight: 700; font-size: .95rem; z-index: 200;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+      opacity: 0; pointer-events: none;
+    }
+    .ev-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .ev-type  { color: var(--silver); font-size: .72rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+    .ev-speed { color: var(--light-teal); font-size: 1.2rem; }
+    .ev-angle { color: var(--silver); font-size: .85rem; }
+
+    /* Springfield overrides for new elements */
+    body.springfield .lp-speed { color: #FF69B4; }
+    body.springfield .lp-key { color: rgba(0,0,0,0.55); }
+    body.springfield .lp-val { color: #000; }
+    body.springfield .lp-row { border-bottom-color: rgba(0,0,0,0.08); }
+    body.springfield .arsenal-name { color: rgba(0,0,0,0.7); }
+    body.springfield .arsenal-bar-wrap { background: rgba(0,0,0,0.1); }
+    body.springfield .arsenal-pct { color: #000; }
+    body.springfield .arsenal-speed { color: rgba(0,0,0,0.5); }
+    body.springfield .spray-meta { color: rgba(0,0,0,0.65); }
+    body.springfield .pz-ab-label { color: rgba(0,0,0,0.65); }
+    body.springfield .pz-legend { color: rgba(0,0,0,0.65); }
+    body.springfield .ev-toast { background: #fff; border: 3px solid #000; box-shadow: 4px 4px 0 #000; }
+    body.springfield .ev-speed { color: #FF3B30; }
+    body.springfield .ev-type, body.springfield .ev-angle { color: #000; }
+
+    /* Goth overrides for new elements */
+    body.goth .lp-speed { color: #C8C8C8; }
+    body.goth .lp-key { color: #8a8a8a; }
+    body.goth .lp-val { color: #E8E8E8; }
+    body.goth .lp-row { border-bottom-color: rgba(255,255,255,0.07); }
+    body.goth .arsenal-name { color: #9e9e9e; }
+    body.goth .arsenal-bar-wrap { background: rgba(255,255,255,0.06); }
+    body.goth .arsenal-pct { color: #E8E8E8; }
+    body.goth .arsenal-speed { color: #8a8a8a; }
+    body.goth .spray-meta { color: #9e9e9e; }
+    body.goth .pz-ab-label { color: #9e9e9e; font-family: 'IM Fell English', serif; font-style: italic; }
+    body.goth .pz-legend { color: #8a8a8a; }
+    body.goth .ev-toast { background: #161616; border-color: rgba(255,255,255,0.2); }
+    body.goth .ev-speed { color: #C8C8C8; }
+    body.goth .ev-type, body.goth .ev-angle { color: #8a8a8a; }
     .wp-labels b { color: #fff; }
 
     /* Linescore */
@@ -383,6 +465,7 @@
 <body>
   <div class="stripe"></div>
   <div id="confetti"></div>
+  <div id="ev-toast" class="ev-toast" role="status" aria-live="polite"></div>
   <div class="clouds" aria-hidden="true">
     <div class="cloud c1"><svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg></div>
     <div class="cloud c2"><svg width="180" height="80" viewBox="0 0 180 80" fill="none"><g fill="#ffffff"><ellipse cx="55" cy="50" rx="45" ry="28"/><ellipse cx="96" cy="36" rx="38" ry="30"/><ellipse cx="132" cy="52" rx="40" ry="24"/><rect x="40" y="50" width="112" height="24" rx="12"/></g></svg></div>
@@ -449,6 +532,27 @@
         <div class="hero-note" id="hero-note"></div>
       </div>
 
+      <!-- Last Pitch -->
+      <div class="card" id="card-last-pitch" style="display:none;">
+        <div class="card-h">Last Pitch</div>
+        <div class="lp-speed" id="lp-speed">--</div>
+        <div class="lp-mph">mph</div>
+        <div id="lp-rows"></div>
+      </div>
+
+      <!-- Pitch Zone -->
+      <div class="card" id="card-pitch-zone" style="display:none;">
+        <div class="card-h">Pitch Zone</div>
+        <div class="pz-ab-label" id="pz-ab-label">Waiting for pitch data...</div>
+        <svg id="pitch-zone-svg" viewBox="0 0 200 220" class="pz-svg" aria-label="Strike zone pitch location chart"></svg>
+        <div class="pz-legend">
+          <span><span class="pz-dot strike"></span>Strike</span>
+          <span><span class="pz-dot ball"></span>Ball</span>
+          <span><span class="pz-dot foul"></span>Foul</span>
+          <span><span class="pz-dot inp"></span>In Play</span>
+        </div>
+      </div>
+
       <!-- Matchup -->
       <div class="card span2" id="card-matchup">
         <div class="card-h" id="matchup-head">At Bat</div>
@@ -470,10 +574,26 @@
       </div>
 
       <!-- Win probability -->
-      <div class="card" id="card-wp" style="display:none;">
+      <div class="card span2" id="card-wp" style="display:none;">
         <div class="card-h">Win Probability</div>
         <div class="wp-bar"><div class="wp-fill" id="wp-fill"></div></div>
         <div class="wp-labels"><span id="wp-mar"><b>Mariners</b></span><span id="wp-opp"></span></div>
+        <svg id="wp-graph" class="wp-graph" viewBox="0 0 400 80" preserveAspectRatio="none" aria-label="Win probability over time"></svg>
+      </div>
+
+      <!-- Pitcher Arsenal -->
+      <div class="card span2" id="card-arsenal" style="display:none;">
+        <div class="card-h" id="arsenal-head">Pitcher Arsenal</div>
+        <div class="arsenal-bars" id="arsenal-bars"></div>
+      </div>
+
+      <!-- Spray Chart -->
+      <div class="card span2" id="card-spray" style="display:none;">
+        <div class="card-h">Batted Balls This Game</div>
+        <div class="spray-wrap">
+          <svg id="spray-svg" viewBox="0 0 250 240" class="spray-svg" aria-label="Spray chart of batted ball locations"></svg>
+          <div class="spray-meta" id="spray-meta"></div>
+        </div>
       </div>
 
       <!-- Linescore -->
@@ -498,7 +618,7 @@
     const $ = id => document.getElementById(id);
 
     let pollTimer = null, gamePk = null;
-    let prev = { marRuns: null, outs: null, playIdx: null, strikes: null };
+    let prev = { marRuns: null, outs: null, playIdx: null, strikes: null, lastBattedIdx: null };
 
     /* ---------- design (Classic default, Springfield + Goth opt-in) ---------- */
     function setDesign(d) {
@@ -656,8 +776,29 @@
         $('b2').classList.toggle('on', !!off.second);
         $('b3').classList.toggle('on', !!off.third);
         renderMatchup(feed);
+        renderPitchZone(feed);
+        renderLastPitch(feed);
+        renderArsenal(feed);
+
+        // Exit velocity flash on new ball in play
+        const allPlaysComplete = ((feed.liveData.plays && feed.liveData.plays.allPlays) || [])
+          .filter(p => p.about && p.about.isComplete);
+        if (allPlaysComplete.length) {
+          const lp = allPlaysComplete[allPlaysComplete.length - 1];
+          const lpIdx = lp.about && lp.about.atBatIndex;
+          if (lpIdx !== prev.lastBattedIdx) {
+            const hitEv = (lp.playEvents || []).find(e => e.hitData && e.hitData.launchSpeed);
+            if (hitEv) {
+              flashEV(hitEv.hitData.launchSpeed, hitEv.hitData.launchAngle, lp.result && lp.result.event);
+            }
+            prev.lastBattedIdx = lpIdx;
+          }
+        }
         prev.strikes = ls.strikes; prev.outs = ls.outs;
       } else if (state === 'Final') {
+        $('card-pitch-zone').style.display = 'none';
+        $('card-last-pitch').style.display = 'none';
+        $('card-arsenal').style.display = 'none';
         $('situation').style.display = 'none';
         $('inning').textContent = 'Final' + (ls.currentInning && ls.currentInning > 9 ? ` / ${ls.currentInning}` : '');
         renderDecisions(feed);
@@ -668,6 +809,7 @@
       // linescore + plays
       renderLinescore(ls, teamAbbr(feed, 'away'), teamAbbr(feed, 'home'), state === 'Live' ? ls.currentInning : 0);
       renderPlays(ld);
+      renderSprayChart(feed);
       renderWinProb(state, marSide);
 
       prev.marRuns = marRuns;
@@ -799,19 +941,375 @@
     }
 
     async function renderWinProb(state, marSide) {
-      if (state !== 'Live') { $('card-wp').style.display = 'none'; return; }
+      const el = $('card-wp');
+      if (state !== 'Live') { el.style.display = 'none'; return; }
       try {
         const wp = await getJSON(`${API}/api/v1/game/${gamePk}/winProbability`);
-        if (!wp || !wp.length) { $('card-wp').style.display = 'none'; return; }
+        if (!wp || !wp.length) { el.style.display = 'none'; return; }
+
         const last = wp[wp.length - 1];
-        const homeWP = last.homeTeamWinProbability;
-        if (homeWP == null) { $('card-wp').style.display = 'none'; return; }
-        const marWP = marSide === 'home' ? homeWP : (100 - homeWP);
-        $('card-wp').style.display = 'block';
+        if (last.homeTeamWinProbability == null) { el.style.display = 'none'; return; }
+
+        el.style.display = 'block';
+
+        const marWP = marSide === 'home' ? last.homeTeamWinProbability : (100 - last.homeTeamWinProbability);
         $('wp-fill').style.width = marWP + '%';
         $('wp-mar').innerHTML = `<b>Mariners ${Math.round(marWP)}%</b>`;
         $('wp-opp').textContent = `Opp ${Math.round(100 - marWP)}%`;
+
+        // ---- Line graph ----
+        const pts = wp.map((e, i) => ({
+          x: i,
+          y: marSide === 'home' ? e.homeTeamWinProbability : (100 - e.homeTeamWinProbability),
+        }));
+        const n = pts.length;
+        const SVG_W = 400, SVG_H = 80;
+        const PL = 32, PR = 10, PT = 8, PB = 14;
+        const plotW = SVG_W - PL - PR, plotH = SVG_H - PT - PB;
+
+        const sx = i => PL + (n < 2 ? plotW / 2 : (i / (n - 1)) * plotW);
+        const sy = v => PT + (1 - v / 100) * plotH;
+
+        const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join('');
+        const area = `M${sx(0).toFixed(1)},${sy(pts[0].y).toFixed(1)}` +
+          pts.map(p => `L${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join('') +
+          `L${sx(n - 1).toFixed(1)},${(PT + plotH).toFixed(1)} L${PL},${(PT + plotH).toFixed(1)} Z`;
+
+        const curX = sx(n - 1).toFixed(1);
+        const curY = sy(pts[n - 1].y).toFixed(1);
+
+        const isGoth = document.body.classList.contains('goth');
+        const isSF   = document.body.classList.contains('springfield');
+        const lineColor = isGoth ? '#9e9e9e' : isSF ? '#7ED957' : '#00B2A9';
+        const areaColor = isGoth ? 'rgba(200,200,200,0.07)' : isSF ? 'rgba(126,217,87,0.12)' : 'rgba(0,178,169,0.1)';
+
+        $('wp-graph').innerHTML = `
+          <line x1="${PL}" y1="${sy(50).toFixed(1)}" x2="${SVG_W - PR}" y2="${sy(50).toFixed(1)}"
+                stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="${PL - 4}" y="${(sy(100) + 4).toFixed(1)}" text-anchor="end" fill="rgba(255,255,255,0.25)"
+                font-size="9" font-family="system-ui,sans-serif">100</text>
+          <text x="${PL - 4}" y="${(sy(50) + 4).toFixed(1)}" text-anchor="end" fill="rgba(255,255,255,0.25)"
+                font-size="9" font-family="system-ui,sans-serif">50%</text>
+          <text x="${PL - 4}" y="${(sy(0) + 4).toFixed(1)}" text-anchor="end" fill="rgba(255,255,255,0.25)"
+                font-size="9" font-family="system-ui,sans-serif">0</text>
+          <path d="${area}" fill="${areaColor}"/>
+          <path d="${line}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="${curX}" cy="${curY}" r="4" fill="${lineColor}"/>
+          <text x="${parseFloat(curX) + 7}" y="${(parseFloat(curY) + 4).toFixed(1)}"
+                fill="${lineColor}" font-size="10" font-family="system-ui,sans-serif" font-weight="700">
+            ${Math.round(pts[n - 1].y)}%
+          </text>
+        `;
       } catch (e) { $('card-wp').style.display = 'none'; }
+    }
+
+    /* ---------- PITCH ZONE ---------- */
+    function renderPitchZone(feed) {
+      const el = $('card-pitch-zone');
+      if (feed.gameData.status.abstractGameState !== 'Live') { el.style.display = 'none'; return; }
+
+      const cp = feed.liveData.plays && feed.liveData.plays.currentPlay;
+      if (!cp) { el.style.display = 'none'; return; }
+
+      const pitches = (cp.playEvents || []).filter(
+        e => e.isPitch && e.pitchData && e.pitchData.coordinates &&
+             e.pitchData.coordinates.pX != null && e.pitchData.coordinates.pZ != null
+      );
+
+      el.style.display = 'block';
+
+      const batter = (cp.matchup && cp.matchup.batter && cp.matchup.batter.fullName) || '';
+      const pitcher = (cp.matchup && cp.matchup.pitcher && cp.matchup.pitcher.fullName) || '';
+      $('pz-ab-label').textContent = batter && pitcher ? `${batter} vs ${pitcher}` : 'Waiting for at-bat...';
+
+      const W = 200, H = 220;
+      const PX_MIN = -2.5, PX_RANGE = 5.0;
+      const PZ_MAX = 5.0;
+      const PAD = 12;
+      const PLOT_W = W - 2 * PAD;
+      const PLOT_H = H - PAD - 30;
+
+      function svgX(px) { return PAD + (px - PX_MIN) / PX_RANGE * PLOT_W; }
+      function svgY(pz) { return PAD + PLOT_H - (pz / PZ_MAX) * PLOT_H; }
+
+      const SZ_L = -0.833, SZ_R = 0.833;
+      const first = pitches[0];
+      const szTop    = (first && first.pitchData && first.pitchData.strikeZoneTop)    || 3.5;
+      const szBottom = (first && first.pitchData && first.pitchData.strikeZoneBottom) || 1.5;
+
+      const zX  = svgX(SZ_L).toFixed(1);
+      const zY  = svgY(szTop).toFixed(1);
+      const zW  = (svgX(SZ_R) - svgX(SZ_L)).toFixed(1);
+      const zH  = (svgY(szBottom) - svgY(szTop)).toFixed(1);
+      const zCX = ((svgX(SZ_L) + svgX(SZ_R)) / 2).toFixed(1);
+
+      let gridLines = '';
+      const x1 = svgX(SZ_L), x2 = svgX(SZ_R);
+      const y1 = svgY(szTop), y2 = svgY(szBottom);
+      const dxT = (x2 - x1) / 3, dyT = (y2 - y1) / 3;
+      for (let i = 1; i <= 2; i++) {
+        gridLines += `<line x1="${(x1+dxT*i).toFixed(1)}" y1="${y1.toFixed(1)}" x2="${(x1+dxT*i).toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(255,255,255,0.12)" stroke-width="0.5"/>`;
+        gridLines += `<line x1="${x1.toFixed(1)}" y1="${(y1+dyT*i).toFixed(1)}" x2="${x2.toFixed(1)}" y2="${(y1+dyT*i).toFixed(1)}" stroke="rgba(255,255,255,0.12)" stroke-width="0.5"/>`;
+      }
+
+      const pY = H - 18, pCX = svgX(0), pHW = svgX(SZ_R) - svgX(0);
+      const platePts = [
+        `${(pCX-pHW).toFixed(1)},${pY-6}`,
+        `${(pCX+pHW).toFixed(1)},${pY-6}`,
+        `${(pCX+pHW).toFixed(1)},${pY}`,
+        `${pCX.toFixed(1)},${pY+5}`,
+        `${(pCX-pHW).toFixed(1)},${pY}`,
+      ].join(' ');
+
+      const isGoth = document.body.classList.contains('goth');
+      const pitchDots = pitches.map((p, i) => {
+        const px = p.pitchData.coordinates.pX;
+        const pz = p.pitchData.coordinates.pZ;
+        const desc = (p.details && p.details.description || '').toLowerCase();
+        const speed = p.pitchData.startSpeed;
+        const isLast = i === pitches.length - 1;
+        const cx = svgX(px).toFixed(1);
+        const cy = svgY(pz).toFixed(1);
+        const r = isLast ? 7.5 : 5.5;
+
+        let color = '#888';
+        if (desc.includes('called strike') || desc.includes('swinging strike') || desc.includes('foul tip')) {
+          color = '#E74C3C';
+        } else if (desc.includes('in play')) {
+          color = isGoth ? '#C8C8C8' : '#00B2A9';
+        } else if (desc.includes('foul')) {
+          color = '#FFC52F';
+        } else if (desc.includes('ball') || desc.includes('intentional')) {
+          color = '#3EC88C';
+        }
+
+        return `
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"
+            ${isLast ? 'stroke="rgba(255,255,255,0.9)" stroke-width="1.5"' : 'opacity="0.78"'}/>
+          <text x="${cx}" y="${(parseFloat(cy) - r - 2).toFixed(1)}" text-anchor="middle"
+            fill="rgba(255,255,255,0.65)" font-size="8" font-family="system-ui,sans-serif">${i + 1}</text>
+          ${isLast && speed ? `<text x="${cx}" y="${(parseFloat(cy) + r + 9).toFixed(1)}" text-anchor="middle"
+            fill="rgba(255,255,255,0.9)" font-size="9" font-family="system-ui,sans-serif" font-weight="700">${speed.toFixed(0)}</text>` : ''}
+        `;
+      }).join('');
+
+      $('pitch-zone-svg').innerHTML = `
+        <rect x="${PAD}" y="${PAD}" width="${PLOT_W}" height="${PLOT_H}" fill="rgba(255,255,255,0.02)" rx="3"/>
+        <rect x="${zX}" y="${zY}" width="${zW}" height="${zH}" fill="rgba(0,178,169,0.07)" stroke="rgba(0,178,169,0.65)" stroke-width="1.5"/>
+        ${gridLines}
+        <text x="${zCX}" y="${(parseFloat(zY) - 3).toFixed(1)}" text-anchor="middle"
+          fill="rgba(0,178,169,0.4)" font-size="8" font-family="system-ui,sans-serif">SZ</text>
+        <polygon points="${platePts}" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        ${pitchDots}
+      `;
+    }
+
+    /* ---------- LAST PITCH ---------- */
+    function renderLastPitch(feed) {
+      const el = $('card-last-pitch');
+      if (feed.gameData.status.abstractGameState !== 'Live') { el.style.display = 'none'; return; }
+
+      const cp = feed.liveData.plays && feed.liveData.plays.currentPlay;
+      const pitches = (cp && cp.playEvents || []).filter(e => e.isPitch);
+      if (!pitches.length) { el.style.display = 'none'; return; }
+
+      el.style.display = 'block';
+      const last = pitches[pitches.length - 1];
+      const pd  = last.pitchData  || {};
+      const det = last.details    || {};
+      const brk = pd.breaks       || {};
+
+      const speed  = pd.startSpeed   ? pd.startSpeed.toFixed(1) : '--';
+      const type   = (det.type && det.type.description) || '--';
+      const result = det.description || '--';
+      const spin   = brk.spinRate   ? Math.round(brk.spinRate).toLocaleString() + ' rpm' : null;
+      const ext    = pd.extension   ? pd.extension.toFixed(1) + ' ft'  : null;
+      const brkH   = brk.breakHorizontal != null ? (brk.breakHorizontal > 0 ? '+' : '') + brk.breakHorizontal.toFixed(1) + '"' : null;
+      const brkV   = brk.breakVertical   != null ? (brk.breakVertical   > 0 ? '+' : '') + brk.breakVertical.toFixed(1) + '"'   : null;
+
+      $('lp-speed').textContent = speed;
+
+      const desc = result.toLowerCase();
+      let resultColor = '#fff';
+      if (desc.includes('called strike') || desc.includes('swinging strike') || desc.includes('foul tip')) resultColor = '#E74C3C';
+      else if (desc.includes('in play')) resultColor = 'var(--light-teal)';
+      else if (desc.includes('foul')) resultColor = '#FFC52F';
+      else if (desc.includes('ball') || desc.includes('intentional')) resultColor = '#3EC88C';
+
+      const rows = [
+        ['Type',   type],
+        ['Result', result, resultColor],
+        spin  ? ['Spin',   spin]       : null,
+        ext   ? ['Extension', ext]     : null,
+        (brkH && brkV) ? ['Break', `${brkH} H / ${brkV} V`] : null,
+      ].filter(Boolean);
+
+      $('lp-rows').innerHTML = rows.map(([k, v, c]) =>
+        `<div class="lp-row">
+          <span class="lp-key">${k}</span>
+          <span class="lp-val"${c ? ` style="color:${c}"` : ''}>${v}</span>
+        </div>`
+      ).join('');
+    }
+
+    /* ---------- PITCHER ARSENAL ---------- */
+    function renderArsenal(feed) {
+      const el = $('card-arsenal');
+      if (feed.gameData.status.abstractGameState !== 'Live') { el.style.display = 'none'; return; }
+
+      const cp = feed.liveData.plays && feed.liveData.plays.currentPlay;
+      if (!cp) { el.style.display = 'none'; return; }
+
+      const pitcherId = cp.matchup && cp.matchup.pitcher && cp.matchup.pitcher.id;
+      const pitcherName = (cp.matchup && cp.matchup.pitcher && cp.matchup.pitcher.fullName) || 'Pitcher';
+
+      const allPlays = (feed.liveData.plays && feed.liveData.plays.allPlays) || [];
+      const pitchMap = {};
+      let total = 0;
+
+      for (const play of allPlays) {
+        const playPitcherId = play.matchup && play.matchup.pitcher && play.matchup.pitcher.id;
+        if (pitcherId && playPitcherId !== pitcherId) continue;
+
+        for (const event of (play.playEvents || [])) {
+          if (!event.isPitch || !event.details || !event.details.type) continue;
+          const code = event.details.type.code;
+          const name = event.details.type.description;
+          const spd  = event.pitchData && event.pitchData.startSpeed;
+          if (!pitchMap[code]) pitchMap[code] = { name, count: 0, totalSpeed: 0, speeds: [] };
+          pitchMap[code].count++;
+          total++;
+          if (spd) { pitchMap[code].totalSpeed += spd; pitchMap[code].speeds.push(spd); }
+        }
+      }
+
+      if (!total) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      $('arsenal-head').textContent = `${pitcherName} · Pitch Mix`;
+
+      const sorted = Object.entries(pitchMap).sort((a, b) => b[1].count - a[1].count);
+      const isGoth = document.body.classList.contains('goth');
+      const isSF   = document.body.classList.contains('springfield');
+
+      const COLORS = isGoth
+        ? ['#9e9e9e', '#8B1A1A', '#777', '#aaa', '#666', '#bbb']
+        : isSF
+        ? ['#FF69B4', '#FFD90F', '#7ED957', '#4A4EFF', '#FF3B30', '#00B2A9']
+        : ['#00B2A9', '#FFC52F', '#C4CED4', '#7B68EE', '#FF8C00', '#E74C3C'];
+
+      $('arsenal-bars').innerHTML = sorted.map(([, d], i) => {
+        const pct = Math.round(d.count / total * 100);
+        const avg = d.speeds.length ? (d.totalSpeed / d.speeds.length).toFixed(1) + ' mph' : '--';
+        return `<div class="arsenal-row">
+          <div class="arsenal-name">${d.name}</div>
+          <div class="arsenal-bar-wrap">
+            <div class="arsenal-bar" style="width:${pct}%; background:${COLORS[i % COLORS.length]}"></div>
+          </div>
+          <div class="arsenal-pct">${pct}%</div>
+          <div class="arsenal-speed">${avg}</div>
+        </div>`;
+      }).join('');
+    }
+
+    /* ---------- SPRAY CHART ---------- */
+    function renderSprayChart(feed) {
+      const el = $('card-spray');
+
+      const allPlays = ((feed.liveData.plays && feed.liveData.plays.allPlays) || [])
+        .filter(p => p.about && p.about.isComplete);
+
+      const batted = [];
+      for (const play of allPlays) {
+        for (const event of (play.playEvents || [])) {
+          const hd = event.hitData;
+          if (!hd || !hd.coordinates || hd.coordinates.coordX == null || hd.coordinates.coordY == null) continue;
+          batted.push({
+            x:    hd.coordinates.coordX,
+            y:    hd.coordinates.coordY,
+            type: (play.result && play.result.eventType) || '',
+            spd:  hd.launchSpeed,
+            ang:  hd.launchAngle,
+            dist: hd.totalDistance,
+          });
+        }
+      }
+
+      if (!batted.length) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+
+      function cx(x) { return x; }
+      function cy(y) { return 250 - y; }
+
+      const HX = 125, HY = cy(205);
+
+      const isGoth = document.body.classList.contains('goth');
+      const isSF   = document.body.classList.contains('springfield');
+      const grassColor = isGoth ? 'rgba(255,255,255,0.03)' : isSF ? 'rgba(126,217,87,0.15)' : 'rgba(0,100,0,0.18)';
+      const lineColor  = isGoth ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.15)';
+
+      const fieldBg = `
+        <path d="M${HX},${HY} L10,10 Q125,-15 240,10 Z"
+              fill="${grassColor}" stroke="${lineColor}" stroke-width="1"/>
+        <ellipse cx="${HX}" cy="${cy(165)}" rx="50" ry="48"
+                 fill="rgba(139,90,43,0.12)" stroke="${lineColor}" stroke-width="0.5"/>
+        <line x1="${HX}" y1="${HY}" x2="10"  y2="10"  stroke="${lineColor}" stroke-width="1"/>
+        <line x1="${HX}" y1="${HY}" x2="240" y2="10"  stroke="${lineColor}" stroke-width="1"/>
+        <circle cx="${HX}" cy="${HY}" r="4" fill="rgba(255,255,255,0.25)"/>
+        <g fill="rgba(255,255,255,0.2)" stroke="${lineColor}" stroke-width="0.5">
+          <rect x="${cx(165)-5}" y="${cy(165)-5}" width="10" height="10" transform="rotate(45,${cx(165)},${cy(165)})"/>
+          <rect x="${cx(125)-5}" y="${cy(185)-5}" width="10" height="10" transform="rotate(45,${cx(125)},${cy(185)})"/>
+          <rect x="${cx(85)-5}"  y="${cy(165)-5}" width="10" height="10" transform="rotate(45,${cx(85)},${cy(165)})"/>
+        </g>
+        <text x="18"  y="22"  fill="rgba(255,255,255,0.2)" font-size="10" font-family="system-ui,sans-serif">LF</text>
+        <text x="119" y="16"  fill="rgba(255,255,255,0.2)" font-size="10" font-family="system-ui,sans-serif">CF</text>
+        <text x="225" y="22"  fill="rgba(255,255,255,0.2)" font-size="10" font-family="system-ui,sans-serif">RF</text>
+      `;
+
+      const dots = batted.map(b => {
+        const et = b.type.toLowerCase();
+        let color;
+        if (et === 'home_run')                              color = '#FFC52F';
+        else if (['single','double','triple'].includes(et)) color = isGoth ? '#C8C8C8' : '#00B2A9';
+        else                                                color = '#E74C3C';
+
+        const title = [
+          et.replace(/_/g, ' '),
+          b.spd  ? `${b.spd.toFixed(0)} mph`  : '',
+          b.ang  != null ? `${b.ang > 0 ? '+' : ''}${b.ang.toFixed(0)}°` : '',
+          b.dist ? `${Math.round(b.dist)} ft` : '',
+        ].filter(Boolean).join(' · ');
+
+        return `<circle cx="${cx(b.x).toFixed(1)}" cy="${cy(b.y).toFixed(1)}"
+          r="6" fill="${color}" opacity="0.85" stroke="rgba(0,0,0,0.35)" stroke-width="0.5">
+          <title>${title}</title></circle>`;
+      }).join('');
+
+      $('spray-svg').innerHTML = fieldBg + dots;
+
+      const last = batted[batted.length - 1];
+      if (last) {
+        const parts = [];
+        if (last.spd)  parts.push(`${last.spd.toFixed(0)} mph EV`);
+        if (last.ang  != null) parts.push(`${last.ang > 0 ? '+' : ''}${last.ang.toFixed(0)}° LA`);
+        if (last.dist) parts.push(`${Math.round(last.dist)} ft`);
+        $('spray-meta').textContent = parts.length ? `Last batted ball: ${parts.join(' · ')}` : '';
+      } else {
+        $('spray-meta').textContent = '';
+      }
+    }
+
+    /* ---------- EXIT VELOCITY FLASH TOAST ---------- */
+    function flashEV(speed, angle, eventType) {
+      const toast = $('ev-toast');
+      if (!toast || !speed) return;
+      const et = (eventType || '').replace(/_/g, ' ');
+      toast.innerHTML =
+        (et ? `<span class="ev-type">${et}</span>` : '') +
+        `<span class="ev-speed">${speed.toFixed(0)} mph</span>` +
+        (angle != null ? `<span class="ev-angle">${angle > 0 ? '+' : ''}${angle.toFixed(0)}°</span>` : '');
+      toast.className = 'ev-toast show';
+      clearTimeout(toast._dismissTimer);
+      toast._dismissTimer = setTimeout(() => { toast.className = 'ev-toast'; }, 4000);
     }
 
     /* ---------- poll loop ---------- */
