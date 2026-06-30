@@ -176,6 +176,7 @@
     .spray-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .spray-svg  { width: 100%; max-width: 300px; display: block; }
     .spray-meta { font-size: .78rem; color: var(--silver); text-align: center; min-height: 1.2em; }
+    .spray-meta.hint { font-style: italic; opacity: 0.6; }
     .spray-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
     .spray-toggle { display:inline-flex; gap:6px; }
     .sp-btn { font-family:inherit; font-size:.66rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:6px 12px; border-radius:999px; border:1px solid rgba(0,178,169,0.35); background:rgba(0,178,169,0.08); color:var(--silver); cursor:pointer; transition:all .18s; }
@@ -186,6 +187,12 @@
     .sp-dot.out { background:#E74C3C; }
     .sp-dot.hit { background:#00B2A9; }
     .sp-dot.hr  { background:#FFC52F; }
+    .spp-legend { flex-wrap: wrap; gap: 8px 14px; }
+    .spp-ring { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:4px; vertical-align:middle; box-sizing:border-box; background:transparent; }
+    .spp-ring.k  { border:2px solid #fff; }
+    .spp-ring.ch { border:2px dashed #FFC52F; }
+    .spp-hint { font-style:italic; opacity:0.6; font-size:.64rem; }
+    body.goth .spp-ring.k { border-color:#E8E8E8; }
     body.springfield .sp-btn { border:2px solid #000; background:#fff; color:#000; box-shadow:2px 2px 0 #000; }
     body.springfield .sp-btn.on { background:#FF69B4; color:#000; border-color:#000; }
     body.springfield .spray-legend { color:rgba(0,0,0,0.65); }
@@ -612,6 +619,25 @@
         <div class="arsenal-bars" id="arsenal-bars"></div>
       </div>
 
+      <!-- Starting Pitchers pitch chart -->
+      <div class="card span2" id="card-sp-pitch" style="display:none;">
+        <div class="spray-head">
+          <div class="card-h">Starting Pitchers</div>
+          <div class="spray-toggle">
+            <button class="sp-btn on" id="spp-mar" type="button" onclick="drawSpPitch('mar')">Mariners</button>
+            <button class="sp-btn" id="spp-opp" type="button" onclick="drawSpPitch('opp')">Opponent</button>
+          </div>
+        </div>
+        <div class="pz-ab-label" id="spp-label"></div>
+        <svg id="spp-svg" viewBox="0 0 200 220" class="pz-svg" aria-label="Starting pitcher pitch location chart"></svg>
+        <div class="pz-legend spp-legend">
+          <span><span class="pz-dot" style="background:#00B2A9"></span>Hit</span>
+          <span><span class="spp-ring k" style="background:#E74C3C"></span>Strikeout</span>
+          <span><span class="spp-ring ch" style="background:#C4CED4"></span>Challenge</span>
+          <span class="spp-hint">Hover a dot for pitch detail</span>
+        </div>
+      </div>
+
       <!-- Spray Chart -->
       <div class="card span2" id="card-spray" style="display:none;">
         <div class="spray-head">
@@ -624,7 +650,7 @@
         <div class="spray-wrap">
           <svg id="spray-svg" viewBox="0 0 250 240" class="spray-svg" aria-label="Spray chart of batted ball locations"></svg>
           <div class="spray-legend">
-            <span><span class="sp-dot out"></span>Out</span>
+            <span id="spray-leg-out"><span class="sp-dot out"></span>Out</span>
             <span><span class="sp-dot hit"></span>Hit</span>
             <span><span class="sp-dot hr"></span>Home Run</span>
           </div>
@@ -898,10 +924,14 @@
       renderLinescore(ls, teamAbbr(feed, 'away'), teamAbbr(feed, 'home'), state === 'Live' ? ls.currentInning : 0);
       renderPlays(ld);
       renderSprayChart(feed);
+      renderSpPitch(feed);
       renderWinProb(state, marSide);
 
       prev.marRuns = marRuns;
-      $('score-head').textContent = `${gd.teams.away.teamName} at ${gd.teams.home.teamName}`;
+      const od = (gd.datetime && (gd.datetime.officialDate || (gd.datetime.dateTime || '').slice(0, 10))) || '';
+      let dateStr = '';
+      if (od) { const [yy, mm, dd] = od.split('-').map(Number); dateStr = new Date(yy, mm - 1, dd).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }); }
+      $('score-head').textContent = `${gd.teams.away.teamName} at ${gd.teams.home.teamName}` + (dateStr ? ` (${dateStr})` : '');
       $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
       $('loading').style.display = 'none'; $('app').style.display = 'block';
     }
@@ -1303,10 +1333,12 @@
     let spraySide = 'mar';
     let sprayData = null;
     let sprayVenue = null;
+    let sprayFinal = false;
     function renderSprayChart(feed) {
       const el = $('card-spray');
       const marIsHome = feed.gameData.teams.home.id === TEAM_ID;
       sprayVenue = feed.gameData.venue && feed.gameData.venue.id;
+      sprayFinal = feed.gameData.status.abstractGameState === 'Final';
 
       const allPlays = ((feed.liveData.plays && feed.liveData.plays.allPlays) || [])
         .filter(p => p.about && p.about.isComplete);
@@ -1429,21 +1461,32 @@
         <text x="${RFx.toFixed(0)}" y="${(RFy-6).toFixed(0)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">RF</text>
       `;
 
-      const dots = balls.map(b => {
+      // Once the game is final, show only hits and home runs (drop the outs the
+      // user does not need). Always draw hits last so a hit is never buried
+      // under a cluster of out dots.
+      const classify = b => {
+        const et = (b.type || '').toLowerCase();
+        if (et === 'home_run') return 'hr';
+        if (['single', 'double', 'triple'].includes(et)) return 'hit';
+        return 'out';
+      };
+      $('spray-leg-out').style.display = sprayFinal ? 'none' : '';
+      let plot = balls.map(b => ({ b, cat: classify(b) }));
+      if (sprayFinal) plot = plot.filter(o => o.cat !== 'out');
+      const zorder = { out: 0, hr: 1, hit: 2 };
+      plot.sort((a, b) => zorder[a.cat] - zorder[b.cat]);
+
+      const dots = plot.map(({ b, cat }) => {
         const dx = b.x - 125, dyUp = 205 - b.y;
         const angDeg = Math.atan2(dx, dyUp) * 180 / Math.PI;
         const rawR = Math.sqrt(dx * dx + dyUp * dyUp);
         const ft = (b.dist != null && b.dist > 0) ? b.dist : rawR * 2.2;
         const [px, py] = pt(angDeg, Math.min(ft, MAX_FT));
-        const et = b.type.toLowerCase();
-        let color;
-        if (et === 'home_run')                              color = '#FFC52F';
-        else if (['single','double','triple'].includes(et)) color = isGoth ? '#C8C8C8' : '#00B2A9';
-        else                                                color = '#E74C3C';
+        const color = cat === 'hr' ? '#FFC52F' : cat === 'hit' ? (isGoth ? '#C8C8C8' : '#00B2A9') : '#E74C3C';
 
         const title = [
           b.batter,
-          et.replace(/_/g, ' '),
+          (b.type || '').replace(/_/g, ' '),
           b.spd  ? `${b.spd.toFixed(0)} mph`  : '',
           b.ang  != null ? `${b.ang > 0 ? '+' : ''}${b.ang.toFixed(0)}°` : '',
           b.dist ? `${Math.round(b.dist)} ft` : '',
@@ -1455,17 +1498,189 @@
       $('spray-svg').innerHTML = fieldBg + dots;
 
       const last = balls[balls.length - 1];
-      if (last) {
+      const meta = $('spray-meta');
+      if (sprayFinal && plot.length) {
+        meta.classList.add('hint');
+        meta.textContent = 'Hover a dot for hit details';
+      } else if (last) {
+        meta.classList.remove('hint');
         const parts = [];
         if (last.spd)  parts.push(`${last.spd.toFixed(0)} mph EV`);
         if (last.ang  != null) parts.push(`${last.ang > 0 ? '+' : ''}${last.ang.toFixed(0)}° LA`);
         if (last.dist) parts.push(`${Math.round(last.dist)} ft`);
-        $('spray-meta').textContent = `Last: ${last.batter}${parts.length ? ' · ' + parts.join(' · ') : ''}`;
+        meta.textContent = `Last: ${last.batter}${parts.length ? ' · ' + parts.join(' · ') : ''}`;
       } else {
-        $('spray-meta').textContent = (spraySide === 'mar' ? 'No Mariners batted balls yet' : 'No opponent batted balls yet');
+        meta.classList.remove('hint');
+        meta.textContent = (spraySide === 'mar' ? 'No Mariners batted balls yet' : 'No opponent batted balls yet');
       }
     }
     window.drawSpray = drawSpray;
+
+    /* ---------- STARTING PITCHERS PITCH CHART ---------- */
+    let sppSide = 'mar';
+    let sppData = null;
+    let sppNames = { mar: '', opp: '' };
+
+    function renderSpPitch(feed) {
+      const el = $('card-sp-pitch');
+      const bs = feed.liveData.boxscore;
+      if (!bs || !bs.teams) { el.style.display = 'none'; return; }
+      const marIsHome = feed.gameData.teams.home.id === TEAM_ID;
+      const homeStarter = (bs.teams.home.pitchers || [])[0];
+      const awayStarter = (bs.teams.away.pitchers || [])[0];
+      const marStarter = marIsHome ? homeStarter : awayStarter;
+      const oppStarter = marIsHome ? awayStarter : homeStarter;
+      if (!marStarter && !oppStarter) { el.style.display = 'none'; return; }
+
+      const nameOf = id => {
+        const p = (bs.teams.home.players['ID' + id]) || (bs.teams.away.players['ID' + id]);
+        return (p && p.person && p.person.fullName) || 'Starter';
+      };
+      sppNames = { mar: nameOf(marStarter), opp: nameOf(oppStarter) };
+
+      const allPlays = (feed.liveData.plays && feed.liveData.plays.allPlays) || [];
+      const collect = starterId => {
+        const arr = [];
+        let total = 0, kc = 0, hc = 0, cc = 0;
+        if (!starterId) return { arr, total, kc, hc, cc };
+        for (const play of allPlays) {
+          const pid = play.matchup && play.matchup.pitcher && play.matchup.pitcher.id;
+          if (pid !== starterId) continue;
+          const ev0 = play.result && play.result.eventType;
+          const isK = ev0 === 'strikeout' || ev0 === 'strikeout_double_play';
+          const isHit = ['single', 'double', 'triple', 'home_run'].includes(ev0);
+          const overturned = !!(play.reviewDetails && play.reviewDetails.isOverturned);
+          const batter = (play.matchup && play.matchup.batter && play.matchup.batter.fullName) || '';
+          const pitchEvents = (play.playEvents || []).filter(
+            e => e.isPitch && e.pitchData && e.pitchData.coordinates &&
+                 e.pitchData.coordinates.pX != null && e.pitchData.coordinates.pZ != null
+          );
+          pitchEvents.forEach((ev, idx) => {
+            total++;
+            const det = ev.details || {};
+            const isKp = isK && idx === pitchEvents.length - 1;
+            const isCh = overturned && !!det.hasReview;
+            const isHp = !!det.isInPlay && isHit;
+            // Keep only the three categories the user cares about.
+            if (!isKp && !isCh && !isHp) return;
+            if (isKp) kc++;
+            if (isHp) hc++;
+            if (isCh) cc++;
+            const hd = ev.hitData || {};
+            const brk = ev.pitchData.breaks || {};
+            arr.push({
+              px: ev.pitchData.coordinates.pX,
+              pz: ev.pitchData.coordinates.pZ,
+              szTop: ev.pitchData.strikeZoneTop,
+              szBottom: ev.pitchData.strikeZoneBottom,
+              isK: isKp, isHit: isHp, isChallenge: isCh,
+              speed: ev.pitchData.startSpeed,
+              type: det.type && det.type.description,
+              spin: brk.spinRate,
+              result: (play.result && play.result.event) || det.description,
+              call: det.description,
+              batter,
+              exitVelo: hd.launchSpeed,
+              dist: hd.totalDistance,
+            });
+          });
+        }
+        return { arr, total, kc, hc, cc };
+      };
+
+      sppData = { mar: collect(marStarter), opp: collect(oppStarter) };
+      if (!sppData.mar.arr.length && !sppData.opp.arr.length) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      if (!sppData[sppSide] || !sppData[sppSide].arr.length) sppSide = sppData.mar.arr.length ? 'mar' : 'opp';
+
+      const lastName = n => { const parts = (n || '').split(' '); return parts.length > 1 ? parts.slice(1).join(' ') : n; };
+      $('spp-mar').textContent = lastName(sppNames.mar);
+      $('spp-opp').textContent = lastName(sppNames.opp);
+      drawSpPitch(sppSide);
+    }
+
+    function drawSpPitch(side) {
+      if (!sppData) return;
+      sppSide = (side === 'opp') ? 'opp' : 'mar';
+      const D = sppData[sppSide] || { arr: [], total: 0, kc: 0, hc: 0, cc: 0 };
+      const pitches = D.arr;
+      $('spp-mar').classList.toggle('on', sppSide === 'mar');
+      $('spp-opp').classList.toggle('on', sppSide === 'opp');
+
+      $('spp-label').textContent = D.total
+        ? `${sppNames[sppSide]} · ${D.total} P · ${D.kc} K · ${D.hc} H` + (D.cc ? ` · ${D.cc} challenged` : '')
+        : `${sppNames[sppSide]} · no pitch data`;
+
+      const W = 200, H = 220, PAD = 12;
+      const PX_MIN = -2.5, PX_RANGE = 5.0, PZ_MAX = 5.0;
+      const PLOT_W = W - 2 * PAD, PLOT_H = H - PAD - 30;
+      const svgX = px => PAD + (px - PX_MIN) / PX_RANGE * PLOT_W;
+      const svgY = pz => PAD + PLOT_H - (pz / PZ_MAX) * PLOT_H;
+      const SZ_L = -0.833, SZ_R = 0.833;
+
+      const tops = pitches.map(p => p.szTop).filter(v => v != null);
+      const bots = pitches.map(p => p.szBottom).filter(v => v != null);
+      const szTop = tops.length ? tops.reduce((a, b) => a + b, 0) / tops.length : 3.4;
+      const szBottom = bots.length ? bots.reduce((a, b) => a + b, 0) / bots.length : 1.6;
+
+      const zX = svgX(SZ_L).toFixed(1), zY = svgY(szTop).toFixed(1);
+      const zW = (svgX(SZ_R) - svgX(SZ_L)).toFixed(1), zH = (svgY(szBottom) - svgY(szTop)).toFixed(1);
+      const zCX = ((svgX(SZ_L) + svgX(SZ_R)) / 2).toFixed(1);
+
+      let gridLines = '';
+      const x1 = svgX(SZ_L), x2 = svgX(SZ_R), y1 = svgY(szTop), y2 = svgY(szBottom);
+      const dxT = (x2 - x1) / 3, dyT = (y2 - y1) / 3;
+      for (let i = 1; i <= 2; i++) {
+        gridLines += `<line x1="${(x1 + dxT * i).toFixed(1)}" y1="${y1.toFixed(1)}" x2="${(x1 + dxT * i).toFixed(1)}" y2="${y2.toFixed(1)}" stroke="rgba(255,255,255,0.12)" stroke-width="0.5"/>`;
+        gridLines += `<line x1="${x1.toFixed(1)}" y1="${(y1 + dyT * i).toFixed(1)}" x2="${x2.toFixed(1)}" y2="${(y1 + dyT * i).toFixed(1)}" stroke="rgba(255,255,255,0.12)" stroke-width="0.5"/>`;
+      }
+
+      const pY = H - 18, pCX = svgX(0), pHW = svgX(SZ_R) - svgX(0);
+      const platePts = [
+        `${(pCX - pHW).toFixed(1)},${pY - 6}`,
+        `${(pCX + pHW).toFixed(1)},${pY - 6}`,
+        `${(pCX + pHW).toFixed(1)},${pY}`,
+        `${pCX.toFixed(1)},${pY + 5}`,
+        `${(pCX - pHW).toFixed(1)},${pY}`,
+      ].join(' ');
+
+      const isGoth = document.body.classList.contains('goth');
+      const TEAL = isGoth ? '#C8C8C8' : '#00B2A9';
+      // Only three categories now: hits, strikeout pitches, and challenge-overturned
+      // pitches. Draw hits first, strikeouts last so their rings sit on top.
+      const order = { ch: 0, hit: 1, k: 2 };
+      const keyOf = p => p.isK ? 'k' : p.isHit ? 'hit' : 'ch';
+      const sorted = pitches.slice().sort((a, b) => order[keyOf(a)] - order[keyOf(b)]);
+
+      const dots = sorted.map(p => {
+        const cx = svgX(p.px).toFixed(1), cy = svgY(p.pz).toFixed(1);
+        const fill = p.isHit ? TEAL : p.isK ? '#E74C3C' : '#C4CED4';
+        const title = [
+          p.batter,
+          p.result,
+          p.call && !p.isHit && p.call !== p.result ? p.call : '',
+          p.type || '',
+          p.speed ? `${p.speed.toFixed(0)} mph` : '',
+          p.spin  ? `${Math.round(p.spin)} rpm` : '',
+          (p.isHit && p.exitVelo) ? `${p.exitVelo.toFixed(0)} mph EV` : '',
+          (p.isHit && p.dist)     ? `${Math.round(p.dist)} ft` : '',
+        ].filter(Boolean).join(' · ');
+        let rings = '';
+        if (p.isChallenge) rings += `<circle cx="${cx}" cy="${cy}" r="8" fill="none" stroke="#FFC52F" stroke-width="1.4" stroke-dasharray="2.5 2"/>`;
+        if (p.isK)         rings += `<circle cx="${cx}" cy="${cy}" r="7.5" fill="none" stroke="${isGoth ? '#E8E8E8' : '#fff'}" stroke-width="1.8"/>`;
+        return `<circle cx="${cx}" cy="${cy}" r="5.5" fill="${fill}" opacity="0.9" stroke="rgba(0,0,0,0.4)" stroke-width="0.6" style="cursor:pointer"><title>${title}</title></circle>${rings}`;
+      }).join('');
+
+      $('spp-svg').innerHTML = `
+        <rect x="${PAD}" y="${PAD}" width="${PLOT_W}" height="${PLOT_H}" fill="rgba(255,255,255,0.02)" rx="3"/>
+        <rect x="${zX}" y="${zY}" width="${zW}" height="${zH}" fill="rgba(0,178,169,0.07)" stroke="rgba(0,178,169,0.65)" stroke-width="1.5"/>
+        ${gridLines}
+        <text x="${zCX}" y="${(parseFloat(zY) - 3).toFixed(1)}" text-anchor="middle" fill="rgba(0,178,169,0.4)" font-size="8" font-family="system-ui,sans-serif">SZ</text>
+        <polygon points="${platePts}" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        ${dots}
+      `;
+    }
+    window.drawSpPitch = drawSpPitch;
 
     /* ---------- EXIT VELOCITY FLASH TOAST ---------- */
     function flashEV(speed, angle, eventType) {
