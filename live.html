@@ -176,6 +176,23 @@
     .spray-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .spray-svg  { width: 100%; max-width: 300px; display: block; }
     .spray-meta { font-size: .78rem; color: var(--silver); text-align: center; min-height: 1.2em; }
+    .spray-head { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+    .spray-toggle { display:inline-flex; gap:6px; }
+    .sp-btn { font-family:inherit; font-size:.66rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:6px 12px; border-radius:999px; border:1px solid rgba(0,178,169,0.35); background:rgba(0,178,169,0.08); color:var(--silver); cursor:pointer; transition:all .18s; }
+    .sp-btn:hover { transform:translateY(-1px); }
+    .sp-btn.on { background:var(--light-teal); color:#06242a; border-color:var(--light-teal); }
+    .spray-legend { display:flex; justify-content:center; gap:16px; font-size:.7rem; color:var(--silver); align-items:center; }
+    .sp-dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+    .sp-dot.out { background:#E74C3C; }
+    .sp-dot.hit { background:#00B2A9; }
+    .sp-dot.hr  { background:#FFC52F; }
+    body.springfield .sp-btn { border:2px solid #000; background:#fff; color:#000; box-shadow:2px 2px 0 #000; }
+    body.springfield .sp-btn.on { background:#FF69B4; color:#000; border-color:#000; }
+    body.springfield .spray-legend { color:rgba(0,0,0,0.65); }
+    body.goth .sp-btn { font-family:'Cinzel',serif; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.06); color:#9e9e9e; }
+    body.goth .sp-btn.on { background:rgba(255,255,255,0.14); color:#E8E8E8; border-color:rgba(255,255,255,0.4); }
+    body.goth .spray-legend { color:#9e9e9e; }
+    body.goth .sp-dot.hit { background:#C8C8C8; }
 
     /* ---- Exit Velocity Toast ---- */
     .ev-toast {
@@ -589,9 +606,20 @@
 
       <!-- Spray Chart -->
       <div class="card span2" id="card-spray" style="display:none;">
-        <div class="card-h">Batted Balls This Game</div>
+        <div class="spray-head">
+          <div class="card-h">Batted Balls This Game</div>
+          <div class="spray-toggle">
+            <button class="sp-btn on" id="sp-mar" type="button" onclick="drawSpray('mar')">Mariners</button>
+            <button class="sp-btn" id="sp-opp" type="button" onclick="drawSpray('opp')">Opponent</button>
+          </div>
+        </div>
         <div class="spray-wrap">
           <svg id="spray-svg" viewBox="0 0 250 240" class="spray-svg" aria-label="Spray chart of batted ball locations"></svg>
+          <div class="spray-legend">
+            <span><span class="sp-dot out"></span>Out</span>
+            <span><span class="sp-dot hit"></span>Hit</span>
+            <span><span class="sp-dot hr"></span>Home Run</span>
+          </div>
           <div class="spray-meta" id="spray-meta"></div>
         </div>
       </div>
@@ -1212,30 +1240,51 @@
     }
 
     /* ---------- SPRAY CHART ---------- */
+    let spraySide = 'mar';
+    let sprayData = null;
+    let sprayVenue = null;
     function renderSprayChart(feed) {
       const el = $('card-spray');
+      const marIsHome = feed.gameData.teams.home.id === TEAM_ID;
+      sprayVenue = feed.gameData.venue && feed.gameData.venue.id;
 
       const allPlays = ((feed.liveData.plays && feed.liveData.plays.allPlays) || [])
         .filter(p => p.about && p.about.isComplete);
 
-      const batted = [];
+      const mar = [], opp = [];
       for (const play of allPlays) {
+        const marBatting = (play.about.isTopInning === !marIsHome);
+        const batter = (play.matchup && play.matchup.batter && play.matchup.batter.fullName) || '';
         for (const event of (play.playEvents || [])) {
           const hd = event.hitData;
           if (!hd || !hd.coordinates || hd.coordinates.coordX == null || hd.coordinates.coordY == null) continue;
-          batted.push({
+          (marBatting ? mar : opp).push({
             x:    hd.coordinates.coordX,
             y:    hd.coordinates.coordY,
             type: (play.result && play.result.eventType) || '',
             spd:  hd.launchSpeed,
             ang:  hd.launchAngle,
             dist: hd.totalDistance,
+            batter,
           });
         }
       }
 
-      if (!batted.length) { el.style.display = 'none'; return; }
+      if (!mar.length && !opp.length) { el.style.display = 'none'; return; }
       el.style.display = 'block';
+      sprayData = { mar, opp };
+      drawSpray(spraySide);
+    }
+
+    // Plot the chosen side's batted balls on a polar field (home plate at the
+    // bottom, true 90-degree foul lines) so fair balls sit inside the wedge and
+    // foul balls fall outside the lines, the way a real spray chart reads.
+    function drawSpray(side) {
+      if (!sprayData) return;
+      spraySide = (side === 'opp') ? 'opp' : 'mar';
+      const balls = sprayData[spraySide] || [];
+      $('sp-mar').classList.toggle('on', spraySide === 'mar');
+      $('sp-opp').classList.toggle('on', spraySide === 'opp');
 
       const isGoth = document.body.classList.contains('goth');
       const isSF   = document.body.classList.contains('springfield');
@@ -1243,34 +1292,58 @@
       const dirtColor  = isGoth ? 'rgba(255,255,255,0.05)'  : 'rgba(150,95,45,0.22)';
       const lineColor  = isGoth ? 'rgba(255,255,255,0.16)'  : 'rgba(255,255,255,0.22)';
 
-      // MLB hit coordinates put home plate at HIGH coordY (~200) and the outfield
-      // at LOW coordY (~20), with coordX ~125 dead center. So we map svgX = coordX
-      // and svgY = coordY directly (no flip) to keep home plate at the bottom and
-      // the outfield wall at the top, fanning out the way a real field does.
-      const HX = 125, HY = 215;                 // home plate
-      const LFp = [38, 60], RFp = [212, 60];    // foul poles
-      const B2 = [125, 155], B1 = [157, 185], B3 = [93, 185];  // bases
+      // Real outfield wall by park: distances in feet at -45 / -22.5 / 0 / +22.5 / +45
+      // degree spray angles (LF line, left-center, center, right-center, RF line).
+      const PARKS = { 680: [331, 378, 401, 381, 326] };   // 680 = T-Mobile Park
+      const profile = PARKS[sprayVenue] || [330, 375, 400, 375, 330];   // generic fallback
+      const PROF_ANG = [-45, -22.5, 0, 22.5, 45];
+      const wallFeet = deg => {
+        const d = Math.max(-45, Math.min(45, deg));
+        for (let i = 0; i < 4; i++) {
+          if (d <= PROF_ANG[i + 1]) {
+            const t = (d - PROF_ANG[i]) / (PROF_ANG[i + 1] - PROF_ANG[i]);
+            return profile[i] + t * (profile[i + 1] - profile[i]);
+          }
+        }
+        return profile[4];
+      };
+
+      // Plot everything by true distance (feet) so home runs clear the wall.
+      const HX = 125, HY = 215, MAX_FT = 470, MAX_R = 188;
+      const scale = MAX_R / MAX_FT;
+      const pt = (deg, ft) => { const r = ft * scale, a = deg * Math.PI / 180; return [HX + r * Math.sin(a), HY - r * Math.cos(a)]; };
+
+      const wallPts = [];
+      for (let a = -45; a <= 45.01; a += 3.75) wallPts.push(pt(a, wallFeet(a)));
+      const wallPath  = wallPts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+      const grassPath = `M${HX},${HY} ` + wallPts.map(p => `L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' Z';
+      const [LFx, LFy] = wallPts[0], [RFx, RFy] = wallPts[wallPts.length - 1];
+      const [b1x, b1y] = pt(45, 90), [b2x, b2y] = pt(0, 127), [b3x, b3y] = pt(-45, 90);
+      const cfy = pt(0, wallFeet(0))[1];
 
       const fieldBg = `
-        <path d="M${HX},${HY} L${LFp[0]},${LFp[1]} Q125,0 ${RFp[0]},${RFp[1]} Z"
-              fill="${grassColor}" stroke="${lineColor}" stroke-width="1"/>
-        <path d="M${HX},${HY} L${B1[0]},${B1[1]} L${B2[0]},${B2[1]} L${B3[0]},${B3[1]} Z"
-              fill="${dirtColor}" stroke="${lineColor}" stroke-width="0.5"/>
-        <line x1="${HX}" y1="${HY}" x2="${LFp[0]}" y2="${LFp[1]}" stroke="${lineColor}" stroke-width="1"/>
-        <line x1="${HX}" y1="${HY}" x2="${RFp[0]}" y2="${RFp[1]}" stroke="${lineColor}" stroke-width="1"/>
+        <path d="${grassPath}" fill="${grassColor}" stroke="none"/>
+        <path d="M${HX},${HY} L${b1x.toFixed(1)},${b1y.toFixed(1)} L${b2x.toFixed(1)},${b2y.toFixed(1)} L${b3x.toFixed(1)},${b3y.toFixed(1)} Z" fill="${dirtColor}" stroke="${lineColor}" stroke-width="0.5"/>
+        <line x1="${HX}" y1="${HY}" x2="${LFx.toFixed(1)}" y2="${LFy.toFixed(1)}" stroke="${lineColor}" stroke-width="1"/>
+        <line x1="${HX}" y1="${HY}" x2="${RFx.toFixed(1)}" y2="${RFy.toFixed(1)}" stroke="${lineColor}" stroke-width="1"/>
+        <path d="${wallPath}" fill="none" stroke="${lineColor}" stroke-width="1.5"/>
         <g fill="rgba(255,255,255,0.28)" stroke="${lineColor}" stroke-width="0.5">
-          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${B1[0]},${B1[1]}) rotate(45)"/>
-          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${B2[0]},${B2[1]}) rotate(45)"/>
-          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${B3[0]},${B3[1]}) rotate(45)"/>
+          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${b1x.toFixed(1)},${b1y.toFixed(1)}) rotate(45)"/>
+          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${b2x.toFixed(1)},${b2y.toFixed(1)}) rotate(45)"/>
+          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${b3x.toFixed(1)},${b3y.toFixed(1)}) rotate(45)"/>
         </g>
-        <polygon points="${HX-4},${HY-4} ${HX+4},${HY-4} ${HX+4},${HY} ${HX},${HY+4} ${HX-4},${HY}"
-                 fill="rgba(255,255,255,0.35)"/>
-        <text x="${LFp[0]-2}" y="${LFp[1]-6}" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">LF</text>
-        <text x="118" y="22" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">CF</text>
-        <text x="${RFp[0]-14}" y="${RFp[1]-6}" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">RF</text>
+        <polygon points="${HX-4},${HY-4} ${HX+4},${HY-4} ${HX+4},${HY} ${HX},${HY+4} ${HX-4},${HY}" fill="rgba(255,255,255,0.35)"/>
+        <text x="${LFx.toFixed(0)}" y="${(LFy-6).toFixed(0)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">LF</text>
+        <text x="125" y="${(cfy-6).toFixed(0)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">CF</text>
+        <text x="${RFx.toFixed(0)}" y="${(RFy-6).toFixed(0)}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">RF</text>
       `;
 
-      const dots = batted.map(b => {
+      const dots = balls.map(b => {
+        const dx = b.x - 125, dyUp = 205 - b.y;
+        const angDeg = Math.atan2(dx, dyUp) * 180 / Math.PI;
+        const rawR = Math.sqrt(dx * dx + dyUp * dyUp);
+        const ft = (b.dist != null && b.dist > 0) ? b.dist : rawR * 2.2;
+        const [px, py] = pt(angDeg, Math.min(ft, MAX_FT));
         const et = b.type.toLowerCase();
         let color;
         if (et === 'home_run')                              color = '#FFC52F';
@@ -1278,30 +1351,30 @@
         else                                                color = '#E74C3C';
 
         const title = [
+          b.batter,
           et.replace(/_/g, ' '),
           b.spd  ? `${b.spd.toFixed(0)} mph`  : '',
           b.ang  != null ? `${b.ang > 0 ? '+' : ''}${b.ang.toFixed(0)}°` : '',
           b.dist ? `${Math.round(b.dist)} ft` : '',
         ].filter(Boolean).join(' · ');
 
-        return `<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}"
-          r="4.5" fill="${color}" opacity="0.82" stroke="rgba(0,0,0,0.35)" stroke-width="0.5">
-          <title>${title}</title></circle>`;
+        return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4.5" fill="${color}" opacity="0.82" stroke="rgba(0,0,0,0.35)" stroke-width="0.5"><title>${title}</title></circle>`;
       }).join('');
 
       $('spray-svg').innerHTML = fieldBg + dots;
 
-      const last = batted[batted.length - 1];
+      const last = balls[balls.length - 1];
       if (last) {
         const parts = [];
         if (last.spd)  parts.push(`${last.spd.toFixed(0)} mph EV`);
         if (last.ang  != null) parts.push(`${last.ang > 0 ? '+' : ''}${last.ang.toFixed(0)}° LA`);
         if (last.dist) parts.push(`${Math.round(last.dist)} ft`);
-        $('spray-meta').textContent = parts.length ? `Last batted ball: ${parts.join(' · ')}` : '';
+        $('spray-meta').textContent = `Last: ${last.batter}${parts.length ? ' · ' + parts.join(' · ') : ''}`;
       } else {
-        $('spray-meta').textContent = '';
+        $('spray-meta').textContent = (spraySide === 'mar' ? 'No Mariners batted balls yet' : 'No opponent batted balls yet');
       }
     }
+    window.drawSpray = drawSpray;
 
     /* ---------- EXIT VELOCITY FLASH TOAST ---------- */
     function flashEV(speed, angle, eventType) {
