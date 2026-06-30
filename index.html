@@ -635,6 +635,12 @@
     .seasons-lp { font-size:.58rem; color:#FFC52F; opacity:.85; margin-top:1px; width:100%; text-align:center; }
     .seasons-note { color:var(--silver); font-size:.78rem; margin-top:14px; text-align:center; }
     .seasons-load { color:var(--silver); padding:50px; text-align:center; width:100%; }
+    /* By Season metric toggle (sits next to the title) */
+    .seasons-head { display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-bottom:18px; }
+    .byseason-toggle { display:inline-flex; gap:6px; }
+    .bs-btn { font-family:inherit; font-size:0.7rem; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:7px 14px; border-radius:999px; border:1px solid rgba(0,178,169,0.35); background:rgba(0,178,169,0.08); color:var(--silver); cursor:pointer; transition:all .18s; }
+    .bs-btn:hover { transform:translateY(-1px); }
+    .bs-btn.on { background:var(--light-teal); color:#06242a; border-color:var(--light-teal); }
 
     .game-row {
       display: flex;
@@ -1063,6 +1069,8 @@
     body.springfield .seasons-rec .w { color: #2e30b0; } body.springfield .seasons-rec .l { color: #C62828; } body.springfield .seasons-rec .wp { color: rgba(0,0,0,0.6); }
     body.springfield .seasons-lp { color: #b07a00; }
     body.springfield .seasons-note, body.springfield .seasons-load { color: rgba(0,0,0,0.6); }
+    body.springfield .bs-btn { border:2px solid #000; background:#fff; color:#000; box-shadow:2px 2px 0 #000; }
+    body.springfield .bs-btn.on { background:#FF69B4; color:#000; border-color:#000; }
 
     body.springfield .trend-sub  { color: rgba(0,0,0,0.6); }
     body.springfield .trend-grid { stroke: rgba(0,0,0,0.1); }
@@ -1313,6 +1321,8 @@
     body.goth .seasons-lp  { color: #8a8a8a; }
     body.goth .seasons-note,
     body.goth .seasons-load { color: #8a8a8a; }
+    body.goth .bs-btn { font-family:'Cinzel', serif; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.06); color:#9e9e9e; }
+    body.goth .bs-btn.on { background:rgba(255,255,255,0.14); color:#E8E8E8; border-color:rgba(255,255,255,0.4); }
 
     /* Game rows */
     body.goth .game-row {
@@ -1481,7 +1491,7 @@
       <div class="card-label" id="streak-label">Consecutive Games Scoring ≤ 3 Runs</div>
       <div class="streak-number" id="streak-num">0</div>
       <div class="streak-bests" id="streak-bests" style="display:none;">
-        <div class="streak-bests-eyebrow">Longest This Season</div>
+        <div class="streak-bests-eyebrow">Longest Streaks This Season</div>
         <div class="streak-best" id="streak-best-1"><span class="sb-num"></span><span class="sb-lbl"></span></div>
         <div class="streak-best" id="streak-best-2"><span class="sb-num"></span><span class="sb-lbl"></span></div>
       </div>
@@ -1538,12 +1548,15 @@
 
     <!-- By season (last 10) -->
     <div class="card full-width">
-      <div class="games-section-label">
+      <div class="seasons-head">
         <span class="games-title">By Season</span>
-        <span class="games-record" id="seasons-cur"></span>
+        <div class="byseason-toggle">
+          <button class="bs-btn on" id="bs-under" type="button" onclick="drawSeasons('under')">3 or fewer</button>
+          <button class="bs-btn" id="bs-over" type="button" onclick="drawSeasons('over')">More than 3</button>
+        </div>
       </div>
       <div class="seasons-bars" id="seasons-bars"><div class="seasons-load">Loading season history...</div></div>
-      <div class="seasons-note">Share of games scoring 3 or fewer each season. Record (win pct) and share of losses where they scored 3 or fewer below each year. Gold = this season. Newest first; scroll for older seasons.</div>
+      <div class="seasons-note" id="seasons-note">Share of games scoring 3 or fewer each season. Record (win pct) and share of losses where they scored 3 or fewer below each year. Gold = this season. Newest first; scroll for older seasons.</div>
     </div>
 
   </div>
@@ -1880,26 +1893,55 @@
   // Multi-season comparison: % of games scoring <=3 over the last 10 seasons.
   // Lazy and cached so it never blocks the main page; fires once after first load.
   let seasonsDone = false;
+  let seasonsData = null;
+  let seasonsMode = 'under';
   async function renderSeasons() {
     if (seasonsDone) return; seasonsDone = true;
     const bars = document.getElementById('seasons-bars');
     const years = []; for (let y = SEASON; y >= 2000; y--) years.push(y);
     try {
-      const data = await Promise.all(years.map(async y => {
+      seasonsData = await Promise.all(years.map(async y => {
         const r = await fetchJSON(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${TEAM_ID}&season=${y}&gameType=R&startDate=${y}-03-01&endDate=${y}-11-15`);
-        let under = 0, tot = 0, w = 0, l = 0, lossLow = 0;
+        let under = 0, over = 0, tot = 0, w = 0, l = 0, lossLow = 0, winHigh = 0;
         for (const day of (r.dates || [])) for (const g of day.games) {
           if (g.status.abstractGameState !== 'Final') continue;
           const sea = g.teams.away.team.id === TEAM_ID ? g.teams.away : g.teams.home;
-          if (sea.score == null) continue; tot++; const low = sea.score <= THRESHOLD; if (low) under++;
-          if (sea.isWinner) w++; else { l++; if (low) lossLow++; }
+          if (sea.score == null) continue; tot++;
+          const low = sea.score <= THRESHOLD; if (low) under++; else over++;
+          if (sea.isWinner) { w++; if (!low) winHigh++; } else { l++; if (low) lossLow++; }
         }
-        return { y, pct: tot ? Math.round(under / tot * 100) : 0, w, l, tot, lossPct: l ? Math.round(lossLow / l * 100) : 0 };
+        return { y, tot, w, l,
+          pctU: tot ? Math.round(under / tot * 100) : 0,
+          pctO: tot ? Math.round(over / tot * 100) : 0,
+          lossPct: l ? Math.round(lossLow / l * 100) : 0,
+          winPct:  w ? Math.round(winHigh / w * 100) : 0 };
       }));
-      const LO = 30, HI = 65, ht = p => Math.max(8, Math.min(100, Math.round((p - LO) / (HI - LO) * 100)));
-      bars.innerHTML = data.map(d => `<div class="seasons-col" title="${d.y}: ${d.w}-${d.l} (${(d.w/(d.w+d.l)).toFixed(3).replace(/^0/,'')}) · ${d.lossPct}% of losses scored ≤3"><div class="seasons-track"><div class="seasons-bar ${d.y === SEASON ? 'cur' : ''}" style="height:${d.tot ? ht(d.pct) : 0}%"><span class="p">${d.tot ? d.pct + '%' : '-'}</span></div></div><div class="seasons-yr">${d.y}</div><div class="seasons-rec">${d.tot ? '<span class="w">' + d.w + '</span>-<span class="l">' + d.l + '</span> <span class="wp">(' + (d.w/(d.w+d.l)).toFixed(3).replace(/^0/,'') + ')</span>' : ''}</div><div class="seasons-lp">${d.tot ? d.lossPct + '% of L ≤3' : ''}</div></div>`).join('');
+      drawSeasons(seasonsMode);
     } catch (e) { bars.innerHTML = '<div class="seasons-load">Season history unavailable.</div>'; seasonsDone = false; }
   }
+
+  // Render the season bars for the chosen metric ('under' = 3 or fewer, 'over' = more than 3).
+  function drawSeasons(mode) {
+    if (!seasonsData) return;
+    seasonsMode = mode;
+    const isUnder = mode === 'under';
+    const LO = isUnder ? 30 : 35, HI = isUnder ? 65 : 70;
+    const ht = p => Math.max(8, Math.min(100, Math.round((p - LO) / (HI - LO) * 100)));
+    document.getElementById('seasons-bars').innerHTML = seasonsData.map(d => {
+      const pct = isUnder ? d.pctU : d.pctO;
+      const sub = isUnder ? d.lossPct + '% of L ≤3' : d.winPct + '% of W >3';
+      const wp  = d.tot ? (d.w / (d.w + d.l)).toFixed(3).replace(/^0/, '') : '';
+      const title = `${d.y}: ${d.w}-${d.l} (${wp}) · ${isUnder ? d.lossPct + '% of losses scored ≤3' : d.winPct + '% of wins scored >3'}`;
+      return `<div class="seasons-col" title="${title}"><div class="seasons-track"><div class="seasons-bar ${d.y === SEASON ? 'cur' : ''}" style="height:${d.tot ? ht(pct) : 0}%"><span class="p">${d.tot ? pct + '%' : '-'}</span></div></div><div class="seasons-yr">${d.y}</div><div class="seasons-rec">${d.tot ? '<span class="w">' + d.w + '</span>-<span class="l">' + d.l + '</span> <span class="wp">(' + wp + ')</span>' : ''}</div><div class="seasons-lp">${d.tot ? sub : ''}</div></div>`;
+    }).join('');
+    document.getElementById('seasons-note').textContent = isUnder
+      ? 'Share of games scoring 3 or fewer each season. Record (win pct) and share of losses where they scored 3 or fewer below each year. Gold = this season. Newest first; scroll for older seasons.'
+      : 'Share of games scoring more than 3 each season. Record (win pct) and share of wins where they scored more than 3 below each year. Gold = this season. Newest first; scroll for older seasons.';
+    const bu = document.getElementById('bs-under'), bo = document.getElementById('bs-over');
+    if (bu) bu.classList.toggle('on', isUnder);
+    if (bo) bo.classList.toggle('on', !isUnder);
+  }
+  window.drawSeasons = drawSeasons;
 
   async function load() {
     try {
