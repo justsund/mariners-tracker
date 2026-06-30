@@ -1237,32 +1237,37 @@
       if (!batted.length) { el.style.display = 'none'; return; }
       el.style.display = 'block';
 
-      function cx(x) { return x; }
-      function cy(y) { return 250 - y; }
-
-      const HX = 125, HY = cy(205);
-
       const isGoth = document.body.classList.contains('goth');
       const isSF   = document.body.classList.contains('springfield');
-      const grassColor = isGoth ? 'rgba(255,255,255,0.03)' : isSF ? 'rgba(126,217,87,0.15)' : 'rgba(0,100,0,0.18)';
-      const lineColor  = isGoth ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.15)';
+      const grassColor = isGoth ? 'rgba(255,255,255,0.035)' : isSF ? 'rgba(126,217,87,0.16)' : 'rgba(0,90,40,0.22)';
+      const dirtColor  = isGoth ? 'rgba(255,255,255,0.05)'  : 'rgba(150,95,45,0.22)';
+      const lineColor  = isGoth ? 'rgba(255,255,255,0.16)'  : 'rgba(255,255,255,0.22)';
+
+      // MLB hit coordinates put home plate at HIGH coordY (~200) and the outfield
+      // at LOW coordY (~20), with coordX ~125 dead center. So we map svgX = coordX
+      // and svgY = coordY directly (no flip) to keep home plate at the bottom and
+      // the outfield wall at the top, fanning out the way a real field does.
+      const HX = 125, HY = 215;                 // home plate
+      const LFp = [38, 60], RFp = [212, 60];    // foul poles
+      const B2 = [125, 155], B1 = [157, 185], B3 = [93, 185];  // bases
 
       const fieldBg = `
-        <path d="M${HX},${HY} L10,10 Q125,-15 240,10 Z"
+        <path d="M${HX},${HY} L${LFp[0]},${LFp[1]} Q125,0 ${RFp[0]},${RFp[1]} Z"
               fill="${grassColor}" stroke="${lineColor}" stroke-width="1"/>
-        <ellipse cx="${HX}" cy="${cy(165)}" rx="50" ry="48"
-                 fill="rgba(139,90,43,0.12)" stroke="${lineColor}" stroke-width="0.5"/>
-        <line x1="${HX}" y1="${HY}" x2="10"  y2="10"  stroke="${lineColor}" stroke-width="1"/>
-        <line x1="${HX}" y1="${HY}" x2="240" y2="10"  stroke="${lineColor}" stroke-width="1"/>
-        <circle cx="${HX}" cy="${HY}" r="4" fill="rgba(255,255,255,0.25)"/>
-        <g fill="rgba(255,255,255,0.2)" stroke="${lineColor}" stroke-width="0.5">
-          <rect x="${cx(165)-5}" y="${cy(165)-5}" width="10" height="10" transform="rotate(45,${cx(165)},${cy(165)})"/>
-          <rect x="${cx(125)-5}" y="${cy(185)-5}" width="10" height="10" transform="rotate(45,${cx(125)},${cy(185)})"/>
-          <rect x="${cx(85)-5}"  y="${cy(165)-5}" width="10" height="10" transform="rotate(45,${cx(85)},${cy(165)})"/>
+        <path d="M${HX},${HY} L${B1[0]},${B1[1]} L${B2[0]},${B2[1]} L${B3[0]},${B3[1]} Z"
+              fill="${dirtColor}" stroke="${lineColor}" stroke-width="0.5"/>
+        <line x1="${HX}" y1="${HY}" x2="${LFp[0]}" y2="${LFp[1]}" stroke="${lineColor}" stroke-width="1"/>
+        <line x1="${HX}" y1="${HY}" x2="${RFp[0]}" y2="${RFp[1]}" stroke="${lineColor}" stroke-width="1"/>
+        <g fill="rgba(255,255,255,0.28)" stroke="${lineColor}" stroke-width="0.5">
+          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${B1[0]},${B1[1]}) rotate(45)"/>
+          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${B2[0]},${B2[1]}) rotate(45)"/>
+          <rect x="-3.5" y="-3.5" width="7" height="7" transform="translate(${B3[0]},${B3[1]}) rotate(45)"/>
         </g>
-        <text x="18"  y="22"  fill="rgba(255,255,255,0.2)" font-size="10" font-family="system-ui,sans-serif">LF</text>
-        <text x="119" y="16"  fill="rgba(255,255,255,0.2)" font-size="10" font-family="system-ui,sans-serif">CF</text>
-        <text x="225" y="22"  fill="rgba(255,255,255,0.2)" font-size="10" font-family="system-ui,sans-serif">RF</text>
+        <polygon points="${HX-4},${HY-4} ${HX+4},${HY-4} ${HX+4},${HY} ${HX},${HY+4} ${HX-4},${HY}"
+                 fill="rgba(255,255,255,0.35)"/>
+        <text x="${LFp[0]-2}" y="${LFp[1]-6}" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">LF</text>
+        <text x="118" y="22" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">CF</text>
+        <text x="${RFp[0]-14}" y="${RFp[1]-6}" fill="rgba(255,255,255,0.3)" font-size="10" font-family="system-ui,sans-serif">RF</text>
       `;
 
       const dots = batted.map(b => {
@@ -1279,8 +1284,8 @@
           b.dist ? `${Math.round(b.dist)} ft` : '',
         ].filter(Boolean).join(' · ');
 
-        return `<circle cx="${cx(b.x).toFixed(1)}" cy="${cy(b.y).toFixed(1)}"
-          r="6" fill="${color}" opacity="0.85" stroke="rgba(0,0,0,0.35)" stroke-width="0.5">
+        return `<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}"
+          r="4.5" fill="${color}" opacity="0.82" stroke="rgba(0,0,0,0.35)" stroke-width="0.5">
           <title>${title}</title></circle>`;
       }).join('');
 
