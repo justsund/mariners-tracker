@@ -262,6 +262,8 @@
     .play { padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.04); border-left: 3px solid rgba(0,178,169,0.4); font-size: .82rem; color: var(--silver); }
     .play.scoring { border-left-color: var(--gold); background: rgba(255,197,47,0.08); color: #fff; }
     .play .pt { font-size: .62rem; color: rgba(196,206,212,0.55); text-transform: uppercase; letter-spacing: 1px; }
+    .play.play-reveal { animation: playIn .5s ease both; }
+    @keyframes playIn { 0% { opacity: 0; transform: translateY(-10px); } 60% { opacity: 1; } 100% { opacity: 1; transform: translateY(0); } }
 
     /* Preview / final big text */
     .big-time { text-align: center; font-size: clamp(2rem, 7vw, 3rem); font-weight: 800; margin: 8px 0; }
@@ -1049,15 +1051,60 @@
         </tbody></table>`;
     }
 
+    /* Play-by-play with staggered reveal: when a single poll brings in several
+       new completed plays, drop them into the log one at a time instead of all
+       at once. The DOM is the source of truth for what has already been shown. */
+    let playsGamePk = null, playsFirstPaint = true, lastPlaysKey = '';
+    let playRevealTimers = [];
+    function clearPlayRevealTimers() { playRevealTimers.forEach(clearTimeout); playRevealTimers = []; }
+    function playKey(p) { return 'ab' + (p.about ? p.about.atBatIndex : Math.random()); }
+    function playHTML(p, extra) {
+      const half = p.about ? ((p.about.isTopInning ? 'Top ' : 'Bot ') + (p.about.inning || '')) : '';
+      const cls = 'play' + (p.result && p.result.rbi ? ' scoring' : '') + (extra ? ' ' + extra : '');
+      return `<div class="${cls}" data-pk="${playKey(p)}"><div class="pt">${half}</div>${(p.result && p.result.description) || ''}</div>`;
+    }
     function renderPlays(ld) {
+      const container = $('plays');
       const all = (ld.plays && ld.plays.allPlays) || [];
-      const done = all.filter(p => p.about && p.about.isComplete).slice(-12).reverse();
-      if (!done.length) { $('plays').innerHTML = '<p class="muted">No plays yet.</p>'; return; }
-      $('plays').innerHTML = done.map(p => {
-        const scoring = p.about && p.about.hasReview === false && p.result && p.result.rbi > 0;
-        const half = p.about ? ((p.about.isTopInning ? 'Top ' : 'Bot ') + (p.about.inning || '')) : '';
-        return `<div class="play ${p.result && p.result.rbi ? 'scoring' : ''}"><div class="pt">${half}</div>${(p.result && p.result.description) || ''}</div>`;
-      }).join('');
+      const done = all.filter(p => p.about && p.about.isComplete).slice(-12).reverse(); // newest first
+
+      // Reset the reveal state whenever the game changes (initial load or swap).
+      if (gamePk !== playsGamePk) { playsGamePk = gamePk; playsFirstPaint = true; lastPlaysKey = ''; clearPlayRevealTimers(); }
+
+      if (!done.length) { container.innerHTML = '<p class="muted">No plays yet.</p>'; lastPlaysKey = ''; playsFirstPaint = true; return; }
+
+      const orderedKeyStr = done.map(playKey).join('|');
+      if (orderedKeyStr === lastPlaysKey) return; // nothing changed; let any running stagger finish
+
+      const domKeys = new Set(Array.from(container.querySelectorAll('[data-pk]')).map(n => n.dataset.pk));
+      const pending = done.filter(p => !domKeys.has(playKey(p))); // newest-first subset not yet shown
+
+      // First paint of a game (or a non-additive change): render the whole list at once.
+      if (playsFirstPaint || pending.length === 0) {
+        clearPlayRevealTimers();
+        container.innerHTML = done.map(p => playHTML(p)).join('');
+        playsFirstPaint = false;
+        lastPlaysKey = orderedKeyStr;
+        return;
+      }
+
+      // One or more new plays: repaint what is already shown, then reveal the new
+      // ones oldest-first, one at a time, each dropping in at the top of the log.
+      clearPlayRevealTimers();
+      const base = done.filter(p => domKeys.has(playKey(p)));
+      container.innerHTML = base.map(p => playHTML(p)).join('');
+      lastPlaysKey = orderedKeyStr;
+      const chrono = pending.slice().reverse(); // oldest new play first
+      const step = chrono.length === 1 ? 0 : Math.min(900, Math.max(280, Math.floor(4500 / chrono.length)));
+      chrono.forEach((p, i) => {
+        const t = setTimeout(() => {
+          const holder = document.createElement('div');
+          holder.innerHTML = playHTML(p, 'play-reveal');
+          container.insertBefore(holder.firstElementChild, container.firstChild);
+          while (container.children.length > 12) container.removeChild(container.lastChild);
+        }, i * step);
+        playRevealTimers.push(t);
+      });
     }
 
     async function renderWinProb(state, marSide) {
@@ -1714,7 +1761,7 @@
         backoff = 0;
         const state = feed.gameData.status.abstractGameState;
         clearTimeout(pollTimer);
-        if (state === 'Live') pollTimer = setTimeout(poll, 8000);
+        if (state === 'Live') pollTimer = setTimeout(poll, 5000);
         else if (state === 'Preview') pollTimer = setTimeout(poll, 30000);
         // Final: stop polling
       } catch (e) {
