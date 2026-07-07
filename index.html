@@ -134,6 +134,21 @@
     }
     .sf-tagline.fade { opacity: 0; }
 
+    /* Classic-only rotating scroll: blended embarrassing lore + live roster
+       moves. Hidden in Springfield/Goth, which have their own taglines. */
+    .classic-tagline {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: rgba(196,206,212,0.72);
+      letter-spacing: 0.3px;
+      min-height: 1.3em;
+      transition: opacity 0.5s ease;
+    }
+    .classic-tagline.fade { opacity: 0; }
+    body.springfield .classic-tagline, body.goth .classic-tagline { display: none; }
+
     /* ---- Layout ---- */
     .grid {
       display: grid;
@@ -1386,6 +1401,7 @@
   <p class="subtitle" id="last-updated"></p>
   <p class="sf-tagline" id="sf-tagline"></p>
   <p class="goth-tagline" id="goth-tagline"></p>
+  <p class="classic-tagline" id="classic-tagline"></p>
 </header>
 
 <div id="loading">
@@ -1737,6 +1753,133 @@
       "We are all Mariners fans now. Weep.",
     ];
 
+    // Classic-only rotating scroll. Curated embarrassing lore (static, evergreen)
+    // blended with live Mariners roster moves from the MLB Stats API.
+    const CLASSIC_LORE = [
+      "The only MLB franchise never to reach a World Series.",
+      "2001: 116 wins, tied for the most ever. No pennant to show for it.",
+      "A playoff drought from 2001 to 2022. Two decades in the dark.",
+      "Felix Hernandez threw a perfect game and never once pitched in October.",
+      "Dustin Ackley: No. 2 overall pick in 2009. A .243 career hitter, done by 2016.",
+      "Traded Adam Jones and Chris Tillman for one rental year of Erik Bedard.",
+      "Signed Chone Figgins for four years. He hit .227 in Seattle.",
+      "Signed Carlos Silva for four years. He went 5-18 as a Mariner.",
+      "Traded a young David Ortiz away in 1996. He became a Red Sox legend.",
+      "Griffey, A-Rod, and Randy Johnson all wore the teal. Still no pennant."
+    ];
+    let classicMoves = [];  // dated roster moves from the last few days
+    let classicStats = [];  // computed "hot hand" lines from recent games
+    function buildClassicItems() {
+      // Round-robin the pools so lore, moves, and stats stay interleaved.
+      const pools = [CLASSIC_LORE, classicMoves, classicStats];
+      const items = [];
+      const maxLen = Math.max.apply(null, pools.map(function (p) { return p.length; }));
+      for (let i = 0; i < maxLen; i++) {
+        for (let j = 0; j < pools.length; j++) { if (pools[j][i]) items.push(pools[j][i]); }
+      }
+      return items;
+    }
+    let classicItems = CLASSIC_LORE.slice();
+    let classicIndex = Math.floor(Math.random() * classicItems.length);
+    let classicInterval = null;
+
+    function rotateClassicTagline() {
+      const el = document.getElementById('classic-tagline');
+      if (!el || !classicItems.length) return;
+      // Same fade-out, swap, fade-in pattern as the Springfield tagline.
+      el.classList.add('fade');
+      setTimeout(function () {
+        classicIndex = (classicIndex + 1) % classicItems.length;
+        el.textContent = classicItems[classicIndex];
+        void el.offsetWidth;
+        el.classList.remove('fade');
+      }, 600);
+    }
+
+    // All live content comes from the same MLB Stats API the dashboard already
+    // uses (no key, CORS-friendly). Everything degrades gracefully: on any
+    // failure the rotator falls back to the curated lore alone.
+    const CLASSIC_SEASON = new Date().getFullYear();
+    function classicYMD(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function classicTxDate(s) {
+      const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const p = (s || '').split('-');
+      if (p.length !== 3) return '';
+      return M[(parseInt(p[1], 10) || 1) - 1] + ' ' + (parseInt(p[2], 10) || '');
+    }
+
+    // Recent roster moves: last 4 days only, dated, and de-duplicated (multi-
+    // player trades come back as repeated rows). Call-ups, options, IL, DFAs.
+    (async function fetchClassicMoves() {
+      try {
+        const end = new Date();
+        const start = new Date(); start.setDate(start.getDate() - 4);
+        const url = 'https://statsapi.mlb.com/api/v1/transactions?teamId=136&startDate=' + classicYMD(start) + '&endDate=' + classicYMD(end);
+        const r = await fetch(url);
+        if (!r.ok) return;
+        const data = await r.json();
+        const seen = {}, out = [];
+        (data.transactions || []).forEach(function (t) {
+          if (!t.description) return;
+          const desc = t.description.trim();
+          const key = (t.date || '') + '|' + desc;
+          if (seen[key]) return; seen[key] = 1;
+          out.push({ date: t.date || '', text: (classicTxDate(t.date) ? classicTxDate(t.date) + ' \u00B7 ' : '') + desc });
+        });
+        out.sort(function (a, b) { return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); }); // newest first
+        classicMoves = out.slice(0, 12).map(function (o) { return o.text; });
+        classicItems = buildClassicItems();
+      } catch (e) { /* lore-only fallback */ }
+    })();
+
+    // Recent hot-hand stats, computed from each active player's last 10 games
+    // (hitting) and last 5 outings (pitching). One hydrated roster call each;
+    // only genuinely good lines are kept, then ranked and capped.
+    (async function fetchClassicStats() {
+      const lines = [];
+      function grab(p) {
+        const st = p.person && p.person.stats;
+        return (st && st[0] && st[0].splits && st[0].splits[0]) ? st[0].splits[0].stat : null;
+      }
+      try {
+        const hu = 'https://statsapi.mlb.com/api/v1/teams/136/roster?rosterType=active&season=' + CLASSIC_SEASON +
+          '&hydrate=person(stats(type=lastXGames,group=hitting,limit=10,gameType=R,season=' + CLASSIC_SEASON + '))';
+        const hr = await fetch(hu);
+        if (hr.ok) {
+          const hd = await hr.json();
+          (hd.roster || []).forEach(function (p) {
+            const s = grab(p);
+            if (!s || (+s.atBats || 0) < 20) return;
+            const name = p.person.fullName, g = s.gamesPlayed || 10, avgF = parseFloat(s.avg);
+            if ((+s.homeRuns) >= 3) lines.push({ score: 100 + (+s.homeRuns), text: name + ' has ' + s.homeRuns + ' home runs over his last ' + g + ' games.' });
+            else if (avgF >= 0.300) lines.push({ score: Math.round(avgF * 100), text: name + ' is hitting ' + s.avg + ' over his last ' + g + ' games.' });
+            else if ((+s.rbi) >= 10) lines.push({ score: 50 + (+s.rbi), text: name + ' has ' + s.rbi + ' RBIs over his last ' + g + ' games.' });
+          });
+        }
+      } catch (e) {}
+      try {
+        const pu = 'https://statsapi.mlb.com/api/v1/teams/136/roster?rosterType=active&season=' + CLASSIC_SEASON +
+          '&hydrate=person(stats(type=lastXGames,group=pitching,limit=5,gameType=R,season=' + CLASSIC_SEASON + '))';
+        const pr = await fetch(pu);
+        if (pr.ok) {
+          const pd = await pr.json();
+          (pd.roster || []).forEach(function (p) {
+            const s = grab(p);
+            if (!s || (parseFloat(s.inningsPitched) || 0) < 10) return;
+            const name = p.person.fullName, g = s.gamesPlayed || 5, eraF = parseFloat(s.era);
+            if ((+s.earnedRuns) === 0) lines.push({ score: 130, text: name + ' has not allowed an earned run over his last ' + g + ' outings.' });
+            else if (!isNaN(eraF) && eraF <= 2.50) lines.push({ score: Math.round(70 - eraF * 10), text: name + ' has a ' + s.era + ' ERA over his last ' + g + ' outings.' });
+            else if ((+s.strikeOuts) >= 30) lines.push({ score: 40 + (+s.strikeOuts), text: name + ' has ' + s.strikeOuts + ' strikeouts over his last ' + g + ' outings.' });
+          });
+        }
+      } catch (e) {}
+      lines.sort(function (a, b) { return b.score - a.score; });
+      classicStats = lines.slice(0, 10).map(function (l) { return l.text; });
+      classicItems = buildClassicItems();
+    })();
+
     let sfIndex = Math.floor(Math.random() * QUOTES.length);
     let gothIndex = Math.floor(Math.random() * GOTH_QUOTES.length);
     let sfInterval = null;
@@ -1785,6 +1928,7 @@
 
       clearInterval(sfInterval); // avoid stacking intervals on repeat selects
       clearInterval(gothInterval);
+      clearInterval(classicInterval);
       if (sf) {
         var el = document.getElementById('sf-tagline');
         if (el) el.textContent = QUOTES[sfIndex];
@@ -1794,6 +1938,11 @@
         var elG = document.getElementById('goth-tagline');
         if (elG) elG.textContent = GOTH_QUOTES[gothIndex];
         gothInterval = setInterval(rotateGothTagline, 20000);
+      }
+      if (!sf && !goth) {
+        var elC = document.getElementById('classic-tagline');
+        if (elC && classicItems.length) elC.textContent = classicItems[classicIndex];
+        classicInterval = setInterval(rotateClassicTagline, 12000);
       }
     };
 
