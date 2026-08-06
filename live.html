@@ -33,6 +33,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!--
     Standalone live game tracker. Open directly with ?gamePk=NNN, or with no
     params it auto-finds the current/next/most-recent Mariners game.
@@ -490,6 +491,147 @@
     body.goth #loading, body.goth #fatal { color: #8a8a8a; }
     body.goth #fatal { color: #8B1A1A; }
     body.goth .spinner { border-color: rgba(255,255,255,0.08); border-top-color: #9e9e9e; }
+    /* ====================================================================== */
+    /* CAMP MODE SKIN — live tracker                                            */
+    /* ====================================================================== */
+    body.camp {
+      font-family: 'Barlow', sans-serif;
+      color: #F1EAD6;
+      background:
+        radial-gradient(ellipse at 20% -10%, rgba(78,122,78,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 100% 110%, rgba(242,167,60,0.10) 0%, transparent 55%),
+        linear-gradient(160deg, #0E1D2E 0%, #163247 42%, #122720 100%);
+      background-attachment: fixed;
+    }
+    body.camp .stripe {
+      height: 3px;
+      background: linear-gradient(90deg, #7A3B22 0%, #C1553A 30%, #F2A73C 50%, #C1553A 70%, #7A3B22 100%);
+    }
+    body.camp .logos img { filter: drop-shadow(0 0 8px rgba(242,167,60,0.35)); }
+    body.camp .status-badge {
+      font-family: 'Oswald', sans-serif; letter-spacing: 2.5px; text-transform: uppercase;
+      border: 1px solid rgba(242,167,60,0.55); color: #F2A73C;
+      background: rgba(242,167,60,0.10); box-shadow: none;
+    }
+    body.camp .status-badge.live    { background: rgba(242,167,60,0.14); }
+    body.camp .status-badge.preview { background: rgba(78,122,78,0.14); border-color: rgba(78,122,78,0.55); color: #7FA05A; }
+    body.camp .status-badge.final   { background: rgba(241,234,214,0.06); border-color: rgba(241,234,214,0.25); color: #C7C1AE; }
+    body.camp .live-dot { background: #F2A73C; }
+
+    body.camp .btn {
+      font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      border: 1px solid rgba(242,167,60,0.35); background: rgba(242,167,60,0.06); color: #C7C1AE;
+      box-shadow: none;
+    }
+    body.camp .btn:hover { background: rgba(242,167,60,0.14); color: #F1EAD6; }
+    body.camp .btn.on {
+      background: #F2A73C; color: #2A1A0E; border-color: #F2A73C;
+      box-shadow: 0 0 18px rgba(242,167,60,0.5);
+    }
+
+    body.camp .card {
+      background: linear-gradient(160deg, rgba(25,51,40,0.94), rgba(18,39,32,0.98));
+      border: 1px solid rgba(242,167,60,0.10);
+      box-shadow: 0 6px 26px rgba(0,0,0,0.5), 0 1px 0 rgba(242,167,60,0.06) inset;
+      backdrop-filter: none;
+    }
+    body.camp .card-h { color: #F2A73C; font-family: 'Oswald', sans-serif; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+
+    body.camp .team-runs, body.camp .hero-verdict { -webkit-text-stroke: 0; text-shadow: none; }
+    body.camp .team-runs { font-family: 'Anton', sans-serif; font-weight: 400; letter-spacing: 1px; }
+    body.camp .team-runs.mar { color: #F2A73C; text-shadow: 0 0 22px rgba(242,167,60,0.4); }
+    body.camp .team-runs.opp { color: #F1EAD6; }
+    body.camp .team-name { color: #C7C1AE; font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+    body.camp .score-mid { color: rgba(241,234,214,0.2); font-family: 'Anton', sans-serif; }
+    body.camp .inning { color: #C7C1AE; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+    body.camp .inning .arrow { color: #F2A73C; }
+    body.camp .big-time { color: #F1EAD6; font-family: 'Anton', sans-serif; font-weight: 400; letter-spacing: 0.5px; text-shadow: none; }
+
+    body.camp .hero-verdict {
+      font-family: 'Anton', sans-serif; font-weight: 400; letter-spacing: 1px; text-transform: uppercase;
+      font-size: clamp(2.4rem, 6vw, 3.4rem);
+    }
+    body.camp .hero-verdict.yes { color: #7FA05A; text-shadow: 0 0 32px rgba(127,160,90,0.35); }
+    body.camp .hero-verdict.no  { color: #C1553A; text-shadow: 0 0 32px rgba(193,85,58,0.35); }
+    body.camp .hero-q, body.camp .hero-note { color: #C7C1AE; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+    body.camp .hero .hero-fire { display: block; }
+
+    body.camp .run-pip { border-color: rgba(241,234,214,0.22); color: rgba(241,234,214,0.4); }
+    body.camp .run-pip.filled { background: #7FA05A; border-color: #7FA05A; color: #2A1A0E; box-shadow: 0 0 14px rgba(127,160,90,0.4); }
+    body.camp .run-pip.fourth { border-style: dashed; }
+    body.camp .run-pip.fourth.filled { background: #F2A73C; border-color: #F2A73C; color: #2A1A0E; box-shadow: 0 0 18px rgba(242,167,60,0.55); }
+
+    body.camp .pip { border-color: rgba(241,234,214,0.3); }
+    body.camp .pip.on.ball   { background: #7FA05A; border-color: #7FA05A; }
+    body.camp .pip.on.strike { background: #C1553A; border-color: #C1553A; }
+    body.camp .pip.on.out    { background: #F2A73C; border-color: #F2A73C; }
+    body.camp .count-grid .lbl { color: #C7C1AE; font-family: 'Oswald', sans-serif; letter-spacing: 2px; }
+    body.camp .base { border-color: rgba(241,234,214,0.3); }
+    body.camp .base.on { background: #F2A73C; border-color: #F2A73C; box-shadow: 0 0 10px rgba(242,167,60,0.5); }
+
+    body.camp .spp-ring.k { border-color:#C1553A; }
+    body.camp .sp-btn { font-family:'Oswald',sans-serif; letter-spacing: 1px; border:1px solid rgba(242,167,60,0.35); background:rgba(242,167,60,0.06); color:#C7C1AE; }
+    body.camp .sp-btn.on { background:rgba(242,167,60,0.18); color:#F1EAD6; border-color:rgba(242,167,60,0.55); }
+    body.camp .spray-legend { color:#C7C1AE; font-family:'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .sp-dot.hit { background:#F2A73C; }
+
+    body.camp .lp-speed { color: #F2A73C; font-family: 'Anton', sans-serif; }
+    body.camp .lp-key { color: #C7C1AE; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+    body.camp .lp-val { color: #F1EAD6; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+    body.camp .lp-row { border-bottom-color: rgba(241,234,214,0.08); }
+
+    body.camp .arsenal-name { color: #F1EAD6; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+    body.camp .arsenal-bar-wrap { background: rgba(241,234,214,0.06); }
+    body.camp .arsenal-bar { background: #F2A73C; }
+    body.camp .arsenal-pct { color: #F1EAD6; font-family: 'Oswald', sans-serif; }
+    body.camp .arsenal-speed { color: #C7C1AE; font-family: 'Oswald', sans-serif; }
+    body.camp .spray-meta { color: #C7C1AE; }
+    body.camp .pz-ab-label { color: #F1EAD6; font-family: 'Oswald', sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+    body.camp .pz-legend { color: #C7C1AE; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+    body.camp .ev-toast { background: rgba(25,51,40,0.98); border-color: rgba(242,167,60,0.4); }
+    body.camp .ev-speed { color: #F2A73C; font-family: 'Anton', sans-serif; }
+    body.camp .ev-type, body.camp .ev-angle { color: #C7C1AE; font-family: 'Oswald', sans-serif; }
+    body.camp .past-banner { color: #C7C1AE; background: rgba(242,167,60,0.08); border: 1px solid rgba(242,167,60,0.35); font-family: 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase; }
+
+    /* Campfire hero SVG (Camp only; other themes hide it) */
+    .hero-fire {
+      display: none; width: 220px; height: 160px; overflow: visible;
+      margin: 4px auto 10px;
+    }
+    .hero-fire .flames { transform-origin: 100px 155px; transition: transform .35s ease; }
+    .hero-fire .flames-glow {
+      filter: drop-shadow(0 0 14px rgba(242,167,60,0.6)) drop-shadow(0 0 26px rgba(193,85,58,0.38));
+      animation: camp-glow-breathe 2.4s ease-in-out infinite;
+    }
+    .hero-fire .flame-flicker {
+      transform-origin: 100px 155px;
+      animation: camp-flame-flick 1.15s ease-in-out infinite;
+    }
+    .hero-fire .ember { animation: camp-ember-blink 1.6s ease-in-out infinite; }
+    .hero-fire .ember-b { animation-delay: 0.4s; animation-duration: 1.9s; }
+    .hero-fire .ember-c { animation-delay: 0.8s; animation-duration: 1.4s; }
+    .hero-fire .ember-d { animation-delay: 1.1s; animation-duration: 2.1s; }
+    @keyframes camp-flame-flick {
+      0%   { transform: scale(1, 1); }
+      22%  { transform: scale(0.96, 1.06); }
+      48%  { transform: scale(1.03, 0.97); }
+      74%  { transform: scale(0.98, 1.04); }
+      100% { transform: scale(1, 1); }
+    }
+    @keyframes camp-glow-breathe {
+      0%, 100% { filter: drop-shadow(0 0 14px rgba(242,167,60,0.6)) drop-shadow(0 0 26px rgba(193,85,58,0.38)); }
+      50%      { filter: drop-shadow(0 0 22px rgba(242,167,60,0.78)) drop-shadow(0 0 36px rgba(193,85,58,0.52)); }
+    }
+    @keyframes camp-ember-blink {
+      0%, 100% { opacity: 0.4; }
+      50%      { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-fire .flame-flicker,
+      .hero-fire .flames-glow,
+      .hero-fire .ember { animation: none; }
+    }
+
   </style>
 </head>
 <body>
@@ -513,6 +655,7 @@
       <button class="btn" id="btn-classic" type="button">Classic</button>
       <button class="btn" id="btn-springfield" type="button">Springfield</button>
       <button class="btn" id="btn-goth" type="button">Goth</button>
+      <button class="btn" id="btn-camp" type="button">Camp</button>
     </div>
     <div class="controls">
       <button class="btn" id="btn-refresh" type="button">Refresh</button>
@@ -562,6 +705,60 @@
       <!-- Hero: more than 3 -->
       <div class="card hero" id="card-hero">
         <div class="card-h" id="hero-head">Did the Mariners score more than 3?</div>
+              <!-- Campfire (Camp theme only; hidden by default via .verdict-fire { display:none }) -->
+      <svg class="hero-fire" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <radialGradient id="camp-glow" cx="0.5" cy="0.6" r="0.6">
+            <stop offset="0"   stop-color="#F2A73C" stop-opacity="0.55"/>
+            <stop offset="0.5" stop-color="#F2A73C" stop-opacity="0.10"/>
+            <stop offset="1"   stop-color="#F2A73C" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="camp-flame-outer" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#F2A73C"/>
+            <stop offset="1" stop-color="#C1553A"/>
+          </linearGradient>
+          <linearGradient id="camp-flame-inner" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#FFE8A0"/>
+            <stop offset="1" stop-color="#F2A73C"/>
+          </linearGradient>
+        </defs>
+        <circle cx="100" cy="140" r="70" fill="url(#camp-glow)"/>
+        <g>
+          <ellipse cx="100" cy="178" rx="52" ry="3" fill="#000" opacity="0.35"/>
+          <g transform="rotate(-2.5 100 168)">
+            <rect x="55" y="163" width="90" height="10" rx="5" fill="#4E2E17"/>
+            <path d="M58 165 Q 100 163.4 142 165" stroke="#2C1808" stroke-width="1.2" fill="none" opacity="0.65"/>
+            <line x1="66" y1="167" x2="74" y2="166.5" stroke="#2C1808" stroke-width="0.7" opacity="0.75"/>
+            <line x1="82" y1="167" x2="93" y2="167.5" stroke="#2C1808" stroke-width="0.7" opacity="0.75"/>
+            <line x1="102" y1="166.5" x2="112" y2="167" stroke="#2C1808" stroke-width="0.7" opacity="0.75"/>
+            <line x1="118" y1="167" x2="128" y2="166.5" stroke="#2C1808" stroke-width="0.7" opacity="0.75"/>
+            <line x1="70" y1="170" x2="80" y2="170.5" stroke="#2C1808" stroke-width="0.5" opacity="0.55"/>
+            <line x1="98" y1="170.5" x2="108" y2="170" stroke="#2C1808" stroke-width="0.5" opacity="0.55"/>
+            <line x1="122" y1="170" x2="132" y2="170.5" stroke="#2C1808" stroke-width="0.5" opacity="0.55"/>
+            <path d="M60 172 Q 100 173 140 172" stroke="#7A4A28" stroke-width="0.8" fill="none" opacity="0.7"/>
+            <ellipse cx="55" cy="168" rx="5.2" ry="5.6" fill="#C89670"/>
+            <ellipse cx="55" cy="168" rx="3.6" ry="4.0" fill="none" stroke="#8E6335" stroke-width="0.6"/>
+            <ellipse cx="55" cy="168" rx="2.2" ry="2.5" fill="none" stroke="#6B4626" stroke-width="0.5"/>
+            <circle cx="55" cy="168" r="0.9" fill="#4A2C13"/>
+            <ellipse cx="145" cy="168" rx="5.2" ry="5.6" fill="#C89670"/>
+            <ellipse cx="145" cy="168" rx="3.6" ry="4.0" fill="none" stroke="#8E6335" stroke-width="0.6"/>
+            <ellipse cx="145" cy="168" rx="2.2" ry="2.5" fill="none" stroke="#6B4626" stroke-width="0.5"/>
+            <circle cx="145" cy="168" r="0.9" fill="#4A2C13"/>
+          </g>
+          <circle cx="82"  cy="177" r="0.9" fill="#F2A73C" opacity="0.9" class="ember ember-a"/>
+          <circle cx="96"  cy="178" r="0.7" fill="#C1553A" opacity="0.85" class="ember ember-b"/>
+          <circle cx="110" cy="177" r="0.9" fill="#F2A73C" opacity="0.9" class="ember ember-c"/>
+          <circle cx="122" cy="178" r="0.7" fill="#C1553A" opacity="0.8" class="ember ember-d"/>
+        </g>
+        <g class="flames flames-glow" data-camp-flames transform="scale(0.60)">
+          <g class="flame-flicker">
+            <path d="M100 155 Q 78 130 82 100 Q 88 78 100 60 Q 112 78 118 100 Q 122 130 100 155 Z" fill="url(#camp-flame-outer)"/>
+            <path d="M100 148 Q 88 130 92 108 Q 96 92 100 82 Q 104 92 108 108 Q 112 130 100 148 Z" fill="url(#camp-flame-inner)"/>
+          </g>
+        </g>
+        <g data-camp-marsh></g>
+      </svg>
+
         <div class="hero-verdict no" id="hero-verdict">NO</div>
         <div class="hero-meter" id="hero-meter"></div>
         <div class="hero-note" id="hero-note"></div>
@@ -690,19 +887,24 @@
     function setDesign(d) {
       const sf = d === 'springfield';
       const goth = d === 'goth';
+      const camp = d === 'camp';
       document.body.classList.toggle('springfield', sf);
       document.body.classList.toggle('goth', goth);
-      $('btn-classic').classList.toggle('on', !sf && !goth);
+      document.body.classList.toggle('camp', camp);
+      $('btn-classic').classList.toggle('on', !sf && !goth && !camp);
       $('btn-springfield').classList.toggle('on', sf);
       $('btn-goth').classList.toggle('on', goth);
+      if ($('btn-camp')) $('btn-camp').classList.toggle('on', camp);
+      if (camp && typeof window.updateCampfire === 'function') window.updateCampfire();
     }
     $('btn-classic').onclick = () => setDesign('classic');
     $('btn-springfield').onclick = () => setDesign('springfield');
     $('btn-goth').onclick = () => setDesign('goth');
+    if ($('btn-camp')) $('btn-camp').onclick = () => setDesign('camp');
     // Honor ?design= passed from the dashboard; default to Classic.
     (function () {
       const d = new URLSearchParams(location.search).get('design');
-      setDesign(d === 'springfield' || d === 'goth' ? d : 'classic');
+      setDesign(d === 'springfield' || d === 'goth' || d === 'camp' ? d : 'classic');
     })();
 
     $('btn-refresh').onclick = () => poll();
@@ -1025,6 +1227,7 @@
         m += `<div class="run-pip ${i === 4 ? 'fourth' : ''} ${filled ? 'filled' : ''}">${i === 4 ? '4+' : i}</div>`;
       }
       $('hero-meter').innerHTML = m;
+      if (typeof window.updateCampfire === 'function') window.updateCampfire(marRuns);
       $('hero-note').textContent = state === 'Final'
         ? (verdict ? `They scored ${marRuns}. Yes.` : `They scored ${marRuns}. No.`)
         : (verdict ? `Up to ${marRuns} runs. They cleared it.` : `${marRuns} so far, need ${THRESHOLD + 1 - marRuns} more.`);
@@ -1782,6 +1985,89 @@
         $('fatal-msg').textContent = e.message || 'Could not load the game.';
       }
     })();
+  
+  /* ============================================================================ */
+  /* Camp campfire renderer                                                       */
+  /*   Draws the fire scale and marshmallows for the current verdict's runs.     */
+  /*   Called by setTheme when Camp becomes active, and after each verdict       */
+  /*   render so the fire tracks live game data.                                 */
+  /* ============================================================================ */
+  window.__campRuns = 0;
+  window.updateCampfire = function (runs) {
+    if (typeof runs === 'number' && !isNaN(runs)) window.__campRuns = runs;
+    var flames = document.querySelector('[data-camp-flames]');
+    var marsh = document.querySelector('[data-camp-marsh]');
+    if (!flames || !marsh) return;
+    var n = window.__campRuns;
+    // Fire scale by heat state
+    var scale = n <= 0 ? 0.35 : n <= 3 ? 0.60 : n <= 6 ? 0.90 : n <= 9 ? 1.15 : 1.42;
+    flames.setAttribute('transform', 'scale(' + scale + ')');
+    // Marshmallows: symmetric pairs plus optional solo on right for odd n
+    marsh.innerHTML = '';
+    if (n <= 0) return;
+    var capped = Math.min(n, 12);
+    var overflow = n - capped;
+    var pairs = Math.floor(capped / 2);
+    var solo = capped % 2;
+    var pairYs = pairs === 0 ? [] :
+                 pairs === 1 ? [128] :
+                 Array.from({length: pairs}, function (_, i) { return 104 + i * (48 / (pairs - 1)); });
+    var MARSH_BODY = '#F5EBD1';
+    var MARSH_STROKE = '#B8A97F';
+    var TOAST_EDGE = n <= 3 ? null : n <= 6 ? '#D89A46' : n <= 9 ? '#8F5522' : '#4A2612';
+    var TOAST_WIDTH = n <= 3 ? 0 : n <= 6 ? 2.5 : n <= 9 ? 3.5 : 4.5;
+    function drawStick(originX, tipX, y) {
+      var NS = 'http://www.w3.org/2000/svg';
+      var g = document.createElementNS(NS, 'g');
+      var line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', originX); line.setAttribute('y1', y + 0.5);
+      line.setAttribute('x2', tipX); line.setAttribute('y2', y);
+      line.setAttribute('stroke', '#7A5A3A'); line.setAttribute('stroke-width', 1.4);
+      line.setAttribute('stroke-linecap', 'round');
+      g.appendChild(line);
+      var w = 12, h = 9;
+      var isLeftSide = originX < 100;
+      var mx = tipX + (isLeftSide ? w / 2 : -w / 2);
+      var rect = document.createElementNS(NS, 'rect');
+      rect.setAttribute('x', mx - w / 2); rect.setAttribute('y', y - h / 2);
+      rect.setAttribute('width', w); rect.setAttribute('height', h); rect.setAttribute('rx', 3);
+      rect.setAttribute('fill', MARSH_BODY); rect.setAttribute('stroke', MARSH_STROKE); rect.setAttribute('stroke-width', 0.6);
+      g.appendChild(rect);
+      if (TOAST_EDGE && TOAST_WIDTH > 0) {
+        var fireEdgeX = isLeftSide ? mx + w / 2 : mx - w / 2;
+        var toastX = isLeftSide ? fireEdgeX - TOAST_WIDTH : fireEdgeX;
+        var toast = document.createElementNS(NS, 'rect');
+        toast.setAttribute('x', toastX); toast.setAttribute('y', y - h / 2 + 0.6);
+        toast.setAttribute('width', TOAST_WIDTH); toast.setAttribute('height', h - 1.2);
+        toast.setAttribute('rx', 2); toast.setAttribute('fill', TOAST_EDGE); toast.setAttribute('opacity', 0.92);
+        g.appendChild(toast);
+      }
+      marsh.appendChild(g);
+    }
+    for (var i = 0; i < pairs; i++) {
+      drawStick(210, 150, pairYs[i]);
+      drawStick(-10, 50, pairYs[i]);
+    }
+    if (solo) {
+      var y0 = pairs === 0 ? 128 : Math.max(88, pairYs[0] - 18);
+      drawStick(210, 150, y0);
+    }
+    if (overflow > 0) {
+      var NS = 'http://www.w3.org/2000/svg';
+      var bg = document.createElementNS(NS, 'rect');
+      bg.setAttribute('x', 82); bg.setAttribute('y', 178);
+      bg.setAttribute('width', 36); bg.setAttribute('height', 16); bg.setAttribute('rx', 8);
+      bg.setAttribute('fill', '#F2A73C');
+      marsh.appendChild(bg);
+      var t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', 100); t.setAttribute('y', 190); t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-family', 'Oswald,sans-serif'); t.setAttribute('font-size', '11');
+      t.setAttribute('font-weight', '700'); t.setAttribute('fill', '#1A1204');
+      t.textContent = '+' + overflow;
+      marsh.appendChild(t);
+    }
+  };
+
   </script>
 </body>
 </html>
