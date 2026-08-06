@@ -33,6 +33,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1362,6 +1363,292 @@
     body.goth .spinner  { border: 3px solid rgba(255,255,255,0.08); border-top-color: #9e9e9e; }
     body.goth #error    { color: #8B1A1A; }
     body.goth footer    { color: #7a7a7a; }
+    /* ====================================================================== */
+    /* CAMP MODE SKIN                                                           */
+    /*   Pacific Northwest evening around a campfire. Dusk-forest palette,      */
+    /*   Anton for display numbers, Oswald for labels, Barlow for body.        */
+    /*   Signature element: an animated campfire that replaces the YES/NO      */
+    /*   word. Fire size scales with runs; marshmallows on sticks count them. */
+    /* ====================================================================== */
+    body.camp {
+      font-family: 'Barlow', sans-serif;
+      color: #F1EAD6;
+      background:
+        radial-gradient(ellipse at 20% -10%, rgba(78,122,78,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 100% 110%, rgba(242,167,60,0.10) 0%, transparent 55%),
+        linear-gradient(160deg, #0E1D2E 0%, #163247 42%, #122720 100%);
+      background-attachment: fixed;
+    }
+    body.camp .top-stripe {
+      background: linear-gradient(90deg, #7A3B22 0%, #C1553A 30%, #F2A73C 50%, #C1553A 70%, #7A3B22 100%);
+    }
+
+    /* Design toggle */
+    body.camp .theme-toggle { background: rgba(25,51,40,0.85); border-bottom: 1px solid rgba(242,167,60,0.22); }
+    body.camp .tt-label { color: #C7C1AE; font-family: 'Oswald', sans-serif; letter-spacing: 3px; }
+    body.camp .tt-btn {
+      font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 2px;
+      border: 1px solid rgba(242,167,60,0.35); background: rgba(242,167,60,0.06);
+      color: #C7C1AE; box-shadow: none; text-transform: uppercase;
+    }
+    body.camp .tt-btn:hover { background: rgba(242,167,60,0.14); color: #F1EAD6; }
+    body.camp .tt-btn.active {
+      background: #F2A73C; color: #2A1A0E; border-color: #F2A73C;
+      box-shadow: 0 0 18px rgba(242,167,60,0.5);
+    }
+
+    /* Header (dusk gradient + warm horizon glow) */
+    body.camp header {
+      background:
+        radial-gradient(ellipse at 50% 30%, rgba(78,122,78,0.15) 0%, transparent 60%),
+        linear-gradient(180deg, #0E1D2E 0%, #163247 42%, #1B3A2A 100%);
+      border-bottom: 1px solid rgba(242,167,60,0.22);
+      position: relative;
+      overflow: hidden;
+    }
+    body.camp header::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+      height: 40px;
+      background: radial-gradient(ellipse at 50% 100%, rgba(242,167,60,0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    body.camp .header-wordmark {
+      font-family: 'Oswald', sans-serif; letter-spacing: 5px; color: #F2A73C;
+    }
+    body.camp header h1 {
+      font-family: 'Anton', sans-serif; font-weight: 400; letter-spacing: 0.5px;
+      color: #F1EAD6; text-transform: uppercase;
+      text-shadow:
+        0 0 1px rgba(0,0,0,0.85),
+        0 2px 6px rgba(0,0,0,0.75),
+        0 4px 18px rgba(0,0,0,0.6);
+    }
+    body.camp header h1 em {
+      font-style: normal; color: #F2A73C;
+      text-shadow:
+        0 0 1px rgba(0,0,0,0.9),
+        0 2px 6px rgba(0,0,0,0.75),
+        0 4px 20px rgba(0,0,0,0.7);
+    }
+    body.camp .subtitle,
+    body.camp .sf-tagline,
+    body.camp .goth-tagline { display: none; }
+    body.camp .classic-tagline {
+      color: #C7C1AE; font-family: 'Oswald', sans-serif; letter-spacing: 3px;
+      text-transform: uppercase; font-size: 0.72rem;
+    }
+
+    /* Cards */
+    body.camp .card {
+      background: linear-gradient(160deg, rgba(25,51,40,0.94), rgba(18,39,32,0.98));
+      border: 1px solid rgba(242,167,60,0.10);
+      border-radius: 14px;
+      box-shadow: 0 6px 26px rgba(0,0,0,0.5), 0 1px 0 rgba(242,167,60,0.06) inset;
+      backdrop-filter: none;
+    }
+    body.camp .card::after {
+      content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(242,167,60,0.4), transparent);
+    }
+    body.camp .card-label {
+      font-family: 'Oswald', sans-serif; font-weight: 700; letter-spacing: 3px;
+      color: #F2A73C; text-transform: uppercase;
+    }
+
+    /* Verdict card: show campfire, size down verdict-word so fire is hero */
+    body.camp .verdict-card .verdict-fire { display: block; }
+    body.camp .verdict-word {
+      font-family: 'Anton', sans-serif; font-weight: 400;
+      font-size: clamp(2.4rem, 6vw, 3.4rem);
+      letter-spacing: 1px; text-transform: uppercase;
+      text-shadow: 0 0 32px rgba(242,167,60,0.35);
+      margin-top: 6px;
+    }
+    body.camp .verdict-word.yes { color: #7FA05A; text-shadow: 0 0 32px rgba(127,160,90,0.35); }
+    body.camp .verdict-word.no  { color: #C1553A; text-shadow: 0 0 32px rgba(193,85,58,0.35); }
+    body.camp .verdict-opponent { color: #F1EAD6; font-weight: 600; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .verdict-detail   { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; }
+    body.camp .run-pip { border-color: rgba(241,234,214,0.22); color: rgba(241,234,214,0.4); }
+    body.camp .run-pip.filled { background: #7FA05A; border-color: #7FA05A; color: #2A1A0E; box-shadow: 0 0 14px rgba(127,160,90,0.4); }
+    body.camp .run-pip.fourth { border-style: dashed; }
+    body.camp .run-pip.fourth.filled { background: #F2A73C; border-color: #F2A73C; color: #2A1A0E; box-shadow: 0 0 18px rgba(242,167,60,0.55); }
+
+    /* Campfire SVG element (injected into verdict-card, hidden by default) */
+    .verdict-fire {
+      display: none; width: 220px; height: 160px; overflow: visible;
+      margin: 4px auto 10px;
+    }
+    .verdict-fire .flames { transform-origin: 100px 155px; transition: transform .35s ease; }
+    .verdict-fire .flames-glow {
+      filter: drop-shadow(0 0 14px rgba(242,167,60,0.6)) drop-shadow(0 0 26px rgba(193,85,58,0.38));
+      animation: camp-glow-breathe 2.4s ease-in-out infinite;
+    }
+    .verdict-fire .flame-flicker {
+      transform-origin: 100px 155px;
+      animation: camp-flame-flick 1.15s ease-in-out infinite;
+    }
+    .verdict-fire .ember { animation: camp-ember-blink 1.6s ease-in-out infinite; }
+    .verdict-fire .ember-b { animation-delay: 0.4s; animation-duration: 1.9s; }
+    .verdict-fire .ember-c { animation-delay: 0.8s; animation-duration: 1.4s; }
+    .verdict-fire .ember-d { animation-delay: 1.1s; animation-duration: 2.1s; }
+    @keyframes camp-flame-flick {
+      0%   { transform: scale(1, 1); }
+      22%  { transform: scale(0.96, 1.06); }
+      48%  { transform: scale(1.03, 0.97); }
+      74%  { transform: scale(0.98, 1.04); }
+      100% { transform: scale(1, 1); }
+    }
+    @keyframes camp-glow-breathe {
+      0%, 100% { filter: drop-shadow(0 0 14px rgba(242,167,60,0.6)) drop-shadow(0 0 26px rgba(193,85,58,0.38)); }
+      50%      { filter: drop-shadow(0 0 22px rgba(242,167,60,0.78)) drop-shadow(0 0 36px rgba(193,85,58,0.52)); }
+    }
+    @keyframes camp-ember-blink {
+      0%, 100% { opacity: 0.4; }
+      50%      { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .verdict-fire .flame-flicker,
+      .verdict-fire .flames-glow,
+      .verdict-fire .ember { animation: none; }
+    }
+
+    /* Game card, streak, tally, trend, last-10, seasons */
+    body.camp .live-badge { background: rgba(242,167,60,0.14); border: 1px solid rgba(242,167,60,0.55); color: #F2A73C; font-family: 'Oswald', sans-serif; letter-spacing: 2px; }
+    body.camp .live-dot { background: #F2A73C; }
+    body.camp .scoreboard-team-name { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+    body.camp .scoreboard-runs { font-family: 'Anton',sans-serif; font-weight: 400; letter-spacing: 1px; }
+    body.camp .scoreboard-runs.mariners { color: #F2A73C; text-shadow: 0 0 22px rgba(242,167,60,0.4); }
+    body.camp .scoreboard-runs.opponent { color: #F1EAD6; }
+    body.camp .scoreboard-divider { color: rgba(241,234,214,0.25); font-family: 'Anton',sans-serif; }
+    body.camp .final-badge { background: rgba(242,167,60,0.14); border: 1px solid rgba(242,167,60,0.5); color: #F2A73C; font-family: 'Oswald',sans-serif; letter-spacing: 2px; }
+    body.camp .final-topline { color: #C7C1AE; }
+    body.camp .final-date { color: #F1EAD6; font-family: 'Oswald',sans-serif; letter-spacing: 2px; }
+    body.camp .linescore-table { font-family: 'Oswald',sans-serif; }
+    body.camp .linescore-table th, body.camp .linescore-table td { border-bottom-color: rgba(241,234,214,0.08); }
+    body.camp .linescore-table th { color: #C7C1AE; font-weight: 500; }
+    body.camp .linescore-table td.team-label { color: #F1EAD6; }
+    body.camp .linescore-table td.total { color: #F2A73C; font-weight: 700; }
+    body.camp .final-divider { border-top-color: rgba(241,234,214,0.1); }
+    body.camp .decision-label { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 1.5px; }
+    body.camp .decisions-wl, body.camp .decisions-sv { color: #F1EAD6; }
+    body.camp .open-live-btn {
+      background: rgba(242,167,60,0.14); color: #F2A73C;
+      border: 1px solid rgba(242,167,60,0.55);
+      font-family: 'Oswald', sans-serif; letter-spacing: 2px; text-transform: uppercase;
+    }
+    body.camp .open-live-btn:hover { background: #F2A73C; color: #2A1A0E; }
+
+    body.camp .streak-number {
+      font-family: 'Anton', sans-serif; font-weight: 400;
+      color: #C1553A; text-shadow: 0 0 26px rgba(193,85,58,0.4);
+    }
+    body.camp .streak-number.zero { color: #7FA05A; text-shadow: 0 0 26px rgba(127,160,90,0.35); }
+    body.camp .streak-best { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .streak-best.over  strong { color: #7FA05A; }
+    body.camp .streak-best.under strong { color: #C1553A; }
+
+    body.camp .tally-stat-num { font-family: 'Anton', sans-serif; font-weight: 400; }
+    body.camp .tally-stat-num.under { color: #C1553A; }
+    body.camp .tally-stat-num.over  { color: #7FA05A; }
+    body.camp .tally-stat-num.pct   { color: #F2A73C; }
+    body.camp .tally-stat-label { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 2px; }
+    body.camp .tally-divider { background: rgba(241,234,214,0.1); }
+    body.camp .tally-bar-wrap { background: rgba(241,234,214,0.06); }
+    body.camp .tally-bar-fill.under { background: #C1553A; }
+    body.camp .tally-bar-fill.over  { background: #7FA05A; }
+    body.camp .tally-bar-label { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+
+    body.camp .games-section-label { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 3px; }
+    body.camp .games-title { font-family: 'Anton',sans-serif; font-weight: 400; color: #F1EAD6; letter-spacing: 1px; }
+    body.camp .games-record .rec-w { color: #7FA05A; }
+    body.camp .games-record .rec-l { color: #C1553A; }
+    body.camp .games-record .rec-neutral { color: #C7C1AE; }
+
+    body.camp .game-row {
+      background: rgba(241,234,214,0.04);
+      border-left: 3px solid rgba(242,167,60,0.35);
+      color: #F1EAD6; font-family: 'Barlow', sans-serif;
+    }
+    body.camp .game-dot.over  { background: #7FA05A; box-shadow: 0 0 8px rgba(127,160,90,0.5); }
+    body.camp .game-dot.under { background: #C1553A; box-shadow: 0 0 8px rgba(193,85,58,0.5); }
+    body.camp .game-opponent { color: #F1EAD6; font-weight: 600; }
+    body.camp .game-date { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .game-score.win  { color: #7FA05A; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .game-score.loss { color: #C1553A; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .game-verdict.yes { background: rgba(127,160,90,0.18); color: #7FA05A; border: 1px solid rgba(127,160,90,0.5); font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .game-verdict.no  { background: rgba(193,85,58,0.18); color: #C1553A; border: 1px solid rgba(193,85,58,0.5); font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+
+    /* Season trend */
+    body.camp .trend-title { font-family: 'Anton',sans-serif; font-weight: 400; color: #F1EAD6; }
+    body.camp .trend-summary { color: #F2A73C; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .trend-sub { color: #C7C1AE; }
+
+    /* By-season block */
+    body.camp .seasons-head .games-title { color: #F1EAD6; }
+    body.camp .byseason-toggle .bs-btn {
+      font-family: 'Oswald',sans-serif; letter-spacing: 2px;
+      background: rgba(242,167,60,0.08); border: 1px solid rgba(242,167,60,0.35); color: #C7C1AE;
+    }
+    body.camp .byseason-toggle .bs-btn.on {
+      background: #F2A73C; color: #2A1A0E; border-color: #F2A73C;
+    }
+    body.camp .seasons-track { background: rgba(241,234,214,0.05); }
+    body.camp .seasons-bar { background: #4E7A4E; }
+    body.camp .seasons-bar.cur { background: #F2A73C; box-shadow: 0 0 14px rgba(242,167,60,0.4); }
+    body.camp .seasons-yr { color: #F1EAD6; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+    body.camp .seasons-rec { color: #C7C1AE; }
+    body.camp .seasons-lp { color: #C7C1AE; font-family: 'Oswald',sans-serif; letter-spacing: 1px; }
+
+    /* Trend SVG axis text and lines */
+    body.camp .trend-svg text { fill: #C7C1AE; font-family: 'Oswald',sans-serif; }
+    body.camp .trend-svg .grid-line { stroke: rgba(241,234,214,0.08); }
+
+    /* Loading + error */
+    body.camp #loading, body.camp #error { color: #C7C1AE; font-family: 'Oswald', sans-serif; letter-spacing: 2px; }
+    body.camp .spinner { border-color: rgba(241,234,214,0.12); border-top-color: #F2A73C; }
+
+
+    /* Camp: Mt Rainier + treeline. Hidden in other themes. */
+    .header-mountain,
+    .header-treeline { display: none; }
+    body.camp .header-mountain {
+      display: block;
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 74px;
+      height: 240px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    body.camp .header-mountain svg { display: block; width: 100%; height: 100%; }
+    body.camp .header-treeline {
+      display: block;
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 0;
+      height: 88px;
+      z-index: 3;
+      pointer-events: none;
+    }
+    body.camp .header-treeline svg { display: block; width: 100%; height: 100%; }
+    body.camp header {
+      padding-bottom: 96px; /* clear the treeline */
+    }
+    body.camp header::before {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 78px;
+      height: 60px;
+      background: radial-gradient(ellipse at 50% 100%, rgba(242,167,60,0.28) 0%, transparent 68%);
+      z-index: 1;
+      pointer-events: none;
+    }
+    body.camp .header-logo,
+    body.camp header h1,
+    body.camp .classic-tagline,
+    body.camp .sf-tagline,
+    body.camp .goth-tagline,
+    body.camp header p.subtitle { position: relative; z-index: 4; }
   </style>
 </head>
 <body>
@@ -1390,9 +1677,196 @@
   <button id="btn-classic" class="tt-btn active" type="button" onclick="setTheme('classic')">🔱 Classic</button>
   <button id="btn-springfield" class="tt-btn" type="button" onclick="setTheme('springfield')">☁️ Springfield</button>
   <button id="btn-goth" class="tt-btn" type="button" onclick="setTheme('goth')">🖤 Goth</button>
+  <button id="btn-camp" class="tt-btn" type="button" onclick="setTheme('camp')">🔥 Camp</button>
 </div>
 
 <header>
+  <div class="header-mountain" aria-hidden="true">
+      <svg viewBox="0 0 1200 240" preserveAspectRatio="xMidYMax slice">
+        <defs>
+          <linearGradient id="rainier-body" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0"   stop-color="#2A4258"/>
+            <stop offset="0.55" stop-color="#1E3348"/>
+            <stop offset="1"   stop-color="#152838"/>
+          </linearGradient>
+          <linearGradient id="rainier-snow" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0"   stop-color="#E8EEF0"/>
+            <stop offset="0.7" stop-color="#B8C6CE"/>
+            <stop offset="1"   stop-color="#8FA0AA"/>
+          </linearGradient>
+        </defs>
+        <!-- Back ridge: distant, low, hazy -->
+        <path d="M0 240 L0 190 L80 172 L180 184 L280 158 L380 176 L480 150 L560 168
+                 L640 154 L740 172 L820 158 L920 178 L1020 164 L1120 180 L1200 168
+                 L1200 240 Z"
+              fill="#1E344A" opacity="0.55"/>
+        <!-- Mid ridge: closer, taller shoulders framing Rainier -->
+        <path d="M0 240 L0 178 L120 152 L240 168 L360 130 L440 148
+                 L520 108 L600 68 L720 108 L800 128 L900 96
+                 L1020 132 L1120 118 L1200 148 L1200 240 Z"
+              fill="#20364C" opacity="0.75"/>
+        <!-- Mt Rainier main massif (broad conical shoulders, jagged summit ridge) -->
+        <path d="M240 240
+                 L340 220 L400 200 L470 172 L510 150 L540 128
+                 L560 108 L578 92 L590 78 L598 66 L604 58
+                 L610 52 L618 58 L625 68 L632 82 L640 98
+                 L652 118 L666 140 L684 162 L706 184 L740 206 L800 224 L900 236
+                 L1000 240 Z"
+              fill="url(#rainier-body)"/>
+        <!-- Snow cap: jagged bottom edge following gullies down the peak -->
+        <path d="M568 116
+                 L578 100 L586 88 L594 76 L600 66 L604 58
+                 L610 52 L618 58 L625 68 L630 78 L636 90 L644 106
+                 L652 122 L660 134
+                 L654 132 L648 126 L642 132 L636 128 L630 138
+                 L624 130 L618 138 L612 132 L606 140 L600 132
+                 L594 142 L588 134 L582 138 L576 130 L570 132 Z"
+              fill="url(#rainier-snow)"/>
+        <!-- Ground haze along mountain base -->
+        <rect x="0" y="228" width="1200" height="12" fill="#0F2418" opacity="0.75"/>
+      </svg>
+    </div>
+  <div class="header-treeline" aria-hidden="true">
+      <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="ground" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#0F2418"/>
+            <stop offset="1" stop-color="#050F0A"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="104" width="1200" height="16" fill="url(#ground)"/>
+        <!-- Back layer: distant evergreens (slightly lighter, softer) -->
+          <g fill="#0F2A1E" opacity="0.85">
+            <path d="M68.88 108 L68.88 102.72 L71.12 102.72 L71.12 108 Z"/>
+            <path d="M54 102.72 L70 84.72 L86 102.72 Z"/>
+            <path d="M57.519999999999996 91.92 L70 75.12 L82.48 91.92 Z"/>
+            <path d="M60.72 81.12 L70 65.52 L79.28 81.12 Z"/>
+            <path d="M63.92 70.32 L70 54.72 L76.08 70.32 Z"/>
+            <path d="M148.74 108 L148.74 102.28 L151.26 102.28 L151.26 108 Z"/>
+            <path d="M132 102.28 L150 82.78 L168 102.28 Z"/>
+            <path d="M135.96 90.58 L150 72.38 L164.04 90.58 Z"/>
+            <path d="M139.56 78.88 L150 61.98 L160.44 78.88 Z"/>
+            <path d="M143.16 67.18 L150 50.28 L156.84 67.18 Z"/>
+            <path d="M238.6 108 L238.6 101.84 L241.4 101.84 L241.4 108 Z"/>
+            <path d="M220 101.84 L240 80.84 L260 101.84 Z"/>
+            <path d="M224.4 89.24000000000001 L240 69.64000000000001 L255.6 89.24000000000001 Z"/>
+            <path d="M228.4 76.64 L240 58.440000000000005 L251.6 76.64 Z"/>
+            <path d="M232.4 64.03999999999999 L240 45.84 L247.6 64.03999999999999 Z"/>
+            <path d="M323.81 108 L323.81 102.5 L326.19 102.5 L326.19 108 Z"/>
+            <path d="M308 102.5 L325 83.75 L342 102.5 Z"/>
+            <path d="M311.74 91.25 L325 73.75 L338.26 91.25 Z"/>
+            <path d="M315.14 80 L325 63.75 L334.86 80 Z"/>
+            <path d="M318.54 68.75 L325 52.5 L331.46 68.75 Z"/>
+            <path d="M418.6 108 L418.6 101.62 L421.4 101.62 L421.4 108 Z"/>
+            <path d="M400 101.62 L420 79.87 L440 101.62 Z"/>
+            <path d="M404.4 88.57000000000001 L420 68.27000000000001 L435.6 88.57000000000001 Z"/>
+            <path d="M408.4 75.52000000000001 L420 56.67 L431.6 75.52000000000001 Z"/>
+            <path d="M412.4 62.47 L420 43.620000000000005 L427.6 62.47 Z"/>
+            <path d="M508.67 108 L508.67 102.06 L511.33 102.06 L511.33 108 Z"/>
+            <path d="M491 102.06 L510 81.81 L529 102.06 Z"/>
+            <path d="M495.18 89.91 L510 71.01 L524.82 89.91 Z"/>
+            <path d="M498.98 77.76 L510 60.21 L521.02 77.76 Z"/>
+            <path d="M502.78 65.61 L510 48.06 L517.22 65.61 Z"/>
+            <path d="M608.53 108 L608.53 101.4 L611.47 101.4 L611.47 108 Z"/>
+            <path d="M589 101.4 L610 78.9 L631 101.4 Z"/>
+            <path d="M593.62 87.9 L610 66.9 L626.38 87.9 Z"/>
+            <path d="M597.82 74.4 L610 54.900000000000006 L622.18 74.4 Z"/>
+            <path d="M602.02 60.900000000000006 L610 41.400000000000006 L617.98 60.900000000000006 Z"/>
+            <path d="M708.67 108 L708.67 101.84 L711.33 101.84 L711.33 108 Z"/>
+            <path d="M691 101.84 L710 80.84 L729 101.84 Z"/>
+            <path d="M695.18 89.24000000000001 L710 69.64000000000001 L724.82 89.24000000000001 Z"/>
+            <path d="M698.98 76.64 L710 58.440000000000005 L721.02 76.64 Z"/>
+            <path d="M702.78 64.03999999999999 L710 45.84 L717.22 64.03999999999999 Z"/>
+            <path d="M813.46 108 L813.46 101.18 L816.54 101.18 L816.54 108 Z"/>
+            <path d="M793 101.18 L815 77.93 L837 101.18 Z"/>
+            <path d="M797.84 87.23 L815 65.53 L832.16 87.23 Z"/>
+            <path d="M802.24 73.28 L815 53.13 L827.76 73.28 Z"/>
+            <path d="M806.64 59.330000000000005 L815 39.18000000000001 L823.36 59.330000000000005 Z"/>
+            <path d="M913.67 108 L913.67 102.06 L916.33 102.06 L916.33 108 Z"/>
+            <path d="M896 102.06 L915 81.81 L934 102.06 Z"/>
+            <path d="M900.18 89.91 L915 71.01 L929.82 89.91 Z"/>
+            <path d="M903.98 77.76 L915 60.21 L926.02 77.76 Z"/>
+            <path d="M907.78 65.61 L915 48.06 L922.22 65.61 Z"/>
+            <path d="M1018.6 108 L1018.6 101.62 L1021.4 101.62 L1021.4 108 Z"/>
+            <path d="M1000 101.62 L1020 79.87 L1040 101.62 Z"/>
+            <path d="M1004.4 88.57000000000001 L1020 68.27000000000001 L1035.6 88.57000000000001 Z"/>
+            <path d="M1008.4 75.52000000000001 L1020 56.67 L1031.6 75.52000000000001 Z"/>
+            <path d="M1012.4 62.47 L1020 43.620000000000005 L1027.6 62.47 Z"/>
+            <path d="M1118.74 108 L1118.74 102.28 L1121.26 102.28 L1121.26 108 Z"/>
+            <path d="M1102 102.28 L1120 82.78 L1138 102.28 Z"/>
+            <path d="M1105.96 90.58 L1120 72.38 L1134.04 90.58 Z"/>
+            <path d="M1109.56 78.88 L1120 61.98 L1130.44 78.88 Z"/>
+            <path d="M1113.16 67.18 L1120 50.28 L1126.84 67.18 Z"/>
+          </g>
+          <g fill="#081C13">
+            <path d="M28.46 108 L28.46 101.18 L31.54 101.18 L31.54 108 Z"/>
+            <path d="M8 101.18 L30 77.93 L52 101.18 Z"/>
+            <path d="M12.84 87.23 L30 65.53 L47.16 87.23 Z"/>
+            <path d="M17.240000000000002 73.28 L30 53.13 L42.76 73.28 Z"/>
+            <path d="M21.64 59.330000000000005 L30 39.18000000000001 L38.36 59.330000000000005 Z"/>
+            <path d="M108.32 108 L108.32 100.52 L111.68 100.52 L111.68 108 Z"/>
+            <path d="M86 100.52 L110 75.02 L134 100.52 Z"/>
+            <path d="M91.28 85.22 L110 61.42 L128.72 85.22 Z"/>
+            <path d="M96.08 69.91999999999999 L110 47.81999999999999 L123.92 69.91999999999999 Z"/>
+            <path d="M100.88 54.61999999999999 L110 32.519999999999996 L119.12 54.61999999999999 Z"/>
+            <path d="M193.18 108 L193.18 99.86 L196.82 99.86 L196.82 108 Z"/>
+            <path d="M169 99.86 L195 72.11 L221 99.86 Z"/>
+            <path d="M174.72 83.21 L195 57.31 L215.28 83.21 Z"/>
+            <path d="M179.92000000000002 66.56 L195 42.51 L210.07999999999998 66.56 Z"/>
+            <path d="M185.12 49.91 L195 25.86 L204.88 49.91 Z"/>
+            <path d="M283.46 108 L283.46 100.74 L286.54 100.74 L286.54 108 Z"/>
+            <path d="M263 100.74 L285 75.99 L307 100.74 Z"/>
+            <path d="M267.84 85.89 L285 62.79 L302.16 85.89 Z"/>
+            <path d="M272.24 71.03999999999999 L285 49.589999999999996 L297.76 71.03999999999999 Z"/>
+            <path d="M276.64 56.18999999999999 L285 34.739999999999995 L293.36 56.18999999999999 Z"/>
+            <path d="M368.04 108 L368.04 99.42 L371.96 99.42 L371.96 108 Z"/>
+            <path d="M342 99.42 L370 70.17 L398 99.42 Z"/>
+            <path d="M348.16 81.87 L370 54.57000000000001 L391.84 81.87 Z"/>
+            <path d="M353.76 64.32 L370 38.97 L386.24 64.32 Z"/>
+            <path d="M359.36 46.769999999999996 L370 21.42 L380.64 46.769999999999996 Z"/>
+            <path d="M463.32 108 L463.32 100.3 L466.68 100.3 L466.68 108 Z"/>
+            <path d="M441 100.3 L465 74.05 L489 100.3 Z"/>
+            <path d="M446.28 84.55 L465 60.05 L483.72 84.55 Z"/>
+            <path d="M451.08 68.8 L465 46.05 L478.92 68.8 Z"/>
+            <path d="M455.88 53.05 L465 30.299999999999997 L474.12 53.05 Z"/>
+            <path d="M552.9 108 L552.9 98.98 L557.1 98.98 L557.1 108 Z"/>
+            <path d="M525 98.98 L555 68.23 L585 98.98 Z"/>
+            <path d="M531.6 80.53 L555 51.830000000000005 L578.4 80.53 Z"/>
+            <path d="M537.6 62.080000000000005 L555 35.43 L572.4 62.080000000000005 Z"/>
+            <path d="M543.6 43.63 L555 16.980000000000004 L566.4 43.63 Z"/>
+            <path d="M658.25 108 L658.25 100.08 L661.75 100.08 L661.75 108 Z"/>
+            <path d="M635 100.08 L660 73.08 L685 100.08 Z"/>
+            <path d="M640.5 83.88 L660 58.68 L679.5 83.88 Z"/>
+            <path d="M645.5 67.68 L660 44.279999999999994 L674.5 67.68 Z"/>
+            <path d="M650.5 51.48 L660 28.08 L669.5 51.48 Z"/>
+            <path d="M758.11 108 L758.11 99.64 L761.89 99.64 L761.89 108 Z"/>
+            <path d="M733 99.64 L760 71.14 L787 99.64 Z"/>
+            <path d="M738.94 82.53999999999999 L760 55.940000000000005 L781.06 82.53999999999999 Z"/>
+            <path d="M744.34 65.44 L760 40.74 L775.66 65.44 Z"/>
+            <path d="M749.74 48.339999999999996 L760 23.64 L770.26 48.339999999999996 Z"/>
+            <path d="M863.39 108 L863.39 100.52 L866.61 100.52 L866.61 108 Z"/>
+            <path d="M842 100.52 L865 75.02 L888 100.52 Z"/>
+            <path d="M847.06 85.22 L865 61.42 L882.94 85.22 Z"/>
+            <path d="M851.66 69.91999999999999 L865 47.81999999999999 L878.34 69.91999999999999 Z"/>
+            <path d="M856.26 54.61999999999999 L865 32.519999999999996 L873.74 54.61999999999999 Z"/>
+            <path d="M963.04 108 L963.04 99.2 L966.96 99.2 L966.96 108 Z"/>
+            <path d="M937 99.2 L965 69.2 L993 99.2 Z"/>
+            <path d="M943.16 81.2 L965 53.2 L986.84 81.2 Z"/>
+            <path d="M948.76 63.2 L965 37.2 L981.24 63.2 Z"/>
+            <path d="M954.36 45.2 L965 19.200000000000003 L975.64 45.2 Z"/>
+            <path d="M1068.32 108 L1068.32 100.3 L1071.68 100.3 L1071.68 108 Z"/>
+            <path d="M1046 100.3 L1070 74.05 L1094 100.3 Z"/>
+            <path d="M1051.28 84.55 L1070 60.05 L1088.72 84.55 Z"/>
+            <path d="M1056.08 68.8 L1070 46.05 L1083.92 68.8 Z"/>
+            <path d="M1060.88 53.05 L1070 30.299999999999997 L1079.12 53.05 Z"/>
+            <path d="M1168.18 108 L1168.18 99.86 L1171.82 99.86 L1171.82 108 Z"/>
+            <path d="M1144 99.86 L1170 72.11 L1196 99.86 Z"/>
+            <path d="M1149.72 83.21 L1170 57.31 L1190.28 83.21 Z"/>
+            <path d="M1154.92 66.56 L1170 42.51 L1185.08 66.56 Z"/>
+            <path d="M1160.12 49.91 L1170 25.86 L1179.88 49.91 Z"/>
+          </g>
+      </svg>
+    </div>
   <div class="header-logo">
     <img src="https://www.mlbstatic.com/team-logos/136.svg" alt="Seattle Mariners" style="width:52px;height:52px;filter:drop-shadow(0 0 12px rgba(0,178,169,0.6));" />
     <div class="header-wordmark">Seattle Mariners</div>
@@ -1425,6 +1899,60 @@
     <!-- Verdict card -->
     <div class="card verdict-card">
       <div class="card-label" id="verdict-label">Last Completed Game</div>
+      <!-- Campfire (Camp theme only; hidden by default via .verdict-fire { display:none }) -->
+      <svg class="verdict-fire" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <radialGradient id="camp-glow" cx="0.5" cy="0.6" r="0.6">
+            <stop offset="0"   stop-color="#F2A73C" stop-opacity="0.55"/>
+            <stop offset="0.5" stop-color="#F2A73C" stop-opacity="0.10"/>
+            <stop offset="1"   stop-color="#F2A73C" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="camp-flame-outer" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#F2A73C"/>
+            <stop offset="1" stop-color="#C1553A"/>
+          </linearGradient>
+          <linearGradient id="camp-flame-inner" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#FFE8A0"/>
+            <stop offset="1" stop-color="#F2A73C"/>
+          </linearGradient>
+        </defs>
+        <circle cx="100" cy="140" r="70" fill="url(#camp-glow)"/>
+        <g>
+          <ellipse cx="100" cy="178" rx="52" ry="3" fill="#000" opacity="0.35"/>
+          <g transform="rotate(-2.5 100 168)">
+            <rect x="55" y="163" width="90" height="10" rx="5" fill="#4E2E17"/>
+            <path d="M58 165 Q 100 163.4 142 165" stroke="#2C1808" stroke-width="1.2" fill="none" opacity="0.65"/>
+            <line x1="66" y1="167" x2="74" y2="166.5" stroke="#2C1808" stroke-width="0.7" opacity="0.75"/>
+            <line x1="82" y1="167" x2="93" y2="167.5" stroke="#2C1808" stroke-width="0.7" opacity="0.75"/>
+            <line x1="102" y1="166.5" x2="112" y2="167" stroke="#2C1808" stroke-width="0.7" opacity="0.75"/>
+            <line x1="118" y1="167" x2="128" y2="166.5" stroke="#2C1808" stroke-width="0.7" opacity="0.75"/>
+            <line x1="70" y1="170" x2="80" y2="170.5" stroke="#2C1808" stroke-width="0.5" opacity="0.55"/>
+            <line x1="98" y1="170.5" x2="108" y2="170" stroke="#2C1808" stroke-width="0.5" opacity="0.55"/>
+            <line x1="122" y1="170" x2="132" y2="170.5" stroke="#2C1808" stroke-width="0.5" opacity="0.55"/>
+            <path d="M60 172 Q 100 173 140 172" stroke="#7A4A28" stroke-width="0.8" fill="none" opacity="0.7"/>
+            <ellipse cx="55" cy="168" rx="5.2" ry="5.6" fill="#C89670"/>
+            <ellipse cx="55" cy="168" rx="3.6" ry="4.0" fill="none" stroke="#8E6335" stroke-width="0.6"/>
+            <ellipse cx="55" cy="168" rx="2.2" ry="2.5" fill="none" stroke="#6B4626" stroke-width="0.5"/>
+            <circle cx="55" cy="168" r="0.9" fill="#4A2C13"/>
+            <ellipse cx="145" cy="168" rx="5.2" ry="5.6" fill="#C89670"/>
+            <ellipse cx="145" cy="168" rx="3.6" ry="4.0" fill="none" stroke="#8E6335" stroke-width="0.6"/>
+            <ellipse cx="145" cy="168" rx="2.2" ry="2.5" fill="none" stroke="#6B4626" stroke-width="0.5"/>
+            <circle cx="145" cy="168" r="0.9" fill="#4A2C13"/>
+          </g>
+          <circle cx="82"  cy="177" r="0.9" fill="#F2A73C" opacity="0.9" class="ember ember-a"/>
+          <circle cx="96"  cy="178" r="0.7" fill="#C1553A" opacity="0.85" class="ember ember-b"/>
+          <circle cx="110" cy="177" r="0.9" fill="#F2A73C" opacity="0.9" class="ember ember-c"/>
+          <circle cx="122" cy="178" r="0.7" fill="#C1553A" opacity="0.8" class="ember ember-d"/>
+        </g>
+        <g class="flames flames-glow" data-camp-flames transform="scale(0.60)">
+          <g class="flame-flicker">
+            <path d="M100 155 Q 78 130 82 100 Q 88 78 100 60 Q 112 78 118 100 Q 122 130 100 155 Z" fill="url(#camp-flame-outer)"/>
+            <path d="M100 148 Q 88 130 92 108 Q 96 92 100 82 Q 104 92 108 108 Q 112 130 100 148 Z" fill="url(#camp-flame-inner)"/>
+          </g>
+        </g>
+        <g data-camp-marsh></g>
+      </svg>
+
       <div class="verdict-word" id="verdict-word">-</div>
       <div class="verdict-meter" id="verdict-meter"></div>
       <div class="verdict-opponent" id="verdict-opponent"></div>
@@ -1917,14 +2445,19 @@
     window.setTheme = function (t) {
       var sf = t === 'springfield';
       var goth = t === 'goth';
+      var camp = t === 'camp';
       document.body.classList.toggle('springfield', sf);
       document.body.classList.toggle('goth', goth);
+      document.body.classList.toggle('camp', camp);
       var c = document.getElementById('btn-classic');
       var s = document.getElementById('btn-springfield');
       var g = document.getElementById('btn-goth');
-      if (c) c.classList.toggle('active', !sf && !goth);
+      var cp = document.getElementById('btn-camp');
+      if (c) c.classList.toggle('active', !sf && !goth && !camp);
       if (s) s.classList.toggle('active', sf);
       if (g) g.classList.toggle('active', goth);
+      if (cp) cp.classList.toggle('active', camp);
+      if (camp && typeof window.updateCampfire === 'function') window.updateCampfire();
 
       clearInterval(sfInterval); // avoid stacking intervals on repeat selects
       clearInterval(gothInterval);
@@ -1939,7 +2472,7 @@
         if (elG) elG.textContent = GOTH_QUOTES[gothIndex];
         gothInterval = setInterval(rotateGothTagline, 20000);
       }
-      if (!sf && !goth) {
+      if (!sf && !goth && !camp) {
         var elC = document.getElementById('classic-tagline');
         if (elC && classicItems.length) elC.textContent = classicItems[classicIndex];
         classicInterval = setInterval(rotateClassicTagline, 12000);
@@ -2158,6 +2691,7 @@
           pips += `<div class="run-pip ${i === 4 ? 'fourth' : ''} ${marRuns >= i ? 'filled' : ''}">${i === 4 ? '4+' : i}</div>`;
         }
         document.getElementById('verdict-meter').innerHTML = pips;
+        if (typeof window.updateCampfire === 'function') window.updateCampfire(marRuns);
         document.getElementById('verdict-opponent').textContent =
           verdict ? `They scored more than ${THRESHOLD} runs`
                   : (live ? `${marRuns} so far, need ${THRESHOLD + 1 - marRuns} more`
@@ -2464,6 +2998,89 @@
   }
 
   load();
-</script>
+
+  /* ============================================================================ */
+  /* Camp campfire renderer                                                       */
+  /*   Draws the fire scale and marshmallows for the current verdict's runs.     */
+  /*   Called by setTheme when Camp becomes active, and after each verdict       */
+  /*   render so the fire tracks live game data.                                 */
+  /* ============================================================================ */
+  window.__campRuns = 0;
+  window.updateCampfire = function (runs) {
+    if (typeof runs === 'number' && !isNaN(runs)) window.__campRuns = runs;
+    var flames = document.querySelector('[data-camp-flames]');
+    var marsh = document.querySelector('[data-camp-marsh]');
+    if (!flames || !marsh) return;
+    var n = window.__campRuns;
+    // Fire scale by heat state
+    var scale = n <= 0 ? 0.35 : n <= 3 ? 0.60 : n <= 6 ? 0.90 : n <= 9 ? 1.15 : 1.42;
+    flames.setAttribute('transform', 'scale(' + scale + ')');
+    // Marshmallows: symmetric pairs plus optional solo on right for odd n
+    marsh.innerHTML = '';
+    if (n <= 0) return;
+    var capped = Math.min(n, 12);
+    var overflow = n - capped;
+    var pairs = Math.floor(capped / 2);
+    var solo = capped % 2;
+    var pairYs = pairs === 0 ? [] :
+                 pairs === 1 ? [128] :
+                 Array.from({length: pairs}, function (_, i) { return 104 + i * (48 / (pairs - 1)); });
+    var MARSH_BODY = '#F5EBD1';
+    var MARSH_STROKE = '#B8A97F';
+    var TOAST_EDGE = n <= 3 ? null : n <= 6 ? '#D89A46' : n <= 9 ? '#8F5522' : '#4A2612';
+    var TOAST_WIDTH = n <= 3 ? 0 : n <= 6 ? 2.5 : n <= 9 ? 3.5 : 4.5;
+    function drawStick(originX, tipX, y) {
+      var NS = 'http://www.w3.org/2000/svg';
+      var g = document.createElementNS(NS, 'g');
+      var line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', originX); line.setAttribute('y1', y + 0.5);
+      line.setAttribute('x2', tipX); line.setAttribute('y2', y);
+      line.setAttribute('stroke', '#7A5A3A'); line.setAttribute('stroke-width', 1.4);
+      line.setAttribute('stroke-linecap', 'round');
+      g.appendChild(line);
+      var w = 12, h = 9;
+      var isLeftSide = originX < 100;
+      var mx = tipX + (isLeftSide ? w / 2 : -w / 2);
+      var rect = document.createElementNS(NS, 'rect');
+      rect.setAttribute('x', mx - w / 2); rect.setAttribute('y', y - h / 2);
+      rect.setAttribute('width', w); rect.setAttribute('height', h); rect.setAttribute('rx', 3);
+      rect.setAttribute('fill', MARSH_BODY); rect.setAttribute('stroke', MARSH_STROKE); rect.setAttribute('stroke-width', 0.6);
+      g.appendChild(rect);
+      if (TOAST_EDGE && TOAST_WIDTH > 0) {
+        var fireEdgeX = isLeftSide ? mx + w / 2 : mx - w / 2;
+        var toastX = isLeftSide ? fireEdgeX - TOAST_WIDTH : fireEdgeX;
+        var toast = document.createElementNS(NS, 'rect');
+        toast.setAttribute('x', toastX); toast.setAttribute('y', y - h / 2 + 0.6);
+        toast.setAttribute('width', TOAST_WIDTH); toast.setAttribute('height', h - 1.2);
+        toast.setAttribute('rx', 2); toast.setAttribute('fill', TOAST_EDGE); toast.setAttribute('opacity', 0.92);
+        g.appendChild(toast);
+      }
+      marsh.appendChild(g);
+    }
+    for (var i = 0; i < pairs; i++) {
+      drawStick(210, 150, pairYs[i]);
+      drawStick(-10, 50, pairYs[i]);
+    }
+    if (solo) {
+      var y0 = pairs === 0 ? 128 : Math.max(88, pairYs[0] - 18);
+      drawStick(210, 150, y0);
+    }
+    if (overflow > 0) {
+      var NS = 'http://www.w3.org/2000/svg';
+      var bg = document.createElementNS(NS, 'rect');
+      bg.setAttribute('x', 82); bg.setAttribute('y', 178);
+      bg.setAttribute('width', 36); bg.setAttribute('height', 16); bg.setAttribute('rx', 8);
+      bg.setAttribute('fill', '#F2A73C');
+      marsh.appendChild(bg);
+      var t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', 100); t.setAttribute('y', 190); t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-family', 'Oswald,sans-serif'); t.setAttribute('font-size', '11');
+      t.setAttribute('font-weight', '700'); t.setAttribute('fill', '#1A1204');
+      t.textContent = '+' + overflow;
+      marsh.appendChild(t);
+    }
+  };
+
+  </script>
 </body>
 </html>
