@@ -878,6 +878,17 @@
       .seasons-track { height: 130px; }
 
       .tt-label { display: none; }
+      .theme-toggle { flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+      .tt-btn { padding: 7px 14px; font-size: 0.72rem; letter-spacing: 0.5px; }
+
+      /* iOS Safari bug: `background-attachment: fixed` mis-sizes the fixed
+         canvas and leaves a hairline strip at the edges. Detach on mobile so
+         the gradient always covers. Visual difference is negligible at this
+         width and the strip disappears. */
+      body,
+      body.springfield,
+      body.goth,
+      body.camp { background-attachment: scroll; }
     }
 
     /* ====================================================================== */
