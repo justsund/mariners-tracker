@@ -632,6 +632,16 @@
       .hero-fire .ember { animation: none; }
     }
 
+    /* iOS Safari bug: `background-attachment: fixed` mis-sizes the fixed
+       canvas and leaves a hairline strip at the edges. Detach on mobile so
+       the gradient always covers. */
+    @media (max-width: 560px) {
+      body,
+      body.springfield,
+      body.goth,
+      body.camp { background-attachment: scroll; }
+    }
+
   </style>
 </head>
 <body>
