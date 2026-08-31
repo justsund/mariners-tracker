@@ -2012,58 +2012,73 @@
     // Fire scale by heat state
     var scale = n <= 0 ? 0.35 : n <= 3 ? 0.60 : n <= 6 ? 0.90 : n <= 9 ? 1.15 : 1.42;
     flames.setAttribute('transform', 'scale(' + scale + ')');
-    // Marshmallows: symmetric pairs plus optional solo on right for odd n
+    // Marshmallows on sticks. They fan out from around the fire at varied angles so
+    // they read like a real campfire roast instead of parallel horizontal rails.
     marsh.innerHTML = '';
     if (n <= 0) return;
     var capped = Math.min(n, 12);
     var overflow = n - capped;
-    var pairs = Math.floor(capped / 2);
-    var solo = capped % 2;
-    var pairYs = pairs === 0 ? [] :
-                 pairs === 1 ? [128] :
-                 Array.from({length: pairs}, function (_, i) { return 104 + i * (48 / (pairs - 1)); });
     var MARSH_BODY = '#F5EBD1';
     var MARSH_STROKE = '#B8A97F';
     var TOAST_EDGE = n <= 3 ? null : n <= 6 ? '#D89A46' : n <= 9 ? '#8F5522' : '#4A2612';
     var TOAST_WIDTH = n <= 3 ? 0 : n <= 6 ? 2.5 : n <= 9 ? 3.5 : 4.5;
-    function drawStick(originX, tipX, y) {
-      var NS = 'http://www.w3.org/2000/svg';
+    var NS = 'http://www.w3.org/2000/svg';
+    var FIRE_X = 100, FIRE_Y = 122;   // marshmallows gather around this point
+    // Deterministic per-index jitter: the fan looks hand-arranged but never
+    // reshuffles between live refreshes.
+    function jit(i, salt) { var v = Math.sin((i + 1) * 12.9898 + salt * 78.233) * 43758.5453; return v - Math.floor(v); }
+    // Split the marshmallows across the two sides of the fire (the right side keeps
+    // the extra one when the count is odd).
+    var rightCount = Math.ceil(capped / 2), leftCount = capped - rightCount;
+    // Fractions across each side's fan, ordered so the near-horizontal "prime"
+    // roasting spots fill first and later marshmallows fan up and down.
+    function fanOrder(count) {
+      var f = [];
+      for (var k = 0; k < count; k++) f.push(count === 1 ? 0.5 : k / (count - 1));
+      return f.sort(function (a, b) { return Math.abs(a - 0.5) - Math.abs(b - 0.5); });
+    }
+    var rF = fanOrder(rightCount), lF = fanOrder(leftCount);
+    function drawStick(i, side, f) {
+      // Angle from the fire out to the held end (SVG degrees: 0 = right, +down).
+      // The right side sweeps from up to angled down; the left mirrors it.
+      var spread = -28 + f * 66 + (jit(i, 1) - 0.5) * 15;
+      var ang = side === 'R' ? spread : 180 - spread;
+      var rad = ang * Math.PI / 180, dx = Math.cos(rad), dy = Math.sin(rad);
+      var Rt = 27 + Math.abs(f - 0.5) * 18 + jit(i, 2) * 22;         // staggered gap so heads scatter, not stack
+      var stickLen = 66 + f * 24 + (jit(i, 3) - 0.5) * 16;          // trailing stick out to the hand
+      var ix = FIRE_X + dx * Rt, iy = FIRE_Y + dy * Rt;             // inner (fire-facing) edge sits here
+      var w = 12, h = 9;
       var g = document.createElementNS(NS, 'g');
+      g.setAttribute('transform', 'translate(' + ix.toFixed(1) + ',' + iy.toFixed(1) + ') rotate(' + ang.toFixed(1) + ')');
+      // Local frame: marshmallow inner edge at x=0, body runs outward (+x), stick
+      // trails from the outer edge to the hand.
       var line = document.createElementNS(NS, 'line');
-      line.setAttribute('x1', originX); line.setAttribute('y1', y + 0.5);
-      line.setAttribute('x2', tipX); line.setAttribute('y2', y);
+      line.setAttribute('x1', w); line.setAttribute('y1', 0);
+      line.setAttribute('x2', w + stickLen); line.setAttribute('y2', 0);
       line.setAttribute('stroke', '#7A5A3A'); line.setAttribute('stroke-width', 1.4);
       line.setAttribute('stroke-linecap', 'round');
       g.appendChild(line);
-      var w = 12, h = 9;
-      var isLeftSide = originX < 100;
-      var mx = tipX + (isLeftSide ? w / 2 : -w / 2);
       var rect = document.createElementNS(NS, 'rect');
-      rect.setAttribute('x', mx - w / 2); rect.setAttribute('y', y - h / 2);
+      rect.setAttribute('x', 0); rect.setAttribute('y', -h / 2);
       rect.setAttribute('width', w); rect.setAttribute('height', h); rect.setAttribute('rx', 3);
       rect.setAttribute('fill', MARSH_BODY); rect.setAttribute('stroke', MARSH_STROKE); rect.setAttribute('stroke-width', 0.6);
       g.appendChild(rect);
       if (TOAST_EDGE && TOAST_WIDTH > 0) {
-        var fireEdgeX = isLeftSide ? mx + w / 2 : mx - w / 2;
-        var toastX = isLeftSide ? fireEdgeX - TOAST_WIDTH : fireEdgeX;
         var toast = document.createElementNS(NS, 'rect');
-        toast.setAttribute('x', toastX); toast.setAttribute('y', y - h / 2 + 0.6);
+        toast.setAttribute('x', 0); toast.setAttribute('y', -h / 2 + 0.6);   // toast the fire-facing edge
         toast.setAttribute('width', TOAST_WIDTH); toast.setAttribute('height', h - 1.2);
         toast.setAttribute('rx', 2); toast.setAttribute('fill', TOAST_EDGE); toast.setAttribute('opacity', 0.92);
         g.appendChild(toast);
       }
       marsh.appendChild(g);
     }
-    for (var i = 0; i < pairs; i++) {
-      drawStick(210, 150, pairYs[i]);
-      drawStick(-10, 50, pairYs[i]);
-    }
-    if (solo) {
-      var y0 = pairs === 0 ? 128 : Math.max(88, pairYs[0] - 18);
-      drawStick(210, 150, y0);
+    // Alternate sides as marshmallows fill in (right, left, right, ...).
+    var ri = 0, li = 0;
+    for (var i = 0; i < capped; i++) {
+      if ((i % 2 === 0 || li >= leftCount) && ri < rightCount) drawStick(i, 'R', rF[ri++]);
+      else drawStick(i, 'L', lF[li++]);
     }
     if (overflow > 0) {
-      var NS = 'http://www.w3.org/2000/svg';
       var bg = document.createElementNS(NS, 'rect');
       bg.setAttribute('x', 82); bg.setAttribute('y', 178);
       bg.setAttribute('width', 36); bg.setAttribute('height', 16); bg.setAttribute('rx', 8);
